@@ -1,6 +1,6 @@
 <template>
     <h1>Eventi di {{ store.match.name }}</h1>
-    <div class="">
+    <div class="table-container">
         <table class="event-table">
             <thead>
                 <tr>

@@ -126,6 +126,8 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  overflow-x: auto;
+  
 }
 
 .name-input {
@@ -195,6 +197,7 @@ input[type="checkbox"] {
 }
 
 .reset-button {
+  position: absolute;
   width: 5em;
   padding: 10px;
   font-size: 10px;
@@ -252,6 +255,10 @@ input[type="checkbox"] {
   box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
 }
 
+.table-container {
+  overflow-x: auto;
+}
+
 .report-table {
   width: -webkit-fill-available;
   border-collapse: collapse;
@@ -264,6 +271,7 @@ input[type="checkbox"] {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .report-table th {
@@ -287,6 +295,7 @@ input[type="checkbox"] {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .event-table th {
@@ -301,11 +310,11 @@ input[type="checkbox"] {
 /* CSS */
 .button-28 {
   appearance: none;
-  background-color: transparent;
-  border: 2px solid #5599e6;
+  border: 2px solid #c0c0c0;
+  color: #fff;
+  background-color: #5599e6;
   border-radius: 50%;
   box-sizing: border-box;
-  color: #364e53;
   cursor: pointer;
   display: inline-block;
   font-family: Roobert, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -331,9 +340,9 @@ input[type="checkbox"] {
 }
 
 .button-28:hover {
-  color: #fff;
-  background-color: #5599e6;
-  border-color: #c0c0c0;
+  background-color: transparent;
+  border: 2px solid #5599e6;
+  color: #364e53;
   box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
   transform: translateY(-2px);
 }
@@ -341,4 +350,16 @@ input[type="checkbox"] {
 .button-28:active {
   box-shadow: none;
   transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+  .report-table th, .report-table td {
+    padding: 5px;
+    font-size: 14px;
+  }
+  .button-28{
+    min-width: 40px;
+    max-height: 20px;
+  }
+
 }

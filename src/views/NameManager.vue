@@ -21,5 +21,7 @@
 import { onMounted } from 'vue';
 import { useElementStore } from '../stores/store';
 const store = useElementStore();
-
+onMounted(() => {
+  store.loadStore();
+});
 </script>

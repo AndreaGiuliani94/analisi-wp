@@ -8,7 +8,9 @@
     <button class="mini-button" @click="" :disabled="store.activeCount !== 7">
       -1s</button>
     <button @click="store.toggleGlobalTimer()" :disabled="store.activeCount !== 7">
-      {{ store.globalInterval ? 'Ferma Timer' : 'Avvia Timer' }}</button>
+      <span v-if="store.globalInterval"><font-awesome-icon :icon="['far', 'circle-play']"/></span>
+      <span v-else><font-awesome-icon :icon="['far', 'circle-pause']" /></span>
+    </button>
     <button class="mini-button" @click="" :disabled="store.activeCount !== 7">
       +1s</button>
     <button class="mini-button" @click="" :disabled="store.activeCount !== 7">

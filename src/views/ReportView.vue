@@ -1,6 +1,6 @@
 <template>
     <h1>Report di {{ store.match.name }}</h1>
-    <div>
+    <div class="table-container">
         <table class="report-table">
             <thead>
                 <tr>
