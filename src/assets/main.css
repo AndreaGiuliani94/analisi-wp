@@ -1,0 +1,344 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+button {
+  display: block;
+  width: 40%;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.checkbox-wrapper-2 .ikxBAC {
+  appearance: none;
+  background-color: #dfe1e4;
+  border-radius: 72px;
+  border-style: none;
+  flex-shrink: 0;
+  height: 20px;
+  margin: 0;
+  position: relative;
+  width: 30px;
+}
+
+.checkbox-wrapper-2 .ikxBAC::before {
+  bottom: -6px;
+  content: "";
+  left: -6px;
+  position: absolute;
+  right: -6px;
+  top: -6px;
+}
+
+.checkbox-wrapper-2 .ikxBAC,
+.checkbox-wrapper-2 .ikxBAC::after {
+  transition: all 100ms ease-out;
+}
+
+.checkbox-wrapper-2 .ikxBAC::after {
+  background-color: #fff;
+  border-radius: 50%;
+  content: "";
+  height: 14px;
+  left: 3px;
+  position: absolute;
+  top: 3px;
+  width: 14px;
+}
+
+.checkbox-wrapper-2 input[type=checkbox] {
+  cursor: default;
+}
+
+.checkbox-wrapper-2 .ikxBAC:hover {
+  background-color: #c9cbcd;
+  transition-duration: 0s;
+}
+
+.checkbox-wrapper-2 .ikxBAC:checked {
+  background-color: #6e79d6;
+}
+
+.checkbox-wrapper-2 .ikxBAC:checked::after {
+  background-color: #fff;
+  left: 13px;
+}
+
+.checkbox-wrapper-2 :focus:not(.focus-visible) {
+  outline: 0;
+}
+
+.checkbox-wrapper-2 .ikxBAC:checked:hover {
+  background-color: #535db3;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.lineup {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.player {
+  padding: 10px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.element {
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.name-input {
+  width: -webkit-fill-available;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-left: 12px;
+}
+
+.player-number {
+  width: 1.5em;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.timer {
+  font-size: 14px;
+  color: #333;
+}
+
+.countdown {
+  font-size: 40px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.quarter {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.button-box {
+  padding: 15px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2em;
+}
+
+.lineup-button-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mini-button {
+  width: 20%;
+  padding: 10px;
+  font-size: 10px;
+  background-color: #1c33b3;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+}
+
+.mini-button-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px
+}
+
+.reset-button {
+  width: 5em;
+  padding: 10px;
+  font-size: 10px;
+  background-color: #d10606;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+}
+
+.player-box {
+  padding: 10px;
+  width: 50%;
+  display: flex;
+  justify-content: start;
+  border: 2px solid #ced4da;
+  border-radius: 10px;
+}
+
+.player-box-active {
+  background-color: maroon;
+  color: white;
+}
+
+.selectable:hover {
+  box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+  transform: translateY(-2px);
+}
+
+.player-box-bench {
+  background-color: gainsboro;
+}
+
+.match-input {
+  margin-bottom: 12px;
+  width: -webkit-fill-available;
+  padding: 6px 12px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  appearance: none;
+  border-radius: 4px;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.match-input:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
+}
+
+.report-table {
+  width: -webkit-fill-available;
+  border-collapse: collapse;
+  margin: 20px 0px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.report-table th {
+  background: #dd0c0c;
+  color: white;
+}
+
+.report-table tr:nth-child(even) {
+  background: #f2f2f2;
+}
+
+.event-table {
+  width: -webkit-fill-available;
+  border-collapse: collapse;
+  margin: 20px 0px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.event-table th,
+.event-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.event-table th {
+  background: #dd0c0c;
+  color: white;
+}
+
+.event-table tr:nth-child(even) {
+  background: #f2f2f2;
+}
+
+/* CSS */
+.button-28 {
+  appearance: none;
+  background-color: transparent;
+  border: 2px solid #5599e6;
+  border-radius: 50%;
+  box-sizing: border-box;
+  color: #364e53;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Roobert, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: normal;
+  margin: 0;
+  min-height: 40px;
+  min-width: 40px;
+  outline: none;
+  text-align: center;
+  text-decoration: none;
+  transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: 100%;
+  will-change: transform;
+}
+
+.button-28:disabled {
+  pointer-events: none;
+}
+
+.button-28:hover {
+  color: #fff;
+  background-color: #5599e6;
+  border-color: #c0c0c0;
+  box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+  transform: translateY(-2px);
+}
+
+.button-28:active {
+  box-shadow: none;
+  transform: translateY(0);
+}
