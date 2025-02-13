@@ -20,9 +20,9 @@
             </tbody>
         </table>
     </div>
-    <div class="button-box">
-        <button @click="$router.push('/game')">Vai al Live</button>
-        <button @click="store.exportToExcel(store.events)" class="save-button">Esporta Eventi</button>
+    <div class="flex justify-center items-center gap-10 p-2">
+        <button @click="$router.push('/game')" class="p-2.5 text-sm md:text-md bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300"><font-awesome-icon :icon="['fas', 'play']" /> Live!</button>
+        <button @click="store.exportToExcel(store.events)" class="p-2.5 text-sm md:text-md bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300">Esporta Eventi</button>
     </div>
 </template>
 

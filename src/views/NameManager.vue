@@ -14,7 +14,7 @@
     </div>
   </div>
   <div class="flex justify-center items-center">
-    <button @click="$router.push('/game')" class="p-2.5 text-sm md:text-md bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300">Vai al Live</button>
+    <button @click="$router.push('/game')" class="p-2.5 text-sm md:text-md bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300"><font-awesome-icon :icon="['fas', 'play']" /> Live!</button>
   </div>
 </template>
 

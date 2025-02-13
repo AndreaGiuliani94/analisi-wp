@@ -1,11 +1,11 @@
 <template>
-  <div class="absolute m-1.5">
+  <div class="absolute m-1.5 md:m-4">
     <button @click="store.resetTimers()"
-      class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-3 py-2 text-center me-2 mb-2 shadow-sm cursor-pointer">
+      class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-3 py-2 text-center me-2 mb-2 shadow-lg cursor-pointer">
       <font-awesome-icon :icon="['fas', 'refresh']" /> Reset
     </button>
   </div>
-  <div class="container mx-auto px-2 md:px-8 py-2 md:py-4 bg-white shadow-md rounded-md">
+  <div class="px-2 md:px-8 py-2 md:py-4 bg-white shadow-xl rounded-md">
     <router-view></router-view>
   </div>
 </template>
