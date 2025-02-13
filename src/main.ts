@@ -5,9 +5,10 @@ import './assets/main.css';
 import router from './router';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faPauseCircle, faPlayCircle, faClock, faHourglass } from '@fortawesome/free-regular-svg-icons'
+import { faPauseCircle, faPlayCircle, faClock, faHourglass, } from '@fortawesome/free-regular-svg-icons'
+import {faRefresh} from '@fortawesome/free-solid-svg-icons'
 
-library.add(faPauseCircle, faPlayCircle, faClock, faHourglass)
+library.add(faPauseCircle, faPlayCircle, faClock, faHourglass, faRefresh)
 const app = createApp(App);
 app.use(createPinia());
 app.use(router);
