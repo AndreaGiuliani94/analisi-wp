@@ -5,18 +5,28 @@ import "./assets/main.css";
 import router from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import {
-  faPauseCircle,
-  faPlayCircle,
-} from "@fortawesome/free-regular-svg-icons";
+import { faFileExcel } from "@fortawesome/free-regular-svg-icons";
 import {
   faRefresh,
   faBackward,
   faForward,
   faPlay,
+  faPause,
+  faTableList,
+  faCalendarDays,
 } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faPauseCircle, faPlayCircle, faRefresh, faBackward, faForward, faPlay);
+library.add(
+  faPlay,
+  faPause,
+  faRefresh,
+  faBackward,
+  faForward,
+  faPlay,
+  faTableList,
+  faCalendarDays,
+  faFileExcel
+);
 const app = createApp(App);
 app.use(createPinia());
 app.use(router);

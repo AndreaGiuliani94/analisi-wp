@@ -10,7 +10,7 @@
       <div class="w-[1.7em]">
         {{ player.number }}.
       </div>
-      <input v-model="player.name" @input="store.updateElementName(player.number, player.name)" class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+      <input v-model="player.name" @input="store.updatePlayerName(player.number, player.name)" class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
     </div>
   </div>
   <div class="flex justify-center items-center">

@@ -1,30 +1,9 @@
 import { defineStore } from 'pinia';
 import * as XLSX from 'xlsx';
 import router from '@/router';
-
-interface Match {
-  quarter: number;
-  name: string;
-}
-
-interface Player {
-  number: number;
-  name: string;
-  activeTime: number;
-  benchTime: number;
-  actualTime: number;
-  shoots: number;
-  goals: number;
-  exclutions: number;
-  active: boolean;
-}
-
-interface Event {
-  player: Player;
-  time: string;
-  description: string;
-  quarter: number;
-}
+import type { Player } from '@/components/Interfaces/Player';
+import type { Event } from '@/components/Interfaces/Event';
+import type { Match } from '@/components/Interfaces/Match';
 
 export const useElementStore = defineStore('elementStore', {
   state: () => {
@@ -81,7 +60,7 @@ export const useElementStore = defineStore('elementStore', {
       }
       this.saveData();
     },
-    updateElementName(number: number, name: string) {
+    updatePlayerName(number: number, name: string) {
       const el = this.players.find(el => el.number === number);
       if (el) {
         el.name = name;
