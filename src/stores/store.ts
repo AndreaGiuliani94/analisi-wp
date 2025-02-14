@@ -89,7 +89,6 @@ export const useElementStore = defineStore("elementStore", {
             }
             el.actualTime++;
           });
-          this.saveData();
         }, 1000);
       }
       if (!this.countdownInterval) {
@@ -121,7 +120,7 @@ export const useElementStore = defineStore("elementStore", {
         this.startGlobalTimer();
       }
     },
-    resetTimers() {
+    resetAll() {
       this.players = [];
       this.match = {};
       this.events = [];
@@ -131,6 +130,12 @@ export const useElementStore = defineStore("elementStore", {
       this.saveData();
       this.loadStore();
       router.push("/");
+    },
+    clearDistinta(){
+      this.players = [];
+      this.match.name = '';
+      this.saveData();
+      this.loadStore();
     },
     addShoot(number: number) {
       const el = this.players.find((el) => el.number === number);
@@ -185,5 +190,12 @@ export const useElementStore = defineStore("elementStore", {
       this.events.push(event);
       this.saveData();
     },
+    back(seconds: number) {
+
+      
+    },
+    forward(seconds: number) {
+      
+    }
   },
 });
