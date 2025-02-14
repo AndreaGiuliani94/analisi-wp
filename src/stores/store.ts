@@ -137,6 +137,20 @@ export const useElementStore = defineStore("elementStore", {
       this.saveData();
       this.loadStore();
     },
+    resetTimer() {
+      this.match.quarter = 1;
+      this.players.forEach(player => {
+        player.activeTime = 0;
+        player.actualTime = 0;
+        player.benchTime = 0;
+        player.exclutions = 0;
+        player.goals = 0;
+        player.shoots = 0;
+        player.active = false;
+      });
+      this.countdown = 480;
+      this.events = [];
+    },
     addShoot(number: number) {
       const el = this.players.find((el) => el.number === number);
       if (el) {
@@ -160,6 +174,7 @@ export const useElementStore = defineStore("elementStore", {
       }
       if (el?.exclutions == 3) {
         this.toggleElement(el.number);
+        if(this.activeCount != 7) this.stopGlobalTimer;
       }
     },
     saveData() {
@@ -191,11 +206,31 @@ export const useElementStore = defineStore("elementStore", {
       this.saveData();
     },
     back(seconds: number) {
-
-      
+      this.countdown += seconds;
+      this.players.forEach(player => {
+        if(player.active) {
+          player.activeTime -= seconds;
+          player.actualTime -= seconds;
+        } else {
+          player.benchTime -= seconds;
+          player.actualTime -= seconds;
+        }
+      });
+      this.saveData();
     },
     forward(seconds: number) {
-      
+      this.countdown -= seconds;
+      this.players.forEach(player => {
+        if(player.active) {
+          player.activeTime += seconds;
+          player.actualTime += seconds;
+        } else {
+          player.benchTime += seconds;
+          player.actualTime += seconds;
+        }
+      });
+      this.saveData();
     }
+
   },
 });

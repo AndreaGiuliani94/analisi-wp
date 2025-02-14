@@ -1,4 +1,12 @@
 <template>
+    <div class="w-full">
+        <div class="flex justify-start items-center gap-2">
+            <button @click="$router.push('/game')"
+                class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+                <font-awesome-icon :icon="['fas', 'arrow-left']" /> Live
+            </button>
+        </div>
+    </div>
     <h1 class="text-3xl text-center font-bold p-2 m-2">Report di {{ store.match.name }}</h1>
     <div class="relative overflow-x-auto shadow-md rounded-lg">
         <table class="w-full text-sm text-left border-collapse rounded-lg">
@@ -25,8 +33,12 @@
         </table>
     </div>
     <div class="flex justify-center items-center gap-10 m-5">
-        <button @click="$router.push('/game')" class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300"><font-awesome-icon :icon="['fas', 'play']" class="w-3.5 h-3.5 text-white me-2"/> Live!</button>
-        <button @click="store.exportToExcel(store.players)" class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300"><font-awesome-icon :icon="['far', 'file-excel']" class="w-3.5 h-3.5 text-white me-2"/> Esporta</button>
+        <button @click="$router.push('/game')"
+            class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300"><font-awesome-icon
+                :icon="['fas', 'play']" class="w-3.5 h-3.5 text-white me-2" /> Live!</button>
+        <button @click="store.exportToExcel(store.players)"
+            class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300"><font-awesome-icon
+                :icon="['far', 'file-excel']" class="w-3.5 h-3.5 text-white me-2" /> Esporta</button>
     </div>
 </template>
 

@@ -9,7 +9,6 @@
         class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
         <font-awesome-icon :icon="['fas', 'refresh']" /> Reset
       </button>
-      
     </div>
   </div>
   <h1 class="text-3xl text-center font-bold mb-4">Distinta</h1>
