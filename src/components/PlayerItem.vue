@@ -2,7 +2,7 @@
   <div :class="[
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
-    class="p-2 w-5/11 transition-colors flex justify-start border border-gray-300 rounded-lg text-sm md:text-regular font-medium"
+    class="p-2 w-5/11 transition-colors flex justify-start items-center border border-gray-300 rounded-lg text-sm md:text-regular font-medium"
     @click="handleClick" @mousedown="startHold" @mouseup="stopHold" @mouseleave="stopHold">
     <template v-if="isEditing">
       <input v-model="editableName" class="bg-transparent border-none outline-none w-full" @blur="saveEdit"
@@ -13,6 +13,7 @@
         {{ player.number }}. {{ player.name }}
       </span>
     </template>
+    <font-awesome-icon v-if="player.exclutions == 3" :icon="['fas', 'triangle-exclamation']" class="inline-flex ml-auto text-red-600" />
   </div>
   <div class="text-sm md:text-regular font-medium ml-1">{{ player.active ? '🕒' : '⏳' }}{{
     store.formatTime(player.actualTime) }}
@@ -22,7 +23,7 @@
       class="px-3 py-2 text-sm font-medium text-white bg-blue-400 border border-gray-200 active:bg-blue-700 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">S</button>
     <button @click="store.addGoal(player.number)" :disabled="!player.active"
       class="px-3 py-2 text-sm font-medium text-white bg-blue-400 border-t border-b border-gray-200  active:bg-blue-700 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">G</button>
-    <button @click="store.addExclution(player.number)" :disabled="!player.active"
+    <button @click="store.addExclution(player.number)" :disabled="!player.active || player.exclutions >= 3"
       class="px-3 py-2 text-sm font-medium text-white bg-blue-400 border border-gray-200 rounded-e-lg active:bg-blue-700 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">E</button>
   </div>
 </template>

@@ -1,4 +1,10 @@
 <template>
+  <div class="absolute">
+    <button @click="$router.push('/')"
+      class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-3 py-2 text-center shadow-lg cursor-pointer">
+      <font-awesome-icon :icon="['fas', 'arrow-left']" /> Distinta
+    </button>
+  </div>
   <div class="text-xl font-bold text-center mt-2">{{ store.match.quarter }} T</div>
   <div class="text-4xl font-bold text-center m-2">{{ store.formatTime(store.countdown) }}</div>
   <div class="flex justify-evenly justify-items-center items-center p-2 mb-2" role="group">
@@ -12,7 +18,7 @@
       <font-awesome-icon :icon="['fas', 'backward']" class="w-3.5 h-3.5 me-2"/>1s</button>
     <button @click="store.toggleGlobalTimer()" :disabled="store.activeCount !== 7"
       class="font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center border-4 border-amber-500 text-amber-500 active:text-white active:bg-amber-500 transition-colors duration-200 disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200">
-      <font-awesome-icon v-if="store.globalInterval" :icon="['fas', 'pause']" fill="currentColor"  class="min-w-10 min-h-10" />
+      <font-awesome-icon v-if="store.globalInterval" :icon="['fas', 'pause']" fill="currentColor"  class="min-w-6 min-h-6 md:min-w-10 md:min-h-10" />
       <font-awesome-icon v-else :icon="['fas', 'play']" class="min-w-6 min-h-6 md:min-w-10 md:min-h-10"/>
     </button>
     <button
@@ -26,7 +32,7 @@
   </div>
 
   <div class=" flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-5">
-    <div v-for="player in store.players" :key="player.number"
+    <div v-for="player in store.actualPlayers" :key="player.number"
       class="border border-gray-300 rounded-lg m-2 flex justify-between items-center overflow-x-auto ">
       <PlayerItem :player="player" />
     </div>

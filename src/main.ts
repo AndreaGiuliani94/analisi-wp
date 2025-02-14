@@ -14,6 +14,8 @@ import {
   faPause,
   faTableList,
   faCalendarDays,
+  faArrowLeft,
+  faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -25,7 +27,9 @@ library.add(
   faPlay,
   faTableList,
   faCalendarDays,
-  faFileExcel
+  faFileExcel,
+  faArrowLeft,
+  faTriangleExclamation
 );
 const app = createApp(App);
 app.use(createPinia());

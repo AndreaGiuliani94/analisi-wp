@@ -13,7 +13,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="element in store.players" :key="element.number" class="border border-gray-300">
+                <tr v-for="element in store.actualPlayers" :key="element.number" class="border border-gray-300">
                     <td class="pl-2.5 py-3 font-medium whitespace-nowrap ">{{ element.number }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.activeTime) }}</td>
