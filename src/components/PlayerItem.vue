@@ -27,18 +27,18 @@
   <div class="inline-flex rounded-md ml-auto h-full" role="group">
     <button @click="store.addShoot(player.number, (team.name == 'HOME' ? 0 : 1))"
       :disabled="(!player.active || player.exclutions >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
-      class="px-3 py-2 text-sm font-medium text-white bg-blue-400 border border-gray-200 active:bg-blue-700 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">S</button>
+      class="px-3 py-2 text-sm font-medium text-white bg-sky-500 border border-gray-200 active:bg-sky-800 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">S</button>
     <button @click="store.addGoal(player.number, (team.name == 'HOME' ? 0 : 1))"
       :disabled="(!player.active || player.exclutions >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
-      class="px-3 py-2 text-sm font-medium text-white bg-blue-400 border-t border-b border-gray-200  active:bg-blue-700 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">G</button>
+      class="px-3 py-2 text-sm font-medium text-white bg-sky-500 border-t border-b border-gray-200  active:bg-sky-800 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">G</button>
     <button @click="store.addExclution(player.number, (team.name == 'HOME' ? 0 : 1))"
       :disabled="(!player.active || player.exclutions >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
-      class="px-3 py-2 text-sm font-medium text-white bg-blue-400 border border-gray-200 rounded-e-lg active:bg-blue-700 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">E</button>
+      class="px-3 py-2 text-sm font-medium text-white bg-sky-500 border border-gray-200 rounded-e-lg active:bg-sky-800 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">E</button>
   </div>
 </template>
 
 <script lang="ts">
-import { useElementStore } from "@/stores/store.ts";
+import { useElementStore } from "@/stores/gameStore";
 import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";

@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { useElementStore } from '@/stores/store';
+import { useElementStore } from '@/stores/gameStore';
 
 export default {
   setup() {

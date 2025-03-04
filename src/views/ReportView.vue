@@ -1,19 +1,19 @@
 <template>
     <div class="w-full">
         <div class="flex justify-start items-center gap-2">
-            <button @click="$router.push('/game')"
+            <button @click="$router.push('/live')"
                 class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" /> Live
             </button>
         </div>
     </div>
-    <h1 class="text-3xl text-center font-bold p-2 m-2">Report di {{ store.match.name }}</h1>
+    <h1 class="text-3xl text-center font-bold p-2 m-2 text-blue-950">Report di {{ store.match.name }}</h1>
     <div class="relative overflow-x-auto shadow-md rounded-lg">
-        <div class="m-2.5 align-middle font-medium text-lg text-red-700">
+        <div class="m-2.5 align-middle font-bold text-lg text-red-800">
             <span>SC QUINTO</span>
         </div>
         <table class="w-full text-sm text-left border-collapse rounded-lg">
-            <thead class="text-xs text-white uppercase bg-red-600 rounded-lg">
+            <thead class="text-xs text-white uppercase bg-red-800 rounded-lg">
                 <tr>
                     <th class="pl-2.5"></th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap">Nome</th>
@@ -36,11 +36,11 @@
         </table>
     </div>
     <div class="relative overflow-x-auto shadow-md rounded-lg mt-2.5">
-        <div class="m-2.5 align-middle font-medium text-lg text-red-700">
+        <div class="m-2.5 align-middle font-bold text-lg text-red-800">
             <span>{{ store.match.opponentsTeam }}</span>
         </div>
         <table class="w-full text-sm text-left border-collapse rounded-lg">
-            <thead class="text-xs text-white uppercase bg-red-600 rounded-lg">
+            <thead class="text-xs text-white uppercase bg-red-800 rounded-lg">
                 <tr>
                     <th class="pl-2.5"></th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap">Nome</th>
@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import ExportButton from '@/components/ExportButton.vue';
-import { useElementStore } from '../stores/store';
+import { useElementStore } from '../stores/gameStore';
 const store = useElementStore();
 
 </script>

@@ -7,6 +7,6 @@
 
 <script setup lang="ts">
 import NavbarItem from './components/NavbarItem.vue';
-import { useElementStore } from './stores/store';
+import { useElementStore } from './stores/gameStore';
 const store = useElementStore();
 </script>

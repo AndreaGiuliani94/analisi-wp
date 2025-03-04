@@ -11,7 +11,7 @@
       </button>
     </div>
   </div>
-  <h1 class="text-3xl text-center font-bold mb-4">Distinta</h1>
+  <h1 class="text-3xl text-center font-bold mb-4 text-blue-950">Distinta</h1>
   <div
     class="px-2.5 py-1.5 border border-gray-300 rounded-md mb-2.5 flex flex-col md:flex-row justify-between gap-3">
     <div
@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useElementStore } from '../stores/store';
+import { useElementStore } from '../stores/gameStore';
 const store = useElementStore();
 onMounted(() => {
   store.loadStore();

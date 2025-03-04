@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import ExportButton from '@/components/ExportButton.vue';
-import { useElementStore } from '../stores/store';
+import { useElementStore } from '../stores/gameStore';
 const store = useElementStore();
 
 </script>

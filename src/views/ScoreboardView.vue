@@ -11,9 +11,9 @@
       </button>
     </div>
   </div>
-  <div class="text-xl font-bold text-center mt-2">{{ store.match.goals }} - {{ store.match.opponentsGoals }}</div>
-  <div class="text-xl font-bold text-center mt-2">{{ store.match.quarter }} T</div>
-  <div class="text-4xl font-bold text-center m-2">{{ store.formatTime(store.countdown) }}</div>
+  <div class="text-xl font-bold text-center mt-2 text-blue-950">{{ store.match.goals }} - {{ store.match.opponentsGoals }}</div>
+  <div class="text-xl font-bold text-center mt-2 text-blue-950">{{ store.match.quarter }} T</div>
+  <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
 
   <ClockManager />
 
@@ -63,7 +63,7 @@
 </template>
 
 <script lang="ts">
-import { useElementStore } from '@/stores/store';
+import { useElementStore } from '@/stores/gameStore';
 import PlayerItem from '@/components/PlayerItem.vue';
 import ClockManager from '@/components/ClockManager.vue';
 import type { Team } from '@/components/Interfaces/Team';

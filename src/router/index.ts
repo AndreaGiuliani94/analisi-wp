@@ -4,6 +4,7 @@ import NameManager from '../views/NameManager.vue';
 import ReportView from '@/views/ReportView.vue';
 import EventView from '@/views/EventView.vue';
 import DashboardView from '@/views/DashboardView.vue';
+import AnalysisView from '@/views/AnalysisView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +14,7 @@ const router = createRouter({
     { path: '/live', component: ElementManager },
     { path: '/report', component: ReportView },
     { path: '/events', component: EventView },
+    { path: '/analysis', component: AnalysisView },
   ]
 });
 
