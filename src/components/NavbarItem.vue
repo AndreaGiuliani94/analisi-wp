@@ -8,12 +8,12 @@
             </router-link>
             <div class="space-x-4 flex">
                 <router-link to="/game" class="flex items-center space-x-0.5"
-                    :class="{ 'font-bold': $route.path === '/game' }">
+                    :class="{ 'font-bold': $route.path.includes('/game') }">
                     <span>⚙️</span>
                     <span>Partita</span>
                 </router-link>
                 <router-link to="/analysis" class="flex items-center space-x-0.5"
-                    :class="{ 'font-bold': $route.path === '/analysis' }">
+                    :class="{ 'font-bold': $route.path.includes('/analysis') }">
                     <span>📊</span>
                     <span>Analisi</span>
                 </router-link>

@@ -11,9 +11,9 @@ const router = createRouter({
   routes: [
     { path: '/', component: DashboardView },
     { path: '/game', component: NameManager },
-    { path: '/live', component: ElementManager },
-    { path: '/report', component: ReportView },
-    { path: '/events', component: EventView },
+    { path: '/game/live', component: ElementManager },
+    { path: '/game/report', component: ReportView },
+    { path: '/game/events', component: EventView },
     { path: '/analysis', component: AnalysisView },
   ]
 });

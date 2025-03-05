@@ -46,7 +46,7 @@
     </div>
   </div>
   <div class="flex justify-center items-center">
-    <button @click="$router.push('/live')" :disabled="store.actualPlayers.length < 7 || store.actualOpponents.length < 7 || store.match.opponentsTeam == ''"
+    <button @click="$router.push('/game/live')" :disabled="store.actualPlayers.length < 7 || store.actualOpponents.length < 7 || store.match.opponentsTeam == ''"
       class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"><font-awesome-icon
         :icon="['fas', 'play']" class="w-3.5 h-3.5 text-white me-2" /> Live!</button>
   </div>

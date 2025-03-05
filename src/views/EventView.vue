@@ -1,7 +1,7 @@
 <template>
     <div class="w-full">
         <div class="flex justify-start items-center gap-2">
-            <button @click="$router.push('/game')"
+            <button @click="$router.push('/game/live')"
                 class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
                 <font-awesome-icon :icon="['fas', 'arrow-left']" /> Live
             </button>

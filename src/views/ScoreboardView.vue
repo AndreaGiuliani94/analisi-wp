@@ -53,10 +53,10 @@
   </div>
 
   <div class="flex justify-center items-center gap-10 p-2 m-5" role="group">
-    <button @click="$router.push('/report')"
+    <button @click="$router.push('/game/report')"
       class="p-2.5 text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors">
       <font-awesome-icon :icon="['fas', 'table-list']" /> Report</button>
-    <button @click="$router.push('/events')" :disabled="store.events.length == 0"
+    <button @click="$router.push('/game/events')" :disabled="store.events.length == 0"
       class="p-2.5 text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed">
       <font-awesome-icon :icon="['fas', 'calendar-days']" /> Eventi</button>
   </div>
