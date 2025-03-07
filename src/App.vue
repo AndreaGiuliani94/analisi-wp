@@ -1,5 +1,5 @@
 <template>
-  <NavbarItem/>
+  <NavbarItem />
   <div class="px-2 md:px-8 py-2 md:py-4 bg-white w-full min-h-full">
     <router-view></router-view>
   </div>
@@ -7,6 +7,5 @@
 
 <script setup lang="ts">
 import NavbarItem from './components/NavbarItem.vue';
-import { useElementStore } from './stores/gameStore';
-const store = useElementStore();
+
 </script>

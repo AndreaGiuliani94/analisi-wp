@@ -18,7 +18,9 @@ import {
   faArrowLeft,
   faTriangleExclamation,
   faEraser,
-  faUpload
+  faUpload,
+  faXmark,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -34,7 +36,9 @@ library.add(
   faArrowLeft,
   faTriangleExclamation,
   faEraser,
-  faUpload
+  faUpload,
+  faXmark,
+  faPlus,
 );
 const app = createApp(App);
 app.use(createPinia());

@@ -1,18 +1,14 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 import { saveAs } from "file-saver";
-
-// Definiamo il tipo di un intervallo di tempo
-interface VideoInterval {
-  start: number;
-  end: number;
-}
+import type { VideoInterval } from "@/components/Interfaces/VideoInterval";
 
 // Definiamo il tipo dello stato dello store
 interface VideoStoreState {
   selectedFile: File | null;
   videoUploaded: boolean;
   videoURL: string | null;
+  videoDuration: number;
   intervals: VideoInterval[];
   downloadProgress: number;
   isUploading: boolean;
@@ -23,6 +19,7 @@ export const useVideoStore = defineStore("video", {
     selectedFile: null,
     videoUploaded: false,
     videoURL: null,
+    videoDuration: 0,
     intervals: [],
     downloadProgress: 0,
     isUploading: false,
@@ -38,11 +35,43 @@ export const useVideoStore = defineStore("video", {
     },
 
     addInterval(): void {
-      this.intervals.push({ start: 0, end: 0 });
+      this.intervals.push({
+        start: "",
+        end: "",
+        category: "",
+        errors: { start: "", end: "" },
+      });
     },
 
     removeInterval(index: number): void {
       this.intervals.splice(index, 1);
+    },
+
+    validateTime(index: number, field: "start" | "end"): void {
+      const value = this.intervals[index][field];
+      const timeRegex = /^[0-5]?[0-9]:[0-5][0-9]$/;
+
+      if (!value.match(timeRegex)) {
+        this.intervals[index].errors[field] = "Formato non valido (mm:ss)";
+      } else {
+        this.intervals[index].errors[field] = ""; // Nessun errore
+      }
+      
+      if(this.timeStringToSeconds(value) > this.videoDuration) {
+        this.intervals[index].errors[field] = "Inserisci un tempo più breve"
+      }
+
+    },
+
+    timeStringToSeconds(timeString: string): number {
+      const regex = /^(\d{1,2}):([0-5][0-9])$/;
+      const match = timeString.match(regex);
+
+      if (!match) {
+        throw new Error("Formato non valido, usa mm:ss");
+      }
+
+      return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
     },
 
     async uploadVideo(): Promise<void> {
@@ -55,11 +84,17 @@ export const useVideoStore = defineStore("video", {
       formData.append("file", this.selectedFile);
 
       try {
-        const response = await axios.post("http://127.0.0.1:8000/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const response = await axios.post(
+          "http://127.0.0.1:8000/upload",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         this.videoUploaded = true;
-        this.videoURL = response.data.video_url; // Usa un URL servito dal backend
+        this.videoURL = response.data.video_url;
+        this.videoDuration = response.data.duration;
+        this.addInterval();
       } catch (error) {
         console.error("Errore nell'upload del video", error);
         alert("Errore nell'upload del video");
@@ -74,20 +109,23 @@ export const useVideoStore = defineStore("video", {
 
       const request: any = {
         intervals: this.intervals,
-        filename: this.selectedFile?.name
-      }
-      
+        filename: this.selectedFile?.name,
+      };
+
       try {
-        const response = await axios.post("http://127.0.0.1:8000/cut", request,
+        const response = await axios.post(
+          "http://127.0.0.1:8000/cut",
+          request,
           {
             headers: { "Content-Type": "application/json" },
             responseType: "blob",
             onDownloadProgress: (progressEvent) => {
               if (progressEvent.total) {
-                this.downloadProgress = (progressEvent.loaded / progressEvent.total) * 100;
+                this.downloadProgress =
+                  (progressEvent.loaded / progressEvent.total) * 100;
               }
             },
-          },
+          }
         );
         const zipBlob = new Blob([response.data], { type: "application/zip" });
         saveAs(zipBlob, "video_clips.zip");
@@ -99,6 +137,16 @@ export const useVideoStore = defineStore("video", {
         alert("Errore durante il taglio del video");
       } finally {
         this.isUploading = false; // Nasconde lo spinner
+      }
+    },
+
+    async cleanupVideos(): Promise<void> {
+      try {
+        await axios.delete("http://127.0.0.1:8000/cleanup/");
+        this.resetStore();
+        alert("Cartelle pulite con successo!");
+      } catch (error) {
+        console.error("Errore nella pulizia dei video", error);
       }
     },
 

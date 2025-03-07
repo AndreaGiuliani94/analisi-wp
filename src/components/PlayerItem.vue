@@ -37,69 +37,57 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { useElementStore } from "@/stores/gameStore";
 import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
 
-export default {
-  props: {
-    player: {
-      type: Object as PropType<Player>,
-      required: true,
-    },
-    team: {
-      type: Object as PropType<Team>,
-      required: true,
-    },
+const props = defineProps({
+  player: {
+    type: Object as PropType<Player>,
+    required: true,
   },
-  setup(props) {
-    const store = useElementStore();
-    const holdTimeout = ref<NodeJS.Timeout | null>(null);
-    const isEditing = ref<boolean>(false);
-    const editableName = ref<string>(props.player.name);
-    const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
-    const inputField = ref<HTMLInputElement | null>(null);
-
-    const startHold = () => {
-      isHolding.value = false; // Reset del flag prima di iniziare
-      holdTimeout.value = setTimeout(() => {
-        isHolding.value = true; // Imposta il flag se la pressione dura abbastanza
-        isEditing.value = true;
-        nextTick(() => {
-          inputField.value?.focus();
-        });
-      }, 1500); // 1.5s di pressione
-    };
-
-    const stopHold = () => {
-      if (holdTimeout.value) {
-        clearTimeout(holdTimeout.value);
-      }
-    };
-
-    const handleClick = (team: number) => {
-      if (!isHolding.value && !isEditing.value) {
-        store.toggleElement(props.player.number, team);
-      }
-    };
-
-    const saveEdit = (team: number) => {
-      isEditing.value = false;
-      store.updatePlayerName(props.player.number, editableName.value, team);
-    };
-
-    return {
-      store,
-      startHold,
-      stopHold,
-      handleClick,
-      saveEdit,
-      isEditing,
-      editableName,
-      inputField,
-    };
+  team: {
+    type: Object as PropType<Team>,
+    required: true,
   },
+});
+
+const store = useElementStore();
+const holdTimeout = ref<NodeJS.Timeout | null>(null);
+const isEditing = ref<boolean>(false);
+const editableName = ref<string>(props.player.name);
+const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
+const inputField = ref<HTMLInputElement | null>(null);
+
+const startHold = () => {
+  isHolding.value = false; // Reset del flag prima di iniziare
+  holdTimeout.value = setTimeout(() => {
+    isHolding.value = true; // Imposta il flag se la pressione dura abbastanza
+    isEditing.value = true;
+    nextTick(() => {
+      inputField.value?.focus();
+    });
+  }, 1500); // 1.5s di pressione
 };
+
+const stopHold = () => {
+  if (holdTimeout.value) {
+    clearTimeout(holdTimeout.value);
+  }
+};
+
+const handleClick = (team: number) => {
+  if (!isHolding.value && !isEditing.value) {
+    store.toggleElement(props.player.number, team);
+  }
+};
+
+const saveEdit = (team: number) => {
+  isEditing.value = false;
+  store.updatePlayerName(props.player.number, editableName.value, team);
+};
+
+
 </script>

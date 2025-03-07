@@ -16,30 +16,30 @@
       <div v-if="videoStore.videoUploaded">
         <h3 class="text-lg font-semibold">Seleziona intervalli di tempo</h3>
 
-        <div v-for="(interval, index) in videoStore.intervals" :key="index" class="flex space-x-4 mt-2">
-          <input type="number" v-model="interval.start" class="border p-2 rounded w-1/3" placeholder="Inizio (sec)">
-          <input type="number" v-model="interval.end" class="border p-2 rounded w-1/3" placeholder="Fine (sec)">
-          <button @click="videoStore.removeInterval(index)"
-            class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600">
-            ✖
-          </button>
+        <div v-for="(interval, index) in videoStore.intervals" :key="index" class="flex justify-between items-end mt-2">
+          <IntervalItem :interval="interval" :index="index"></IntervalItem>
         </div>
-        
-        <div>
+
+        <div class="flex justify-between">
           <button @click="videoStore.addInterval"
             class="mt-3 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-            Aggiungi Intervallo
+            <font-awesome-icon :icon="['fas', 'plus']" />
           </button>
           <button @click="videoStore.sendIntervals"
-            class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            :disabled="videoStore.intervals.length === 0">
+            class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 disabled:bg-gray-300"
+            :disabled="videoStore.intervals.length === 0 || hasErrors">
             Taglia Video
           </button>
-          <button @click="videoStore.resetStore"
+          <button @click="showConfirmModal = true"
             class="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
             Resetta
           </button>
         </div>
+
+        <!-- Modale di conferma -->
+        <ConfirmModal :isOpen="showConfirmModal" title="Conferma Eliminazione"
+          message="Questa operazione eliminerà tutti i file caricati e convertiti. Vuoi procedere?"
+          @confirm="confirmCleanup" @close="showConfirmModal = false" />
 
         <!-- Progress Bar -->
         <div v-if="videoStore.downloadProgress > 0" class="w-full bg-gray-200 rounded-full mt-4">
@@ -48,7 +48,6 @@
             {{ videoStore.downloadProgress.toFixed(0) }}%
           </div>
         </div>
-
 
       </div>
 
@@ -59,8 +58,20 @@
 <script setup lang="ts">
 import { useVideoStore } from "@/stores/videoStore";
 import FileUpload from "@/components/FileUpload.vue";
+import ConfirmModal from "@/components/ConfirmModal.vue";
+import { computed, ref } from "vue";
+import IntervalItem from "@/components/IntervalItem.vue";
 
-// Importiamo lo store di Pinia
 const videoStore = useVideoStore();
+
+const showConfirmModal = ref(false);
+const confirmCleanup = async () => {
+  showConfirmModal.value = false;
+  await videoStore.cleanupVideos();
+};
+
+const hasErrors = computed(() =>
+  videoStore.intervals.some(interval => interval.errors.start || interval.errors.end)
+);
 
 </script>
