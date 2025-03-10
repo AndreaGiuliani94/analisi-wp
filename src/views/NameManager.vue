@@ -2,12 +2,12 @@
   <div class="w-full">
     <div class="flex justify-start items-center gap-2">
       <button @click="store.clearDistinta()"
-        class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-        <font-awesome-icon :icon="['fas', 'eraser']" /> Pulisci
+        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+        <TrashIcon class="size-4 me-1 mt-1 mb-1" /> Pulisci
       </button>
       <button @click="store.resetAll()"
-        class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
-        <font-awesome-icon :icon="['fas', 'refresh']" /> Reset
+        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
+        <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" /> Reset
       </button>
     </div>
   </div>
@@ -47,14 +47,15 @@
   </div>
   <div class="flex justify-center items-center">
     <button @click="$router.push('/game/live')" :disabled="store.actualPlayers.length < 7 || store.actualOpponents.length < 7 || store.match.opponentsTeam == ''"
-      class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"><font-awesome-icon
-        :icon="['fas', 'play']" class="w-3.5 h-3.5 text-white me-2" /> Live!</button>
+      class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">
+      <PlayIcon class="size-5 me-2" /> Live!</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useElementStore } from '../stores/gameStore';
+import { ArrowPathIcon, PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
 const store = useElementStore();
 onMounted(() => {
   store.loadStore();

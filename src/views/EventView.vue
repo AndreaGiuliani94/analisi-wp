@@ -2,8 +2,8 @@
     <div class="w-full">
         <div class="flex justify-start items-center gap-2">
             <button @click="$router.push('/game/live')"
-                class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-                <font-awesome-icon :icon="['fas', 'arrow-left']" /> Live
+                class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+                <ArrowLeftIcon class="size-4 me-1" /> Live
             </button>
         </div>
     </div>
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import ExportButton from '@/components/ExportButton.vue';
 import { useElementStore } from '../stores/gameStore';
+import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 const store = useElementStore();
 
 </script>

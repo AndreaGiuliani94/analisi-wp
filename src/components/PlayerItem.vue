@@ -14,8 +14,8 @@
         {{ player.number }}. {{ player.name }}
       </span>
     </template>
-    <font-awesome-icon v-if="player.exclutions == 3" :icon="['fas', 'triangle-exclamation']"
-      class="inline-flex ml-auto text-red-600" />
+    <ExclamationTriangleIcon v-if="player.exclutions == 3"
+      class="inline-flex ml-auto size-3 text-red-600" />
   </div>
 
   <div v-if="team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
@@ -42,6 +42,7 @@ import { useElementStore } from "@/stores/gameStore";
 import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
   player: {

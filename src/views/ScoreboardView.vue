@@ -2,12 +2,12 @@
   <div class="w-full">
     <div class="flex justify-start items-center gap-2">
       <button @click="$router.push('/game')"
-        class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-        <font-awesome-icon :icon="['fas', 'arrow-left']" /> Distinta
+        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+        <ArrowLeftIcon class="size-4 me-1 mt-1 mb-1" />Distinta
       </button>
       <button @click="store.resetTimer()"
-        class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
-        <font-awesome-icon :icon="['fas', 'refresh']" /> Restart
+        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
+        <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" />Restart
       </button>
     </div>
   </div>
@@ -55,11 +55,11 @@
 
   <div class="flex justify-center items-center gap-10 p-2 m-5" role="group">
     <button @click="$router.push('/game/report')"
-      class="p-2.5 text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors">
-      <font-awesome-icon :icon="['fas', 'table-list']" /> Report</button>
+      class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors">
+      <TableCellsIcon class="size-6 me-1" />Report</button>
     <button @click="$router.push('/game/events')" :disabled="store.events.length == 0"
-      class="p-2.5 text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed">
-      <font-awesome-icon :icon="['fas', 'calendar-days']" /> Eventi</button>
+      class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed">
+      <CalendarDaysIcon class="size-6 me-1" />Eventi</button>
   </div>
 </template>
 
@@ -68,6 +68,7 @@ import { useElementStore } from '@/stores/gameStore';
 import PlayerItem from '@/components/PlayerItem.vue';
 import ClockManager from '@/components/ClockManager.vue';
 import type { Team } from '@/components/Interfaces/Team';
+import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
 
 const store = useElementStore();
 var homeTeam: Team = {

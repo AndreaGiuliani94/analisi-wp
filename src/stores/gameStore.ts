@@ -120,7 +120,7 @@ export const useElementStore = defineStore("elementStore", {
       }
     },
     startGlobalTimer() {
-      if (this.activeCount === 7 && (this.opponentsTimerActivated && this.activeOppCount === 7) && !this.globalInterval) {
+      if (this.activeCount === 7 && /* (this.opponentsTimerActivated && this.activeOppCount === 7) && */ !this.globalInterval) {
         this.globalInterval = window.setInterval(() => {
           this.players.forEach((el) => {
             if (el.active) {

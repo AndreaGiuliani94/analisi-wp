@@ -22,28 +22,22 @@
     
     <button @click="videoStore.removeInterval(index)"
         class="bg-red-500 px-2 h-8 rounded hover:bg-red-600">
-        <font-awesome-icon :icon="['fas', 'xmark']" class="text-white"/>
+        <XMarkIcon class="size-5 font-bold text-white"/>
     </button>
     
 </template>
 
 <script setup lang=ts>
 import { useVideoStore } from '@/stores/videoStore';
-import { ref, type PropType } from 'vue';
 import type { VideoInterval } from './Interfaces/VideoInterval';
 import CategoryListbox from './CategoryListbox.vue';
+import { XMarkIcon } from '@heroicons/vue/20/solid';
 
 const videoStore = useVideoStore();
 
-const props = defineProps({
-  interval: {
-    type: Object as PropType<VideoInterval>,
-    required: true,
-  },
-  index: {
-    type: Object as PropType<number>,
-    required: true,
-  },
-});
+const props = defineProps<{
+  interval: VideoInterval;
+  index: number;
+}>();
 
 </script>

@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import type { VideoInterval } from "@/components/Interfaces/VideoInterval";
+import type { TacticsData } from "@/components/Interfaces/TacticsData";
 
 // Definiamo il tipo dello stato dello store
 interface VideoStoreState {
@@ -12,6 +13,7 @@ interface VideoStoreState {
   intervals: VideoInterval[];
   downloadProgress: number;
   isUploading: boolean;
+  tactics: TacticsData | null;
 }
 
 export const useVideoStore = defineStore("video", {
@@ -23,6 +25,7 @@ export const useVideoStore = defineStore("video", {
     intervals: [],
     downloadProgress: 0,
     isUploading: false,
+    tactics: null,
   }),
 
   actions: {
@@ -74,6 +77,12 @@ export const useVideoStore = defineStore("video", {
       return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
     },
 
+    async loadVideo(): Promise<void> {
+      await this.uploadVideo();
+      await this.fetchTactics();
+      this.addInterval();
+    },
+
     async uploadVideo(): Promise<void> {
       if (!this.selectedFile) return;
 
@@ -94,7 +103,6 @@ export const useVideoStore = defineStore("video", {
         this.videoUploaded = true;
         this.videoURL = response.data.video_url;
         this.videoDuration = response.data.duration;
-        this.addInterval();
       } catch (error) {
         console.error("Errore nell'upload del video", error);
         alert("Errore nell'upload del video");
@@ -150,6 +158,15 @@ export const useVideoStore = defineStore("video", {
       }
     },
 
+    async fetchTactics(): Promise<void> {
+      try {
+        const response = await axios.get<TacticsData>("https://ws-analisi-wp-production.up.railway.app/categories/");
+        this.tactics = response.data;
+      } catch (error) {
+        console.error("Errore nel recupero delle tattiche:", error);
+      } 
+    },
+
     resetStore(): void {
       this.selectedFile = null;
       this.videoUploaded = false;
@@ -157,6 +174,7 @@ export const useVideoStore = defineStore("video", {
       this.intervals = [];
       this.downloadProgress = 0;
       this.isUploading = false;
+      this.tactics = null;
     },
   },
 });

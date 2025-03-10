@@ -16,14 +16,14 @@
       <div v-if="videoStore.videoUploaded">
         <h3 class="text-lg font-semibold">Seleziona intervalli di tempo</h3>
 
-        <div v-for="(interval, index) in videoStore.intervals" :key="index" class="flex justify-between items-end mt-2">
+        <div v-for="(interval, index) in videoStore.intervals" :key="index" class="flex justify-between items-end mt-2 gap-2">
           <IntervalItem :interval="interval" :index="index"></IntervalItem>
         </div>
 
         <div class="flex justify-between">
           <button @click="videoStore.addInterval"
             class="mt-3 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-            <font-awesome-icon :icon="['fas', 'plus']" />
+            <PlusIcon class="size-6 font-bold"/>
           </button>
           <button @click="videoStore.sendIntervals"
             class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 disabled:bg-gray-300"
@@ -61,6 +61,7 @@ import FileUpload from "@/components/FileUpload.vue";
 import ConfirmModal from "@/components/ConfirmModal.vue";
 import { computed, ref } from "vue";
 import IntervalItem from "@/components/IntervalItem.vue";
+import { PlusIcon } from "@heroicons/vue/24/solid";
 
 const videoStore = useVideoStore();
 
