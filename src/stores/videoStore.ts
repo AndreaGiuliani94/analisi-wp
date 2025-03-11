@@ -3,6 +3,7 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import type { VideoInterval } from "@/components/Interfaces/VideoInterval";
 import type { TacticsData } from "@/components/Interfaces/TacticsData";
+import type { Interval } from "@/components/Interfaces/Interval";
 
 // Definiamo il tipo dello stato dello store
 interface VideoStoreState {
@@ -27,6 +28,19 @@ export const useVideoStore = defineStore("video", {
     isUploading: false,
     tactics: null,
   }),
+  getters: {
+    requestIntervals: (state) => {
+      var reqInt: Interval[] = [];
+      state.intervals.map(
+        (interval) => (reqInt.push({ 
+          start: timeStringToSeconds(interval.start),
+          end: timeStringToSeconds(interval.end),
+          category: interval.category
+         }))
+      );
+      return reqInt;
+    },
+  },
 
   actions: {
     setFile(file: File) {
@@ -60,22 +74,10 @@ export const useVideoStore = defineStore("video", {
       } else {
         this.intervals[index].errors[field] = ""; // Nessun errore
       }
-      
-      if(this.timeStringToSeconds(value) > this.videoDuration) {
-        this.intervals[index].errors[field] = "Inserisci un tempo più breve"
+
+      if (timeStringToSeconds(value) > this.videoDuration) {
+        this.intervals[index].errors[field] = "Inserisci un tempo più breve";
       }
-
-    },
-
-    timeStringToSeconds(timeString: string): number {
-      const regex = /^(\d{1,2}):([0-5][0-9])$/;
-      const match = timeString.match(regex);
-
-      if (!match) {
-        throw new Error("Formato non valido, usa mm:ss");
-      }
-
-      return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
     },
 
     async loadVideo(): Promise<void> {
@@ -117,8 +119,8 @@ export const useVideoStore = defineStore("video", {
       this.isUploading = true; // Mostra lo spinner
 
       const request: any = {
-        intervals: this.intervals,
-        filename: this.selectedFile?.name,
+        intervals: this.requestIntervals,
+        video_id: this.selectedFile?.name,
       };
 
       try {
@@ -161,11 +163,13 @@ export const useVideoStore = defineStore("video", {
 
     async fetchTactics(): Promise<void> {
       try {
-        const response = await axios.get<TacticsData>("https://ws-analisi-wp-production.up.railway.app/categories/");
+        const response = await axios.get<TacticsData>(
+          "https://ws-analisi-wp-production.up.railway.app/categories/"
+        );
         this.tactics = response.data;
       } catch (error) {
         console.error("Errore nel recupero delle tattiche:", error);
-      } 
+      }
     },
 
     resetStore(): void {
@@ -179,3 +183,14 @@ export const useVideoStore = defineStore("video", {
     },
   },
 });
+
+function timeStringToSeconds(timeString: string): number {
+  const regex = /^(\d{1,2}):([0-5][0-9])$/;
+  const match = timeString.match(regex);
+
+  if (!match) {
+    throw new Error("Formato non valido, usa mm:ss");
+  }
+
+  return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+}

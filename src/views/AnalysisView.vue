@@ -27,7 +27,7 @@
           </button>
           <button @click="videoStore.sendIntervals"
             class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 disabled:bg-gray-300"
-            :disabled="videoStore.intervals.length === 0 || hasErrors">
+            :disabled="videoStore.intervals.length === 0 || hasErrors || isIntervalEmpy">
             Taglia Video
           </button>
           <button @click="showConfirmModal = true"
@@ -73,6 +73,10 @@ const confirmCleanup = async () => {
 
 const hasErrors = computed(() =>
   videoStore.intervals.some(interval => interval.errors.start || interval.errors.end)
+);
+
+const isIntervalEmpy = computed(()=>
+  videoStore.intervals.some(interval => !interval.category || !interval.start || !interval.end)
 );
 
 </script>
