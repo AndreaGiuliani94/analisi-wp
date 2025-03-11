@@ -5,7 +5,7 @@
                 <span>{{ videoStore.selectedFile?.name }}</span>
                 <div class="flex justify-between gap-2">
                     <button
-                        class="bg-sky-500 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-400 disabled:bg-gray-50 "
+                        class="bg-sky-500 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300 "
                         @click="videoStore.loadVideo"
                         :disabled="!videoStore.selectedFile || videoStore.isUploading">Upload</button>
                     <button class="bg-red-500 text-white font-medium rounded-md cursor-pointer px-2 py-1"

@@ -56,6 +56,7 @@ export const useVideoStore = defineStore("video", {
 
       if (!value.match(timeRegex)) {
         this.intervals[index].errors[field] = "Formato non valido (mm:ss)";
+        return;
       } else {
         this.intervals[index].errors[field] = ""; // Nessun errore
       }

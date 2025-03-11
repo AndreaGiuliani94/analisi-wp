@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full mx-auto">
+  <div class="grid-rows-2 w-full mx-auto">
     <Listbox :modelValue="modelValue" @update:modelValue="updateSelection" >
       <ListboxLabel class="text-sm font-medium">Categoria:</ListboxLabel>
       <div class="relative">
