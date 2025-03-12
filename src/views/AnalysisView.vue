@@ -16,7 +16,7 @@
       <div v-if="videoStore.videoUploaded">
         <h3 class="text-lg font-semibold">Seleziona intervalli di tempo</h3>
 
-        <div v-for="(interval, index) in videoStore.intervals" :key="index" class="flex justify-between items-start mt-2 gap-2">
+        <div v-for="(interval, index) in videoStore.intervals" :key="index" class="flex w-full justify-between items-start mt-2 gap-2">
           <IntervalItem :interval="interval" :index="index"></IntervalItem>
         </div>
 

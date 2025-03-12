@@ -35,7 +35,8 @@ export const useVideoStore = defineStore("video", {
         (interval) => (reqInt.push({ 
           start: timeStringToSeconds(interval.start),
           end: timeStringToSeconds(interval.end),
-          category: interval.category
+          category: interval.category,
+          title: interval.title
          }))
       );
       return reqInt;
@@ -56,7 +57,8 @@ export const useVideoStore = defineStore("video", {
         start: "",
         end: "",
         category: "",
-        errors: { start: "", end: "" },
+        title: "",
+        errors: { start: "", end: "", title: ""},
       });
     },
 

@@ -1,7 +1,7 @@
 <template>
-  <div class="grid-rows-2 w-full mx-auto">
+  <div class="flex flex-col w-full">
     <Listbox :modelValue="modelValue" @update:modelValue="updateSelection" >
-      <ListboxLabel class="text-sm font-medium">Categoria:</ListboxLabel>
+      <ListboxLabel class="text-sm font-medium">*Categoria:</ListboxLabel>
       <div class="relative">
         <ListboxButton
           class="relative z-5 h-8 w-full rounded-md bg-white border-1 border-gray-300 pl-3 pr-10 text-left sm:text-sm active:ring-2 active:ring-sky-300">
