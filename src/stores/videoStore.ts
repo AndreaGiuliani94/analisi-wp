@@ -99,7 +99,7 @@ export const useVideoStore = defineStore("video", {
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:8000/upload",
+          import.meta.env.VITE_BE_URL + "/upload/",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -127,7 +127,7 @@ export const useVideoStore = defineStore("video", {
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:8000/cut",
+          import.meta.env.VITE_BE_URL + "/cut",
           request,
           {
             headers: { "Content-Type": "application/json" },
@@ -155,7 +155,7 @@ export const useVideoStore = defineStore("video", {
 
     async cleanupVideos(): Promise<void> {
       try {
-        await axios.delete("http://127.0.0.1:8000/cleanup/");
+        await axios.delete(import.meta.env.VITE_BE_URL + "/cleanup/");
         this.resetStore();
         alert("Cartelle pulite con successo!");
       } catch (error) {
@@ -166,7 +166,7 @@ export const useVideoStore = defineStore("video", {
     async fetchTactics(): Promise<void> {
       try {
         const response = await axios.get<TacticsData>(
-          "https://ws-analisi-wp-production.up.railway.app/categories/"
+          import.meta.env.VITE_BE_PROD_URL + "/categories/"
         );
         this.tactics = response.data;
       } catch (error) {

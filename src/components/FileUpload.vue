@@ -18,7 +18,7 @@
             <div class="border-dashed border-2 rounded-md flex flex-col items-center justify-center p-10 transition-all cursor-pointer"
                 :class="[isDragActive ? 'border-amber-400 bg-amber-100' : 'border-gray-400 bg-gray-50 hover:bg-gray-100']">
                 <input v-bind="getInputProps()" />
-                <ArrowUpTrayIcon class="size-18 mb-3 opacity-80" />
+                <CloudArrowUpIcon class="size-20 mb-3 opacity-80" />
                 <p v-if="isDragActive">Drop the file here...</p>
                 <p v-else>Drag 'n' drop a file here, or click to select a file</p>
             </div>
@@ -43,6 +43,7 @@ import { ref } from "vue";
 import { useDropzone, type FileRejectReason } from "vue3-dropzone";
 import ConfirmModal from "./ConfirmModal.vue";
 import { ArrowUpTrayIcon } from "@heroicons/vue/24/solid";
+import { CloudArrowUpIcon } from "@heroicons/vue/24/outline";
 
 
 const videoStore = useVideoStore();
