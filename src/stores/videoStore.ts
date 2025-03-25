@@ -11,6 +11,7 @@ interface VideoStoreState {
   videoUploaded: boolean;
   videoURL: string | null;
   videoDuration: number;
+  tsUrls: string [];
   intervals: VideoInterval[];
   downloadProgress: number;
   isUploading: boolean;
@@ -23,6 +24,7 @@ export const useVideoStore = defineStore("video", {
     videoUploaded: false,
     videoURL: null,
     videoDuration: 0,
+    tsUrls: [],
     intervals: [],
     downloadProgress: 0,
     isUploading: false,
@@ -99,15 +101,16 @@ export const useVideoStore = defineStore("video", {
 
       try {
         const response = await axios.post(
-          import.meta.env.VITE_BE_URL + "/upload/",
+          import.meta.env.VITE_BE_URL + "/upload-video/",
           formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
           }
         );
-        this.videoUploaded = true;
         this.videoURL = response.data.video_url;
+        this.tsUrls = response.data.ts_urls;
         this.videoDuration = response.data.duration;
+        this.videoUploaded = true;
       } catch (error) {
         console.error("Errore nell'upload del video", error);
         alert("Errore nell'upload del video");
@@ -127,7 +130,7 @@ export const useVideoStore = defineStore("video", {
 
       try {
         const response = await axios.post(
-          import.meta.env.VITE_BE_URL + "/cut",
+          import.meta.env.VITE_BE_URL + "/extract-clips/",
           request,
           {
             headers: { "Content-Type": "application/json" },
@@ -155,7 +158,7 @@ export const useVideoStore = defineStore("video", {
 
     async cleanupVideos(): Promise<void> {
       try {
-        await axios.delete(import.meta.env.VITE_BE_URL + "/cleanup/");
+        await axios.delete(import.meta.env.VITE_BE_URL + "/clean-bucket/");
         this.resetStore();
         alert("Cartelle pulite con successo!");
       } catch (error) {
@@ -166,11 +169,22 @@ export const useVideoStore = defineStore("video", {
     async fetchTactics(): Promise<void> {
       try {
         const response = await axios.get<TacticsData>(
-          import.meta.env.VITE_BE_PROD_URL + "/categories/"
+          import.meta.env.VITE_BE_URL + "/categories/"
         );
         this.tactics = response.data;
       } catch (error) {
         console.error("Errore nel recupero delle tattiche:", error);
+      }
+    },
+
+    async testS3Connection(): Promise<void> {
+      try{
+        const response = await axios.get<TacticsData>(
+          import.meta.env.VITE_BE_PROD_URL + "/test-s3"
+        );
+        console.log("connesso a S3", response);
+      } catch(error) {
+        console.error("Errore nella connsessiona a S3", error);
       }
     },
 

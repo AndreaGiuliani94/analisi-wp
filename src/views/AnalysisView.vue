@@ -7,9 +7,9 @@
       <FileUpload />
 
       <!-- Video Preview -->
-      <div v-if="videoStore.videoURL" class="mb-2">
+      <div v-if="videoStore.videoURL && videoStore.videoUploaded" class="mb-2">
         <h3 class="text-lg font-semibold">Anteprima del Video</h3>
-        <video :src="videoStore.videoURL" controls class="w-full mt-1 rounded-lg shadow-md"></video>
+        <HlsVideoPlayer :videoUrl="videoStore.videoURL"></HlsVideoPlayer>
       </div>
 
       <!-- Form per selezionare intervalli -->
@@ -62,6 +62,7 @@ import ConfirmModal from "@/components/ConfirmModal.vue";
 import { computed, ref } from "vue";
 import IntervalItem from "@/components/IntervalItem.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";
+import HlsVideoPlayer from "@/components/HlsVideoPlayer.vue";
 
 const videoStore = useVideoStore();
 

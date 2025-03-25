@@ -10,6 +10,9 @@
                         :disabled="!videoStore.selectedFile || videoStore.isUploading">Upload</button>
                     <button class="bg-red-500 text-white font-medium rounded-md cursor-pointer px-2 py-1"
                         @click="showConfirmModal = true">Remove</button>
+                    <!-- <button class="bg-amber-500 text-white font-medium rounded-md cursor-pointer px-2 py-1" @click="videoStore.testS3Connection">
+                        Test S3
+                    </button> -->
                 </div>
 
             </div>
@@ -42,7 +45,6 @@ import { useVideoStore } from "@/stores/videoStore";
 import { ref } from "vue";
 import { useDropzone, type FileRejectReason } from "vue3-dropzone";
 import ConfirmModal from "./ConfirmModal.vue";
-import { ArrowUpTrayIcon } from "@heroicons/vue/24/solid";
 import { CloudArrowUpIcon } from "@heroicons/vue/24/outline";
 
 
@@ -55,7 +57,7 @@ function onDrop(acceptFiles: File[], rejectReasons: FileRejectReason[]) {
     });
 }
 
-const { getRootProps, getInputProps, isDragActive, ...rest } = useDropzone({ onDrop, multiple: false });
+const { getRootProps, getInputProps, isDragActive, ...rest } = useDropzone({ onDrop, multiple: false, accept: "video/*" });
 
 const showConfirmModal = ref(false);
 
