@@ -8,6 +8,7 @@ import type { Interval } from "@/components/Interfaces/Interval";
 // Definiamo il tipo dello stato dello store
 interface VideoStoreState {
   selectedFile: File | null;
+  videoName: string;
   videoUploaded: boolean;
   videoURL: string | null;
   videoDuration: number;
@@ -21,6 +22,7 @@ interface VideoStoreState {
 export const useVideoStore = defineStore("video", {
   state: (): VideoStoreState => ({
     selectedFile: null,
+    videoName: '',
     videoUploaded: false,
     videoURL: null,
     videoDuration: 0,
@@ -52,6 +54,10 @@ export const useVideoStore = defineStore("video", {
 
     setVideoURL(url: string) {
       this.videoURL = url;
+    },
+
+    setVideoName(name: string) {
+      this.videoName = name;
     },
 
     addInterval(): void {
@@ -93,24 +99,38 @@ export const useVideoStore = defineStore("video", {
     async uploadVideo(): Promise<void> {
       if (!this.selectedFile) return;
 
+      this.setVideoName(this.selectedFile.name.replace(/\.[^/.]+$/, ""));
+
       this.isUploading = true; // Mostra lo spinner
 
-      const formData = new FormData();
-      formData.append("body", this.selectedFile);
-      formData.append("file", this.selectedFile);
-
       try {
-        const response = await axios.post(
-          import.meta.env.VITE_BE_URL + "/upload-video/",
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
+        const response = await axios.get(import.meta.env.VITE_BE_URL + `/get-link-s3/?file_name=${this.videoName}`);
+        const presignedUrl = response.data.url;
+        const jobId = response.data.job_id;
+
+        // Carica il file direttamente su S3 usando l'URL pre-firmato
+        const uploadResponse = await axios.put(presignedUrl, this.selectedFile, {
+          headers: {
+            'Content-Type': this.selectedFile.type,  // Puoi configurare il content-type a seconda del tipo di file
+          },
+        });
+
+        await this.waitForCompletion(jobId, 30000); // 30sec
+
+        if (uploadResponse.status === 200 && this.videoUploaded) {
+          console.log('File caricato con successo su S3!');
+          const response = await axios.get(import.meta.env.VITE_BE_URL + `/get-video-link/?file_name=${this.videoName}`);
+          if(response.data.error){
+            console.error("Errore: " + response.data.error)
+            alert("Errore nel caricamento del video")
+          } else {
+            this.videoURL = response.data.video_url;
+            this.tsUrls = response.data.ts_urls;
+            this.videoDuration = response.data.duration;
           }
-        );
-        this.videoURL = response.data.video_url;
-        this.tsUrls = response.data.ts_urls;
-        this.videoDuration = response.data.duration;
-        this.videoUploaded = true;
+        } else {
+          throw new Error("Errore in upload")
+        }
       } catch (error) {
         console.error("Errore nell'upload del video", error);
         alert("Errore nell'upload del video");
@@ -119,13 +139,54 @@ export const useVideoStore = defineStore("video", {
       }
     },
 
+    async waitForCompletion(jobId:string, timeout: number) {
+      return new Promise<void>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Timeout di attesa superato.'));
+        }, timeout);
+
+        const intervalId = setInterval(async () => {
+          await this.getConversionStatus(jobId);
+  
+          // Se la conversione è completata, ferma il ciclo
+          if (this.videoUploaded) {
+            clearInterval(intervalId); // Ferma l'intervallo
+            clearTimeout(timeoutId);
+            resolve(); // Risolve la Promise, terminando l'attesa
+          }
+        }, 2000); // 2 secondi
+      });
+    },
+
+    async getConversionStatus(jobId:string): Promise<void> {
+      try {
+        const statusResponse = await axios.get(import.meta.env.VITE_BE_RAILWAY + `/check-conversion-status/?job_id=${jobId}`);
+        const status = statusResponse.data.status;
+
+        if (status.toUpperCase() === 'COMPLETE'.toUpperCase()) {
+          console.log('Il processo di conversione è completato!' + statusResponse.data);
+          this.videoUploaded = true;
+        } else if (status.toUpperCase() === 'ERROR'.toUpperCase()) {
+          console.error('Il processo di conversione è fallito');
+          this.videoUploaded = false;
+        } else {
+          console.log('Il processo di conversione non è ancora completato');
+          this.videoUploaded = false;
+        }
+      } catch (error) {
+        console.error('Errore durante il polling dello stato', error);
+        this.videoUploaded = false;
+      }
+      
+    },
+
     async sendIntervals(): Promise<void> {
       this.downloadProgress = 0; // Reset progress
       this.isUploading = true; // Mostra lo spinner
 
       const request: any = {
         intervals: this.requestIntervals,
-        video_id: this.selectedFile?.name,
+        video_id: this.videoName,
       };
 
       try {

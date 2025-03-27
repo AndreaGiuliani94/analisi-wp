@@ -9,7 +9,8 @@
       <!-- Video Preview -->
       <div v-if="videoStore.videoURL && videoStore.videoUploaded" class="mb-2">
         <h3 class="text-lg font-semibold">Anteprima del Video</h3>
-        <HlsVideoPlayer :videoUrl="videoStore.videoURL"></HlsVideoPlayer>
+        <!-- <video :src="videoStore.videoURL" class="w-full mt-1 rounded-lg shadow-md" controls></video> -->
+        <HlsVideoPlayer :videoUrl="videoStore.videoURL" :videoName="videoStore.videoName"></HlsVideoPlayer>
       </div>
 
       <!-- Form per selezionare intervalli -->
@@ -27,7 +28,7 @@
           </button>
           <button @click="videoStore.sendIntervals"
             class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 disabled:bg-gray-300"
-            :disabled="videoStore.intervals.length === 0 || hasErrors || isIntervalEmpy">
+            :disabled="videoStore.intervals.length === 0 /* || hasErrors */ || isIntervalEmpy">
             Taglia Video
           </button>
           <button @click="showConfirmModal = true"

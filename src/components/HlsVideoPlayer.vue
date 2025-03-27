@@ -16,6 +16,10 @@ const props = defineProps({
     videoUrl: {
         type: String,
         required: true
+    },
+    videoName: {
+        type: String,
+        required: true
     }
 });
 
@@ -33,7 +37,7 @@ const loadHlsVideo = async () => {
     let m3u8Content = await m3u8Response.text();
 
     videoStore.tsUrls.forEach((tsUrl: string, index: number) => {
-      m3u8Content = m3u8Content.replace(new RegExp(`playlist${index}\.ts`, 'g'), tsUrl);
+      m3u8Content = m3u8Content.replace(new RegExp(`${props.videoName}__0*${index+1}\.ts`, 'g'), tsUrl);
     });
 
     const blob = new Blob([m3u8Content], { type: 'application/vnd.apple.mpegurl' });
