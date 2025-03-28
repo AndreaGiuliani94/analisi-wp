@@ -104,7 +104,7 @@ export const useVideoStore = defineStore("video", {
       this.isUploading = true; // Mostra lo spinner
 
       try {
-        const response = await axios.get(import.meta.env.VITE_BE_URL + `/get-link-s3/?file_name=${this.videoName}`);
+        const response = await axios.get(import.meta.env.VITE_BE_URL + `/video/link/?file_name=${this.selectedFile.name}`);
         const presignedUrl = response.data.url;
         const jobId = response.data.job_id;
 
@@ -115,11 +115,11 @@ export const useVideoStore = defineStore("video", {
           },
         });
 
-        await this.waitForCompletion(jobId, 30000); // 30sec
+        await this.waitForCompletion(jobId, 1800000); // 30min
 
         if (uploadResponse.status === 200 && this.videoUploaded) {
           console.log('File caricato con successo su S3!');
-          const response = await axios.get(import.meta.env.VITE_BE_URL + `/get-video-link/?file_name=${this.videoName}`);
+          const response = await axios.get(import.meta.env.VITE_BE_URL + `/video/info/?file_name=${this.videoName}`);
           if(response.data.error){
             console.error("Errore: " + response.data.error)
             alert("Errore nel caricamento del video")
@@ -154,13 +154,13 @@ export const useVideoStore = defineStore("video", {
             clearTimeout(timeoutId);
             resolve(); // Risolve la Promise, terminando l'attesa
           }
-        }, 2000); // 2 secondi
+        }, 30000); // 30 secondi
       });
     },
 
     async getConversionStatus(jobId:string): Promise<void> {
       try {
-        const statusResponse = await axios.get(import.meta.env.VITE_BE_RAILWAY + `/check-conversion-status/?job_id=${jobId}`);
+        const statusResponse = await axios.get(import.meta.env.VITE_BE_URL + `/status/check/?job_id=${jobId}`);
         const status = statusResponse.data.status;
 
         if (status.toUpperCase() === 'COMPLETE'.toUpperCase()) {
@@ -191,7 +191,7 @@ export const useVideoStore = defineStore("video", {
 
       try {
         const response = await axios.post(
-          import.meta.env.VITE_BE_URL + "/extract-clips/",
+          import.meta.env.VITE_BE_URL + "/video/extract-clips/",
           request,
           {
             headers: { "Content-Type": "application/json" },
@@ -219,7 +219,7 @@ export const useVideoStore = defineStore("video", {
 
     async cleanupVideos(): Promise<void> {
       try {
-        await axios.delete(import.meta.env.VITE_BE_URL + "/clean-bucket/");
+        await axios.delete(import.meta.env.VITE_BE_URL + "/video/clean-bucket/");
         this.resetStore();
         alert("Cartelle pulite con successo!");
       } catch (error) {
@@ -230,7 +230,7 @@ export const useVideoStore = defineStore("video", {
     async fetchTactics(): Promise<void> {
       try {
         const response = await axios.get<TacticsData>(
-          import.meta.env.VITE_BE_URL + "/categories/"
+          import.meta.env.VITE_BE_URL + "/video/categories/"
         );
         this.tactics = response.data;
       } catch (error) {
@@ -241,7 +241,7 @@ export const useVideoStore = defineStore("video", {
     async testS3Connection(): Promise<void> {
       try{
         const response = await axios.get<TacticsData>(
-          import.meta.env.VITE_BE_PROD_URL + "/test-s3"
+          import.meta.env.VITE_BE_URL + "/test-s3"
         );
         console.log("connesso a S3", response);
       } catch(error) {
