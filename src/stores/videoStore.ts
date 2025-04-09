@@ -154,7 +154,7 @@ export const useVideoStore = defineStore("video", {
             clearTimeout(timeoutId);
             resolve(); // Risolve la Promise, terminando l'attesa
           }
-        }, 30000); // 30 secondi
+        }, 10000); // 10 secondi
       });
     },
 
@@ -186,12 +186,12 @@ export const useVideoStore = defineStore("video", {
 
       const request: any = {
         intervals: this.requestIntervals,
-        video_id: this.videoName,
+        video_id: this.selectedFile?.name,
       };
 
       try {
         const response = await axios.post(
-          import.meta.env.VITE_BE_URL + "/video/extract-clips/",
+          import.meta.env.VITE_BE_URL + "/video/extract-clips-mc/",
           request,
           {
             headers: { "Content-Type": "application/json" },

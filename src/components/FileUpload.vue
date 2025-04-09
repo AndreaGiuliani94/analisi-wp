@@ -57,7 +57,7 @@ function onDrop(acceptFiles: File[], rejectReasons: FileRejectReason[]) {
     });
 }
 
-const { getRootProps, getInputProps, isDragActive, ...rest } = useDropzone({ onDrop, multiple: false, accept: "video/*" });
+const { getRootProps, getInputProps, isDragActive, ...rest } = useDropzone({ onDrop, multiple: false, accept: "video/*,.mts" });
 
 const showConfirmModal = ref(false);
 
