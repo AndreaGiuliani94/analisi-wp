@@ -184,6 +184,8 @@ export const useElementStore = defineStore("elementStore", {
     },
     resetTimer() {
       this.match.quarter = 1;
+      this.match.goals = 0;
+      this.match.opponentsGoals = 0;
       this.players.forEach((player) => {
         player.activeTime = 0;
         player.actualTime = 0;
@@ -216,8 +218,14 @@ export const useElementStore = defineStore("elementStore", {
     },
     addGoal(number: number, team: number) {
       var el;
-      if (team === 0) el = this.players.find((el) => el.number === number);
-      else el = this.opponents.find((el) => el.number === number);
+      if (team === 0) {
+        el = this.players.find((el) => el.number === number);
+        this.match.goals++;
+      }
+      else {
+        el = this.opponents.find((el) => el.number === number);
+        this.match.opponentsGoals++;
+      }
       if (el) {
         el.goals++;
         el.shoots++;

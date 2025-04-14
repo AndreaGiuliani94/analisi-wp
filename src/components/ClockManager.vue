@@ -39,9 +39,6 @@
 import { useElementStore } from '@/stores/gameStore';
 import { BackwardIcon, ForwardIcon, PauseIcon, PlayIcon } from '@heroicons/vue/20/solid';
 
-
-
 const store = useElementStore();
-
 
 </script>

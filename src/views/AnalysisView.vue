@@ -23,16 +23,18 @@
 
         <div class="flex justify-between">
           <button @click="videoStore.addInterval"
-            class="mt-3 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+            class="mt-3 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:border-gray-500 disabled:bg-gray-300"
+            :disabled="videoStore.isUploading">
             <PlusIcon class="size-6 font-bold"/>
           </button>
           <button @click="videoStore.sendIntervals"
-            class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 disabled:bg-gray-300"
-            :disabled="videoStore.intervals.length === 0 /* || hasErrors */ || isIntervalEmpy">
+            class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 ddisabled:border-gray-500 disabled:bg-gray-300"
+            :disabled="videoStore.intervals.length === 0 || hasErrors || isIntervalEmpy || videoStore.isUploading">
             Taglia Video
           </button>
           <button @click="showConfirmModal = true"
-            class="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+            class="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:border-gray-500 disabled:bg-gray-300"
+            :disabled="videoStore.isUploading">
             Resetta
           </button>
         </div>

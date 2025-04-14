@@ -8,8 +8,9 @@
                         class="bg-sky-500 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300 "
                         @click="videoStore.loadVideo"
                         :disabled="!videoStore.selectedFile || videoStore.isUploading">Upload</button>
-                    <button class="bg-red-500 text-white font-medium rounded-md cursor-pointer px-2 py-1"
-                        @click="showConfirmModal = true">Remove</button>
+                    <button class="bg-red-500 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300"
+                        @click="showConfirmModal = true"
+                        :disabled="videoStore.isUploading">Remove</button>
                     <!-- <button class="bg-amber-500 text-white font-medium rounded-md cursor-pointer px-2 py-1" @click="videoStore.testS3Connection">
                         Test S3
                     </button> -->

@@ -15,6 +15,7 @@ interface VideoStoreState {
   tsUrls: string [];
   intervals: VideoInterval[];
   downloadProgress: number;
+  isDownloading: boolean;
   isUploading: boolean;
   tactics: TacticsData | null;
 }
@@ -29,6 +30,7 @@ export const useVideoStore = defineStore("video", {
     tsUrls: [],
     intervals: [],
     downloadProgress: 0,
+    isDownloading: false,
     isUploading: false,
     tactics: null,
   }),
@@ -190,25 +192,22 @@ export const useVideoStore = defineStore("video", {
       };
 
       try {
-        const response = await axios.post(
+        const response = await fetch(
           import.meta.env.VITE_BE_URL + "/video/extract-clips-mc/",
-          request,
           {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
-            responseType: "blob",
-            onDownloadProgress: (progressEvent) => {
-              if (progressEvent.total) {
-                this.downloadProgress =
-                  (progressEvent.loaded / progressEvent.total) * 100;
-              }
-            },
+            body: JSON.stringify(request)
           }
         );
-        const zipBlob = new Blob([response.data], { type: "application/zip" });
-        saveAs(zipBlob, "video_clips.zip");
 
-        this.downloadProgress = 100;
-        setTimeout(() => (this.downloadProgress = 0), 2000);
+        const data = await response.json();
+
+        if (data.download_url) {
+          await this.downloadZipWithProgress(data.download_url, "clips.zip", (percent) => {
+            this.downloadProgress = percent;
+          });
+        }
       } catch (error) {
         console.error("Errore durante il taglio del video", error);
         alert("Errore durante il taglio del video");
@@ -217,9 +216,60 @@ export const useVideoStore = defineStore("video", {
       }
     },
 
+    async downloadZipWithProgress(
+      downloadUrl: string,
+      fileName = "clips.zip",
+      onProgress?: (percent: number) => void
+    ): Promise<void> {
+      try {
+        const response = await fetch(downloadUrl);
+    
+        if (!response.ok || !response.body) {
+          throw new Error(`Errore durante il download: ${response.statusText}`);
+        }
+    
+        const contentLength = response.headers.get("Content-Length");
+        if (!contentLength) throw new Error("Impossibile determinare la dimensione del file");
+    
+        const total = parseInt(contentLength, 10);
+        let loaded = 0;
+        const reader = response.body.getReader();
+        const chunks: Uint8Array[] = [];
+    
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) {
+            chunks.push(value);
+            loaded += value.length;
+            if (onProgress) {
+              const percent = Math.round((loaded / total) * 100);
+              onProgress(percent);
+            }
+          }
+        }
+    
+        const blob = new Blob(chunks);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+    
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+    
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Errore durante il download dello zip:", error);
+      }
+    },
+
     async cleanupVideos(): Promise<void> {
       try {
+        this.isUploading = true; // Mostra lo spinner
         await axios.delete(import.meta.env.VITE_BE_URL + "/video/clean-bucket/");
+        this.isUploading = false; // Nasconde lo spinner
         this.resetStore();
         alert("Cartelle pulite con successo!");
       } catch (error) {
