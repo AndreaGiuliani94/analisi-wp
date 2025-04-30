@@ -1,5 +1,5 @@
 <template>
-    <nav class="bg-blue-950 text-white p-4">
+    <nav class="bg-blue-950 text-white p-4 h-13">
         <div class="container mx-auto flex justify-between items-center">
             <router-link to="/" class="flex items-center space-x-0.5"
                 :class="{ 'font-bold': $route.path === '/' }">

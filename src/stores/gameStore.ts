@@ -39,9 +39,10 @@ export const useElementStore = defineStore("elementStore", {
           activeTime: 0,
           benchTime: 0,
           actualTime: 0,
-          shoots: 0,
-          goals: 0,
-          exclutions: 0,
+          shotsEven: [],
+          shotsSup: [],
+          shotsPenalty: [], 
+          exclutions: [],
           active: false,
         }));
       }
@@ -52,9 +53,10 @@ export const useElementStore = defineStore("elementStore", {
           activeTime: 0,
           benchTime: 0,
           actualTime: 0,
-          shoots: 0,
-          goals: 0,
-          exclutions: 0,
+          shotsEven: [],
+          shotsSup: [],
+          shotsPenalty: [], 
+          exclutions: [],
           active: false,
         }));
       }
@@ -84,7 +86,7 @@ export const useElementStore = defineStore("elementStore", {
         if (this.activeCount > 7) {
           if (el) el.active = false;
           this.activeCount--;
-        } else if (el?.exclutions == 3) {
+        } else if (el?.exclutions.length == 3) {
           if (el) el.active = false;
           if (el) el.actualTime = 0;
           this.activeCount--;
@@ -100,7 +102,7 @@ export const useElementStore = defineStore("elementStore", {
         if (this.activeOppCount > 7) {
           if (el) el.active = false;
           this.activeOppCount--;
-        } else if (el?.exclutions == 3) {
+        } else if (el?.exclutions.length == 3) {
           if (el) el.active = false;
           if (el) el.actualTime = 0;
           this.activeOppCount--;
@@ -190,18 +192,20 @@ export const useElementStore = defineStore("elementStore", {
         player.activeTime = 0;
         player.actualTime = 0;
         player.benchTime = 0;
-        player.exclutions = 0;
-        player.goals = 0;
-        player.shoots = 0;
+        player.exclutions = [];
+        player.shotsEven = [];
+        player.shotsSup = [];
+        player.shotsPenalty = [];
         player.active = false;
       });
       this.opponents.forEach((player) => {
         player.activeTime = 0;
         player.actualTime = 0;
         player.benchTime = 0;
-        player.exclutions = 0;
-        player.goals = 0;
-        player.shoots = 0;
+        player.exclutions = [];
+        player.shotsEven = [];
+        player.shotsSup = [];
+        player.shotsPenalty = [];
         player.active = false;
       });
       this.countdown = 480;
@@ -212,7 +216,7 @@ export const useElementStore = defineStore("elementStore", {
       if (team === 0) el = this.players.find((el) => el.number === number);
       else el = this.opponents.find((el) => el.number === number);
       if (el) {
-        el.shoots++;
+        el.shotsEven;
         this.saveEvents("SHOOT", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
       }
     },
@@ -227,20 +231,21 @@ export const useElementStore = defineStore("elementStore", {
         this.match.opponentsGoals++;
       }
       if (el) {
-        el.goals++;
-        el.shoots++;
         this.saveEvents("GOAL", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
       }
     },
-    addExclution(number: number, team: number) {
+    addExclution(number: number, team: number, type: string, position: string) {
       var el;
       if (team === 0) el = this.players.find((el) => el.number === number);
       else el = this.opponents.find((el) => el.number === number);
       if (el) {
-        el.exclutions++;
-        this.saveEvents("EXCLUTION", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
+        el.exclutions.push({
+          position: position,
+          type: type
+        })
+        this.saveEvents(type, el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
       }
-      if (el?.exclutions == 3) {
+      if (el?.exclutions.length == 3) {
         this.toggleElement(el.number, team);
         if (this.activeCount != 7) this.stopGlobalTimer;
       }

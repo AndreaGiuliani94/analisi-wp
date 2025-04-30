@@ -1,51 +1,57 @@
 <template>
-  <div class="w-full">
-    <div class="flex justify-start items-center gap-2">
-      <button @click="$router.push('/game')"
-        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-        <ArrowLeftIcon class="size-4 me-1 mt-1 mb-1" />Distinta
-      </button>
-      <button @click="store.resetTimer()"
-        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
-        <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" />Restart
-      </button>
+  <!-- <div ref="headerRef" class="fixed top-0 px-4 pt-4 left-0 w-full z-50 bg-white"> -->
+    <div class="w-full">
+      <div class="flex justify-between items-start gap-2">
+        <button @click="$router.push('/game')"
+          class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+          <ArrowLeftIcon class="size-4 me-1 mt-1 mb-1" />Distinta
+        </button>
+        <div>
+          <div class="text-xl font-bold text-center text-blue-950">{{ store.match.goals }} - {{ store.match.opponentsGoals}}</div>
+          <div class="text-xl font-bold text-center mt-2 text-blue-950">{{ store.match.quarter }} T</div>
+        </div>
+        <button @click="store.resetTimer()"
+          class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+          <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" />Restart
+        </button>
+      </div>
+    
     </div>
-  </div>
-  <div class="text-xl font-bold text-center mt-2 text-blue-950">{{ store.match.goals }} - {{ store.match.opponentsGoals
-    }}</div>
-  <div class="text-xl font-bold text-center mt-2 text-blue-950">{{ store.match.quarter }} T</div>
-  <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
+    
+    <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
 
-  <ClockManager />
+    <ClockManager />
 
-  <div class="mb-2.5 flex flex-col md:flex-row justify-between gap-3">
+  <!-- </div> -->
 
-    <div class="px-2.5 py-1.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
-      <div class="m-2.5 align-middle font-medium text-lg text-red-700">
+  <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
+
+    <div class="px-2.5 pb-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
+      <div class="mt-2.5 ms-2.5 align-middle font-medium text-lg text-red-700">
         <span>SC QUINTO</span>
       </div>
-      <div class="flex flex-col md:grid md:grid-cols-2 ">
+      <div class="flex flex-col">
         <div v-for="player in store.actualPlayers" :key="player.number"
-          class="border border-gray-300 rounded-lg m-2 flex justify-between items-center overflow-x-auto ">
+          class="border border-gray-300 rounded-lg mt-1 flex justify-between items-center overflow-x-auto ">
           <PlayerItem :player="player" :team="homeTeam" />
         </div>
       </div>
     </div>
 
-    <div class="px-2.5 py-1.5 border border-gray-300 rounded-md mb-2.5 flex flex-col w-full">
+    <div class="px-2.5 pb-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
       <div class="m-2.5 align-middle font-medium text-lg text-red-700 flex">
         <span>{{ store.match.opponentsTeam }}</span>
-        <label class="inline-flex items-center cursor-pointer ml-auto">
+        <!-- <label class="inline-flex items-center cursor-pointer ml-auto">
           <input type="checkbox" v-model="store.opponentsTimerActivated" class="sr-only peer">
           <div
             class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600">
           </div>
           <span class="ms-3 text-sm font-medium text-gray-900">Abilita Tempo</span>
-        </label>
+        </label> -->
       </div>
-      <div class="flex flex-col md:grid md:grid-cols-2">
+      <div class="flex flex-col">
         <div v-for="player in store.actualOpponents" :key="player.number"
-          class="border border-gray-300 rounded-lg m-2 flex justify-between items-center overflow-x-auto ">
+          class="border border-gray-300 rounded-lg mt-1 flex justify-between items-center overflow-x-auto ">
           <PlayerItem :player="player" :team="opponentTeam" />
         </div>
       </div>
@@ -69,6 +75,7 @@ import PlayerItem from '@/components/PlayerItem.vue';
 import ClockManager from '@/components/ClockManager.vue';
 import type { Team } from '@/components/Interfaces/Team';
 import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const store = useElementStore();
 var homeTeam: Team = {
@@ -79,5 +86,23 @@ var opponentTeam: Team = {
   name: 'AWAY',
   activatedTimer: store.opponentsTimerActivated,
 };
+
+const headerRef = ref<HTMLElement | null>(null)
+const headerHeight = ref(0)
+
+const updateHeaderHeight = () => {
+  if (headerRef.value) {
+    headerHeight.value = headerRef.value.getBoundingClientRect().height
+  }
+}
+
+onMounted(() => {
+  updateHeaderHeight()
+  window.addEventListener('resize', updateHeaderHeight)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateHeaderHeight)
+})
 
 </script>

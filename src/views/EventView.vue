@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import ExportButton from '@/components/ExportButton.vue';
+import ExportButton from '@/components/buttons/ExportButton.vue';
 import { useElementStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 const store = useElementStore();
