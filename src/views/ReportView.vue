@@ -29,7 +29,7 @@
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.activeTime) }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.benchTime) }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.goals + '/' + element.shoots }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsEven.length + '/' + element.shotsEven.length }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.exclutions }}</td>
                 </tr>
             </tbody>
@@ -56,7 +56,7 @@
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.activeTime) }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.benchTime) }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.goals + '/' + element.shoots }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsEven.length + '/' + element.shotsEven.length }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.exclutions }}</td>
                 </tr>
             </tbody>
