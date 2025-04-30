@@ -211,13 +211,32 @@ export const useElementStore = defineStore("elementStore", {
       this.countdown = 480;
       this.events = [];
     },
-    addShoot(number: number, team: number) {
+    addShoot(number: number, team: number, type: string, position: string, outcome: string) {
       var el;
       if (team === 0) el = this.players.find((el) => el.number === number);
       else el = this.opponents.find((el) => el.number === number);
       if (el) {
-        el.shotsEven;
-        this.saveEvents("SHOOT", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
+        switch (type) {
+          case 'EVEN':
+            el.shotsEven.push({position: position, outcome: outcome});
+            break;
+          case 'SUP':
+            el.shotsSup.push({position: position, outcome: outcome});
+            break;
+          case 'PENALTY':
+            el.shotsPenalty.push({position: position, outcome: outcome});
+            break;
+          default:
+            break;
+        }
+        switch (outcome.toUpperCase()) {
+          case 'GOAL':
+            this.addGoal(number, team);
+            break;
+          default:
+            this.saveEvents("SHOT", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
+            break;
+        }
       }
     },
     addGoal(number: number, team: number) {

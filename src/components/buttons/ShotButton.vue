@@ -32,10 +32,10 @@
                 <MenuItem
                   v-for="item in shotOptions[props.type]"
                   :key="item"
-                  v-slot="{ active }"
+                  v-slot="{ active, close }"
                 >
                   <button  v-if="!props.isGoal"
-                    @click.stop.prevent="handleFirstSelect(item)"
+                    @click.stop.prevent="handleFirstSelect(item, close)"
                     class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
                     :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                   >
@@ -43,7 +43,7 @@
                   </button>
 
                   <button  v-else
-                    @click="handleFirstSelect(item)"
+                    @click="handleFirstSelect(item, close)"
                     class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
                     :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                   >
@@ -56,10 +56,10 @@
               <MenuItem
                 v-for="sub in shotOptions['OUT']"
                 :key="sub"
-                v-slot="{ active }"
+                v-slot="{ active, close }"
               >
                 <button
-                  @click="handleSecondSelect(sub)"
+                  @click="handleSecondSelect(sub, close)"
                   class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
                   :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                 >
@@ -89,13 +89,13 @@
   <div v-else-if="props.type==='PENALTY'">
     <div v-if="props.isGoal">
         <button class="flex items-center justify-center w-6 h-6 rounded-full border
-            text-sm font-bold transition cursor-pointer
-            disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
-            :class="props.disabled
-            ? 'cursor-not-allowed'
-            : 'text-white bg-sky-500 border border-sky-500'"
-            :disabled="props.disabled"
-
+          text-sm font-bold transition cursor-pointer
+          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
+          :class="props.disabled
+          ? 'cursor-not-allowed'
+          : 'text-white bg-sky-500 border border-sky-500'"
+          :disabled="props.disabled"
+          @click="handleZeroSelect"
         >
             {{ 'G' }}
         </button>
@@ -132,10 +132,10 @@
                         <MenuItem
                             v-for="sub in shotOptions['OUT']"
                             :key="sub"
-                            v-slot="{ active }"
+                            v-slot="{ active, close }"
                         >
                             <button
-                            @click="handleSecondSelect(sub)"
+                            @click="handleSecondSelect(sub, close)"
                             class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
                             :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                             >
@@ -164,6 +164,10 @@ const props = defineProps<{
   isGoal: boolean;
 }>()
 
+const emit = defineEmits<{
+  (e: 'handleShot', payload: { type: string, position: string, outcome: string }): void
+}>()
+
 const shotOptions: Record<string, string[]> = {
   'EVEN': ['1', '2', '3', '4', '5', 'CB', 'Ripartenza'],
   'SUP': ['1', '2', '3', '4', 'P5', 'P6', 'Ripartenza'],
@@ -174,19 +178,36 @@ const activeStep = ref<'first' | 'second'>('first')
 const firstSelection = ref<string | null>(null)
 const selectedOption = ref<string | null>(null)
 
-const handleFirstSelect = (item: string) => {
+const handleZeroSelect = () => {
+  emit('handleShot', {
+      type: props.type,
+      position: '',
+      outcome: 'GOAL'
+    })
+}
+
+const handleFirstSelect = (item: string, close: () => void) => {
   firstSelection.value = item
   if(!props.isGoal){
     activeStep.value = 'second'
   } else {
-    console.log(firstSelection.value)
+    emit('handleShot', {
+      type: props.type,
+      position: item ? item : '',
+      outcome: 'GOAL'
+    })
     close();
   }
 }
 
-const handleSecondSelect = (item: string) => {
+const handleSecondSelect = (item: string, close: () => void) => {
   selectedOption.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
-  console.log(`${firstSelection.value} - ${item}`)
+  emit('handleShot', {
+      type: props.type,
+      position: firstSelection.value ? firstSelection.value : '',
+      outcome: item
+    });
+  resetSelection();
   close();
 }
 
@@ -195,9 +216,4 @@ const resetSelection = () => {
   firstSelection.value = null
 }
 
-// Questa funzione verrà implementata da chi usa il componente.
-// Per ora è un placeholder.
-const addShot = (item: string) => {
-  console.log('Shot aggiunto:', item)
-}
 </script>

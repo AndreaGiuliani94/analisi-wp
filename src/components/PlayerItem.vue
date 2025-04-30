@@ -41,22 +41,29 @@
   </div>
 
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" :type="'EVEN'" :is-goal="true"/>
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" :type="'EVEN'" :is-goal="false"/>
-    <div class="rounded-md"> 1/5</div>
+    <ShotButton 
+      :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" 
+      :type="'EVEN'" :is-goal="true" @handleShot="addShot"/>
+    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" 
+      :type="'EVEN'" :is-goal="false" @handleShot="addShot"/>
+    <div class="rounded-md"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
   </div>
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" :type="'SUP'" :is-goal="true"/>
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" :type="'SUP'" :is-goal="false"/>
-    <div class="rounded-md"> 1/5</div>
+    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" 
+      :type="'SUP'" :is-goal="true" @handleShot="addShot"/>
+    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" 
+      :type="'SUP'" :is-goal="false" @handleShot="addShot"/>
+    <div class="rounded-md"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
   </div>
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" :type="'PENALTY'" :is-goal="true"/>
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" :type="'PENALTY'" :is-goal="false"/>
-    <div class="rounded-md"> 1/5</div>
+    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" 
+      :type="'PENALTY'" :is-goal="true" @handleShot="addShot"/>
+    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'HOME' || (team.name == 'AWAY' && store.opponentsTimerActivated)" 
+      :type="'PENALTY'" :is-goal="false" @handleShot="addShot"/>
+    <div class="rounded-md"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
   </div>
   <div class="inline-flex ml-3 mr-2" role="group">
-    <div class="rounded-md"> 1/5</div>
+    <div class="rounded-md"> {{ getAllShots().goals + '/' + getAllShots().shots }}</div>
   </div>
 
   <!-- <div class="inline-flex rounded-md ml-auto h-full" role="group">
@@ -99,6 +106,16 @@ const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
 
+const getAllShots = () => {
+  var totalShots = [];
+  totalShots.push(...props.player.shotsEven, ...props.player.shotsSup, ...props.player.shotsPenalty)
+  var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === 'GOAL' )
+  return {
+    goals: totalGoals.length,
+    shots: totalShots.length
+  }
+}
+
 const startHold = () => {
   isHolding.value = false; // Reset del flag prima di iniziare
   holdTimeout.value = setTimeout(() => {
@@ -131,5 +148,8 @@ const addExclution = (payload : { type: string, position: string}) => {
   store.addExclution(props.player.number, (props.team.name == 'HOME' ? 0 : 1), payload.type, payload.position);
 }
 
+const addShot = (payload : { type: string, position: string, outcome: string }) => {
+  store.addShoot(props.player.number, (props.team.name == 'HOME' ? 0 : 1), payload.type, payload.position, payload.outcome)
+}
 
 </script>
