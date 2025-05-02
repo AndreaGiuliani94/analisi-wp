@@ -7,8 +7,8 @@
           <ArrowLeftIcon class="size-4 me-1 mt-1 mb-1" />Distinta
         </button>
         <div>
-          <div class="text-xl font-bold text-center text-blue-950">{{ store.match.goals }} - {{ store.match.opponentsGoals}}</div>
-          <div class="text-xl font-bold text-center mt-2 text-blue-950">{{ store.match.quarter }} T</div>
+          <div class="text-xl font-bold text-center text-blue-950">{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
+          <div class="text-xl font-bold text-center text-blue-950">{{ store.match.quarter }} T</div>
         </div>
         <button @click="store.resetTimer()"
           class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
@@ -22,37 +22,83 @@
 
     <ClockManager />
 
-  <!-- </div> -->
-
   <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
 
-    <div class="px-2.5 pb-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
-      <div class="mt-2.5 ms-2.5 align-middle font-medium text-lg text-red-700">
-        <span>SC QUINTO</span>
+    <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
+      <div class="ms-2.5 mb-1.5 flex justify-start items-center">
+        <a class="text-red-700 flex justify-start items-center cursor-pointer"
+        @click="$router.push('/game/report')">
+          <span>SC QUINTO</span>
+          <ArrowRightIcon class="size-5 ms-2"/>
+        </a>
+        <div class="ml-auto flex items-center justify-end gap-1">
+          <span>TO</span>
+          <button class=" w-6 h-6 rounded-full border
+          text-sm font-bold transition cursor-pointer
+          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
+          :class="store.match.homeTeam.timeOut1 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
+          @click="toggleTimeOut(1,'HOME')"
+          >
+          </button>
+          <button class=" w-6 h-6 rounded-full border
+          text-sm font-bold transition cursor-pointer
+          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
+          :class="store.match.homeTeam.timeOut2 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
+          @click="toggleTimeOut(2,'HOME')"
+          >
+          </button>
+
+        </div>
       </div>
-      <div class="flex flex-col">
+      
+      <div class="flex flex-col text-sm">
         <div v-for="player in store.actualPlayers" :key="player.number"
           class="border border-gray-300 rounded-lg mt-1 flex justify-between items-center overflow-x-auto ">
-          <PlayerItem :player="player" :team="homeTeam" />
+          <PlayerItem :player="player" :team="store.match.homeTeam" />
         </div>
       </div>
     </div>
 
-    <div class="px-2.5 pb-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
-      <div class="m-2.5 align-middle font-medium text-lg text-red-700 flex">
-        <span>{{ store.match.opponentsTeam }}</span>
-        <!-- <label class="inline-flex items-center cursor-pointer ml-auto">
-          <input type="checkbox" v-model="store.opponentsTimerActivated" class="sr-only peer">
-          <div
-            class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600">
-          </div>
-          <span class="ms-3 text-sm font-medium text-gray-900">Abilita Tempo</span>
-        </label> -->
+    <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
+      <div class="ms-2.5 mb-1.5 flex justify-start items-center">
+        <a class="text-red-700 flex justify-start items-center cursor-pointer"
+        @click="$router.push('/game/report')">
+          <span>{{store.match.awayTeam.name}}</span>
+          <ArrowRightIcon class="size-5 ms-2"/>
+        </a>
+        <div class="ml-auto flex items-center justify-end gap-1">
+          <span>TO</span>
+          <button class=" w-6 h-6 rounded-full border
+          text-sm font-bold transition cursor-pointer
+          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
+          :class="store.match.awayTeam.timeOut1 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
+          @click="toggleTimeOut(1,'AWAY')"
+          >
+          </button>
+          <button class=" w-6 h-6 rounded-full border
+          text-sm font-bold transition cursor-pointer
+          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
+          :class="store.match.awayTeam.timeOut2 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
+          @click="toggleTimeOut(2,'AWAY')"
+          >
+          </button>
+
+          <!--
+          <label class="inline-flex items-center cursor-pointer ml-auto">
+            <input type="checkbox" v-model="store.opponentsTimerActivated" class="sr-only peer">
+            <div
+              class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600">
+            </div>
+            <span class="ms-3 text-sm font-medium text-gray-900">Abilita Tempo</span>
+          </label> 
+          -->
+        </div>
       </div>
-      <div class="flex flex-col">
+      
+      <div class="flex flex-col text-sm">
         <div v-for="player in store.actualOpponents" :key="player.number"
           class="border border-gray-300 rounded-lg mt-1 flex justify-between items-center overflow-x-auto ">
-          <PlayerItem :player="player" :team="opponentTeam" />
+          <PlayerItem :player="player" :team="store.match.awayTeam" />
         </div>
       </div>
     </div>
@@ -73,19 +119,10 @@
 import { useElementStore } from '@/stores/gameStore';
 import PlayerItem from '@/components/PlayerItem.vue';
 import ClockManager from '@/components/ClockManager.vue';
-import type { Team } from '@/components/Interfaces/Team';
-import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
+import { ArrowLeftIcon, ArrowPathIcon, ArrowRightIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const store = useElementStore();
-var homeTeam: Team = {
-  name: 'HOME',
-  activatedTimer: true,
-};
-var opponentTeam: Team = {
-  name: 'AWAY',
-  activatedTimer: store.opponentsTimerActivated,
-};
 
 const headerRef = ref<HTMLElement | null>(null)
 const headerHeight = ref(0)
@@ -104,5 +141,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateHeaderHeight)
 })
+
+const toggleTimeOut = (number: number, team: string) => {
+  store.addTimeOut(number, team);
+}
 
 </script>

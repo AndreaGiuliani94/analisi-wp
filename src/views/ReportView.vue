@@ -7,10 +7,10 @@
             </button>
         </div>
     </div>
-    <h1 class="text-3xl text-center font-bold p-2 m-2 text-blue-950">Report di {{ store.match.name }}</h1>
+    <h1 class="text-3xl text-center font-bold p-2 m-2 text-blue-950">Report di {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</h1>
     <div class="relative overflow-x-auto shadow-md rounded-lg">
         <div class="m-2.5 align-middle font-bold text-lg text-red-800">
-            <span>SC QUINTO</span>
+            <span>{{ store.match.homeTeam.name }}</span>
         </div>
         <table class="w-full text-sm text-left border-collapse rounded-lg">
             <thead class="text-xs text-white uppercase bg-red-800 rounded-lg">
@@ -37,7 +37,7 @@
     </div>
     <div class="relative overflow-x-auto shadow-md rounded-lg mt-2.5">
         <div class="m-2.5 align-middle font-bold text-lg text-red-800">
-            <span>{{ store.match.opponentsTeam }}</span>
+            <span>{{ store.match.awayTeam.name }}</span>
         </div>
         <table class="w-full text-sm text-left border-collapse rounded-lg">
             <thead class="text-xs text-white uppercase bg-red-800 rounded-lg">

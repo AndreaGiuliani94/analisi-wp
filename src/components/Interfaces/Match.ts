@@ -1,7 +1,7 @@
+import type { Team } from "./Team";
+
 export interface Match {
   quarter: number;
-  name: string;
-  goals: number;
-  opponentsGoals: number;
-  opponentsTeam: string;
+  homeTeam: Team;
+  awayTeam: Team;
 }

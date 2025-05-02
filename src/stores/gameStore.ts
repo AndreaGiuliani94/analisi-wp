@@ -7,81 +7,51 @@ import type { Match } from "@/components/Interfaces/Match";
 
 export const useElementStore = defineStore("elementStore", {
   state: () => {
-    const savedPlayers = localStorage.getItem("players");
-    const savedOpponents = localStorage.getItem("opponents");
     const savedEvents = localStorage.getItem("events");
     const savedMatch = localStorage.getItem("match");
     return {
-      players: savedPlayers ? (JSON.parse(savedPlayers) as Player[]) : [],
-      opponents: savedOpponents ? (JSON.parse(savedOpponents) as Player[]) : [],
-      opponentsTimerActivated: false,
+      opponentsTeamName: '',
       globalInterval: null as number | null,
       activeCount: 0,
       activeOppCount: 0,
       countdown: 480,
       countdownInterval: null as number | null,
-      events: savedEvents ? (JSON.parse(savedEvents) as Event[]) : [],
+      events: savedEvents ? JSON.parse(savedEvents) as Event[] : [],
       match: savedMatch ? JSON.parse(savedMatch) as Match : {} as Match,
     };
   },
   getters: {
     actualPlayers: (state) =>
-      state.players.filter((player) => player.name.length > 0),
+      state.match.homeTeam?.players.filter((player) => player.name.length > 0),
     actualOpponents: (state) =>
-      state.opponents.filter((player) => player.name.length > 0),
+      state.match.awayTeam?.players.filter((player) => player.name.length > 0),
   },
   actions: {
     loadStore() {
-      if (this.actualPlayers.length == 0) {
-        this.players = Array.from({ length: 15 }, (_, i) => ({
-          number: i + 1,
-          name: "",
-          activeTime: 0,
-          benchTime: 0,
-          actualTime: 0,
-          shotsEven: [],
-          shotsSup: [],
-          shotsPenalty: [], 
-          exclutions: [],
-          active: false,
-        }));
+      if(!this.match.homeTeam) {
+        initializeHomeTeam.call(this);
       }
-      if (this.opponents.length == 0) {
-        this.opponents = Array.from({ length: 15 }, (_, i) => ({
-          number: i + 1,
-          name: "",
-          activeTime: 0,
-          benchTime: 0,
-          actualTime: 0,
-          shotsEven: [],
-          shotsSup: [],
-          shotsPenalty: [], 
-          exclutions: [],
-          active: false,
-        }));
+      if(!this.match.awayTeam) {
+        initializeAwayTeam.call(this);
+      }
+      if(this.match.quarter) {
+        this.match.quarter = 1;
       }
       this.saveData();
     },
     updateMatch(opponentsTeam: string) {
       if (opponentsTeam) {
-        const match: Match = {
-          name: "SC Quinto - " + opponentsTeam,
-          opponentsTeam: opponentsTeam,
-          quarter: 1,
-          goals: 0,
-          opponentsGoals: 0,
-        };
-        this.match = match;
+        this.match.awayTeam.name = opponentsTeam.toUpperCase();
         this.saveData();
       }
     },
     toggleElement(number: number, team: number) {
       var el;
       if (team === 0) {
-        el = this.players.find((el) => el.number === number);
+        el = this.match.homeTeam.players.find((el) => el.number === number);
         if (el) {
           el.active = !el.active;
-          this.activeCount = this.players.filter((e) => e.active).length;
+          this.activeCount = this.match.homeTeam.players.filter((e) => e.active).length;
         }
         if (this.activeCount > 7) {
           if (el) el.active = false;
@@ -94,10 +64,10 @@ export const useElementStore = defineStore("elementStore", {
           if (el) el.actualTime = 0;
         }
       } else {
-        el = this.opponents.find((el) => el.number === number);
+        el = this.match.awayTeam.players.find((el) => el.number === number);
         if (el) {
           el.active = !el.active;
-          this.activeOppCount = this.opponents.filter((e) => e.active).length;
+          this.activeOppCount = this.match.awayTeam.players.filter((e) => e.active).length;
         }
         if (this.activeOppCount > 7) {
           if (el) el.active = false;
@@ -114,8 +84,8 @@ export const useElementStore = defineStore("elementStore", {
     },
     updatePlayerName(number: number, name: string, team: number) {
       var el;
-      if (team === 0) el = this.players.find((el) => el.number === number);
-      else el = this.opponents.find((el) => el.number === number);
+      if (team === 0) el = this.match.homeTeam.players.find((el) => el.number === number);
+      else el = this.match.awayTeam.players.find((el) => el.number === number);
       if (el) {
         el.name = name;
         this.saveData();
@@ -124,7 +94,7 @@ export const useElementStore = defineStore("elementStore", {
     startGlobalTimer() {
       if (this.activeCount === 7 && /* (this.opponentsTimerActivated && this.activeOppCount === 7) && */ !this.globalInterval) {
         this.globalInterval = window.setInterval(() => {
-          this.players.forEach((el) => {
+          this.match.homeTeam.players.forEach((el) => {
             if (el.active) {
               el.activeTime++;
             } else {
@@ -164,8 +134,6 @@ export const useElementStore = defineStore("elementStore", {
       }
     },
     resetAll() {
-      this.players = [];
-      this.opponents = [];
       this.match = {} as Match;
       this.events = [];
       this.activeCount = 0;
@@ -174,21 +142,19 @@ export const useElementStore = defineStore("elementStore", {
       this.stopGlobalTimer();
       this.saveData();
       this.loadStore();
-      router.push("/");
+      router.push("/game");
     },
     clearDistinta() {
-      this.players = [];
-      this.opponents = [];
-      this.match.name = "";
-      this.match.opponentsTeam = "";
+      this.match = {} as Match;
       this.saveData();
       this.loadStore();
     },
     resetTimer() {
       this.match.quarter = 1;
-      this.match.goals = 0;
-      this.match.opponentsGoals = 0;
-      this.players.forEach((player) => {
+      this.match.homeTeam.score = 0;
+      this.match.homeTeam.timeOut1 = false;
+      this.match.homeTeam.timeOut2 = false;
+      this.match.homeTeam.players.forEach((player) => {
         player.activeTime = 0;
         player.actualTime = 0;
         player.benchTime = 0;
@@ -198,7 +164,10 @@ export const useElementStore = defineStore("elementStore", {
         player.shotsPenalty = [];
         player.active = false;
       });
-      this.opponents.forEach((player) => {
+      this.match.awayTeam.score = 0;
+      this.match.awayTeam.timeOut1 = false;
+      this.match.awayTeam.timeOut2 = false;
+      this.match.awayTeam.players.forEach((player) => {
         player.activeTime = 0;
         player.actualTime = 0;
         player.benchTime = 0;
@@ -213,8 +182,8 @@ export const useElementStore = defineStore("elementStore", {
     },
     addShoot(number: number, team: number, type: string, position: string, outcome: string) {
       var el;
-      if (team === 0) el = this.players.find((el) => el.number === number);
-      else el = this.opponents.find((el) => el.number === number);
+      if (team === 0) el = this.match.homeTeam.players.find((el) => el.number === number);
+      else el = this.match.awayTeam.players.find((el) => el.number === number);
       if (el) {
         switch (type) {
           case 'EVEN':
@@ -234,7 +203,7 @@ export const useElementStore = defineStore("elementStore", {
             this.addGoal(number, team);
             break;
           default:
-            this.saveEvents("SHOT", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
+            this.saveEvents("SHOT", el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
             break;
         }
       }
@@ -242,38 +211,48 @@ export const useElementStore = defineStore("elementStore", {
     addGoal(number: number, team: number) {
       var el;
       if (team === 0) {
-        el = this.players.find((el) => el.number === number);
-        this.match.goals++;
+        el = this.match.homeTeam.players.find((el) => el.number === number);
+        this.match.homeTeam.score++;
       }
       else {
-        el = this.opponents.find((el) => el.number === number);
-        this.match.opponentsGoals++;
+        el = this.match.awayTeam.players.find((el) => el.number === number);
+        this.match.awayTeam.score++;
       }
       if (el) {
-        this.saveEvents("GOAL", el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
+        this.saveEvents("GOAL", el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
       }
     },
-    addExclution(number: number, team: number, type: string, position: string) {
+    addExclution(number: number, team: number, type: string, position: string, exclNumber: number) {
       var el;
-      if (team === 0) el = this.players.find((el) => el.number === number);
-      else el = this.opponents.find((el) => el.number === number);
+      el = (team === 0) ? this.match.homeTeam.players.find((el) => el.number === number) : this.match.awayTeam.players.find((el) => el.number === number) ;
+      
       if (el) {
-        el.exclutions.push({
-          position: position,
-          type: type
-        })
-        this.saveEvents(type, el, (team===0 ? 'SC Quinto' : this.match.opponentsTeam));
+        if(el.exclutions.length < exclNumber) {
+          el.exclutions.push({
+            position: position,
+            type: type
+          })
+        } else {
+          el.exclutions[exclNumber - 1] = {
+            position: position, 
+            type: type
+          }
+        }
+        
+        this.saveEvents(type, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
       }
       if (el?.exclutions.length == 3) {
         this.toggleElement(el.number, team);
         if (this.activeCount != 7) this.stopGlobalTimer;
       }
     },
+    addTimeOut(number: number, team: string) {
+      number === 1 ? (team === 'HOME' ? this.match.homeTeam.timeOut1 = true : this.match.awayTeam.timeOut1 = true ) :  (team === 'HOME' ? this.match.homeTeam.timeOut2 = true : this.match.awayTeam.timeOut2 = true );
+      this.saveData();
+    },
     saveData() {
       localStorage.setItem("match", JSON.stringify(this.match));
       localStorage.setItem("events", JSON.stringify(this.events));
-      localStorage.setItem("players", JSON.stringify(this.players));
-      localStorage.setItem("opponents", JSON.stringify(this.opponents));
     },
     formatTime(seconds: number) {
       const minutes = Math.floor(seconds / 60);
@@ -301,7 +280,7 @@ export const useElementStore = defineStore("elementStore", {
     },
     back(seconds: number) {
       this.countdown += seconds;
-      this.players.forEach((player) => {
+      this.match.homeTeam.players.forEach((player) => {
         if (player.active) {
           player.activeTime -= seconds;
           player.actualTime -= seconds;
@@ -314,7 +293,7 @@ export const useElementStore = defineStore("elementStore", {
     },
     forward(seconds: number) {
       this.countdown -= seconds;
-      this.players.forEach((player) => {
+      this.match.homeTeam.players.forEach((player) => {
         if (player.active) {
           player.activeTime += seconds;
           player.actualTime += seconds;
@@ -327,3 +306,48 @@ export const useElementStore = defineStore("elementStore", {
     },
   },
 });
+
+function initializeHomeTeam(this: any) {
+  this.match.homeTeam = {
+    activatedTimer: true,
+    name: 'SC QUINTO',
+    score: 0,
+    timeOut1: false,
+    timeOut2: false,
+    players: Array.from({ length: 15 }, (_, i) => ({
+      number: i + 1,
+      name: "",
+      activeTime: 0,
+      benchTime: 0,
+      actualTime: 0,
+      shotsEven: [],
+      shotsSup: [],
+      shotsPenalty: [],
+      exclutions: [],
+      active: false,
+    }))
+  };
+}
+
+function initializeAwayTeam(this: any) {
+  this.match.awayTeam = {
+    activatedTimer: false,
+    name: '',
+    score: 0,
+    timeOut1: false,
+    timeOut2: false,
+    players: Array.from({ length: 15 }, (_, i) => ({
+      number: i + 1,
+      name: "",
+      activeTime: 0,
+      benchTime: 0,
+      actualTime: 0,
+      shotsEven: [],
+      shotsSup: [],
+      shotsPenalty: [],
+      exclutions: [],
+      active: false,
+    }))
+  };
+}
+

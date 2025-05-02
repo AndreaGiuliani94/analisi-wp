@@ -45,7 +45,7 @@
 import { useVideoStore } from "@/stores/videoStore";
 import { ref } from "vue";
 import { useDropzone, type FileRejectReason } from "vue3-dropzone";
-import ConfirmModal from "./ConfirmModal.vue";
+import ConfirmModal from "./modals/ConfirmModal.vue";
 import { CloudArrowUpIcon } from "@heroicons/vue/24/outline";
 
 

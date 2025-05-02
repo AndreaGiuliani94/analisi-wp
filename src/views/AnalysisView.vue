@@ -61,7 +61,7 @@
 <script setup lang="ts">
 import { useVideoStore } from "@/stores/videoStore";
 import FileUpload from "@/components/FileUpload.vue";
-import ConfirmModal from "@/components/ConfirmModal.vue";
+import ConfirmModal from "@/components/modals/ConfirmModal.vue";
 import { computed, ref } from "vue";
 import IntervalItem from "@/components/IntervalItem.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";

@@ -7,7 +7,7 @@
             </button>
         </div>
     </div>
-    <h1 class="text-3xl text-center font-bold p-2 pl-2.5">Eventi di {{ store.match.name }}</h1>
+    <h1 class="text-3xl text-center font-bold p-2 pl-2.5">Eventi di {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</h1>
     <div class="relative overflow-x-auto shadow-md rounded-lg">
         <table class="w-full text-sm text-left border-collapse rounded-lg">
             <thead class="text-xs text-white uppercase bg-red-600 rounded-lg">
@@ -24,7 +24,7 @@
                     <td class="px-4 py-3 whitespace-nowrap ">{{ event.quarter }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ event.time }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ event.team }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ event.player.name }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ event.player.number + '. ' + event.player.name }} </td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ event.description }}</td>
                 </tr>
             </tbody>

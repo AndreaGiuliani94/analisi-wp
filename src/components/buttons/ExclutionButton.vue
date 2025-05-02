@@ -4,11 +4,11 @@
       <MenuButton
         :as="'button'"
         class="flex items-center justify-center min-w-6 h-6 border rounded-full text-xs font-bold
-               transition disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200
-               cursor-pointer
+               transition cursor-pointer
                "
         :class=" (state === 'selected' || props.exclutionState) ?
-          'bg-red-600 text-white border-red-600': 'bg-white text-red-600 border-red-600'
+          'bg-red-600 text-white border-red-600 disabled:text-gray-200 disabled:border-red-800 disabled:bg-red-800 disabled:cursor-not-allowed': 
+          'bg-white text-red-600 border-red-600 disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200 disabled:cursor-not-allowed'
         "
         :disabled="props.disabled"
       >
@@ -26,9 +26,10 @@
       >
         <MenuItems
           v-if="!props.disabled"
-          class=" mt-1 absolute bg-white border border-red-200 divide-x divide-gray-100 rounded-md shadow-lg focus:outline-none z-50"
+          class="mt-1 absolute bg-white border border-red-200 
+          rounded-md shadow-lg z-50"
         >
-          <div class="px-1 py-1">
+          <div class="p-1">
 
             <template v-if="activeStep === 'first'">
               <MenuItem
@@ -38,7 +39,7 @@
               >
                 <button
                   @click.stop.prevent="handleFirstSelect(item)"
-                  class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-red-500 text-white' : 'text-gray-900'"
                 >
                   {{ item }}
@@ -50,11 +51,11 @@
               <MenuItem
                 v-for="sub in availableSecondOptions"
                 :key="sub"
-                v-slot="{ active }"
+                v-slot="{ active, close }"
               >
                 <button
-                  @click="handleSecondSelect(sub)"
-                  class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                  @click="handleSecondSelect(sub, close)"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-red-500 text-white' : 'text-gray-900'"
                 >
                   {{ sub }}
@@ -65,7 +66,7 @@
               <MenuItem v-slot="{ active }">
                 <button
                   @click.stop.prevent="resetSelection"
-                  class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-gray-200 text-gray-900' : 'text-gray-600'"
                 >
                   ← Indietro
@@ -110,16 +111,17 @@ const handleFirstSelect = (item: string) => {
   activeStep.value = 'second'
 }
 
-const handleSecondSelect = (item: string) => {
+const handleSecondSelect = (item: string, close: () => void) => {
   selectedOption.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
   state.value = 'selected'
-  close();
   if(firstSelection.value) {
     emit('handleExclution', {
       type: firstSelection.value,
       position: item
     })
   }
+  resetSelection();
+  close();
 }
 
 const availableSecondOptions = computed(() => {

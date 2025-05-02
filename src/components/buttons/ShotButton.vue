@@ -1,4 +1,7 @@
 <template>
+  <div class="">
+
+  </div>
   <div v-if="props.type === 'EVEN' || props.type === 'SUP'">
     <Menu as="div">
       <MenuButton
@@ -24,10 +27,10 @@
       >
         <MenuItems
           v-if="!props.disabled"
-          class="absolute mt-1 bg-white border border-gray-200 divide-y divide-gray-100
-                 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+          class="absolute mt-1 bg-white border border-sky-200 
+          rounded-md shadow-lg z-50"
         >
-          <div class="px-1 py-1">
+          <div class="p-1">
             <template v-if="activeStep === 'first'">
                 <MenuItem
                   v-for="item in shotOptions[props.type]"
@@ -36,7 +39,7 @@
                 >
                   <button  v-if="!props.isGoal"
                     @click.stop.prevent="handleFirstSelect(item, close)"
-                    class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                    class="group flex w-full items-center rounded-md p-1 text-sm"
                     :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                   >
                     {{ item }}
@@ -44,7 +47,7 @@
 
                   <button  v-else
                     @click="handleFirstSelect(item, close)"
-                    class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                    class="group flex w-full items-center rounded-md p-1 text-sm"
                     :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                   >
                     {{ item }}
@@ -60,7 +63,7 @@
               >
                 <button
                   @click="handleSecondSelect(sub, close)"
-                  class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                 >
                   {{ sub }}
@@ -71,7 +74,7 @@
               <MenuItem v-slot="{ active }">
                 <button
                   @click.stop.prevent="resetSelection"
-                  class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-gray-200 text-gray-900' : 'text-gray-600'"
                 >
                   ← Indietro
@@ -125,10 +128,10 @@
             >
                 <MenuItems
                 v-if="!props.disabled"
-                class="absolute mt-1 bg-white border border-gray-200 divide-y divide-gray-100
-                        rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                class="absolute mt-1 bg-white border border-sky-200
+                rounded-md shadow-lg z-50"
                 >
-                    <div class="px-1 py-1">                    
+                    <div class="p-1">                    
                         <MenuItem
                             v-for="sub in shotOptions['OUT']"
                             :key="sub"
@@ -136,7 +139,7 @@
                         >
                             <button
                             @click="handleSecondSelect(sub, close)"
-                            class="group flex w-full items-center rounded-md px-2 py-2 text-sm"
+                            class="group flex w-full items-center rounded-md p-1 text-sm"
                             :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
                             >
                                 {{ sub }}

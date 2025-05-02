@@ -1,4 +1,4 @@
 export interface TacticsData {
-    attacco: string[];
-    difesa: string[];
-  }
+  attacco: string[];
+  difesa: string[];
+}
