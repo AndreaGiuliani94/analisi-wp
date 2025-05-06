@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
-import { saveAs } from "file-saver";
+import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
 import type { VideoInterval } from "@/components/Interfaces/VideoInterval";
 import type { TacticsData } from "@/components/Interfaces/TacticsData";
 import type { Interval } from "@/components/Interfaces/Interval";
@@ -18,6 +17,7 @@ interface VideoStoreState {
   isDownloading: boolean;
   isUploading: boolean;
   tactics: TacticsData | null;
+  clipJobStatusMessage: string;
 }
 
 export const useVideoStore = defineStore("video", {
@@ -33,6 +33,7 @@ export const useVideoStore = defineStore("video", {
     isDownloading: false,
     isUploading: false,
     tactics: null,
+    clipJobStatusMessage: ''
   }),
   getters: {
     requestIntervals: (state) => {
@@ -103,6 +104,8 @@ export const useVideoStore = defineStore("video", {
 
       this.setVideoName(this.selectedFile.name.replace(/\.[^/.]+$/, ""));
 
+      this.downloadProgress = 0; // Reset progress
+      this.clipJobStatusMessage = '';
       this.isUploading = true; // Mostra lo spinner
 
       try {
@@ -111,12 +114,11 @@ export const useVideoStore = defineStore("video", {
         const jobId = response.data.job_id;
 
         // Carica il file direttamente su S3 usando l'URL pre-firmato
-        const uploadResponse = await axios.put(presignedUrl, this.selectedFile, {
-          headers: {
-            'Content-Type': this.selectedFile.type,  // Puoi configurare il content-type a seconda del tipo di file
-          },
+        const uploadResponse = await this.uploadFileWithProgress(this.selectedFile, presignedUrl, (percent) => {
+          this.clipJobStatusMessage = `Upload... (${percent}%)`;
         });
 
+        this.clipJobStatusMessage='Sto elaborando il video...'
         await this.waitForCompletion(jobId, 1800000); // 30min
 
         if (uploadResponse.status === 200 && this.videoUploaded) {
@@ -137,6 +139,7 @@ export const useVideoStore = defineStore("video", {
         console.error("Errore nell'upload del video", error);
         alert("Errore nell'upload del video");
       } finally {
+        this.clipJobStatusMessage='';
         this.isUploading = false; // Nasconde lo spinner
       }
     },
@@ -148,10 +151,10 @@ export const useVideoStore = defineStore("video", {
         }, timeout);
 
         const intervalId = setInterval(async () => {
-          await this.getConversionStatus(jobId);
-  
+          await this.getConversionStatus(jobId);  
           // Se la conversione è completata, ferma il ciclo
           if (this.videoUploaded) {
+            this.clipJobStatusMessage='Terminata l\'elaborazione per lo streaming!'
             clearInterval(intervalId); // Ferma l'intervallo
             clearTimeout(timeoutId);
             resolve(); // Risolve la Promise, terminando l'attesa
@@ -182,8 +185,32 @@ export const useVideoStore = defineStore("video", {
       
     },
 
+    async uploadFileWithProgress(
+      file: File,
+      presignedUrl: string,
+      onProgress?: (percent: number) => void
+    ): Promise<AxiosResponse> {
+      try {
+        return await axios.put(presignedUrl, file, {
+          headers: {
+            'Content-Type': file.type,
+          },
+          onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+            if (progressEvent.total && onProgress) {
+              const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+              onProgress(percent);
+            }
+          },
+        });
+      } catch (error) {
+        console.error("Errore durante l'upload del file su S3:", error);
+        throw error;
+      }
+    },
+
     async sendIntervals(): Promise<void> {
       this.downloadProgress = 0; // Reset progress
+      this.clipJobStatusMessage = '';
       this.isUploading = true; // Mostra lo spinner
 
       const request: any = {
@@ -192,6 +219,7 @@ export const useVideoStore = defineStore("video", {
       };
 
       try {
+        this.clipJobStatusMessage = 'Avvio estrazione clip...'
         const response = await fetch(
           import.meta.env.VITE_BE_URL + "/video/extract-clips-mc/",
           {
@@ -202,6 +230,47 @@ export const useVideoStore = defineStore("video", {
         );
 
         const data = await response.json();
+        const jobId = data.job_id;
+
+        const totalClips = this.requestIntervals.length;
+        let currentClip = 0;
+
+        while (true) {
+          const res = await fetch(`${import.meta.env.VITE_BE_URL}/video/job-status/${jobId}`);
+          const status = await res.json();
+
+          if (status.status === 'failed') {
+            throw new Error(status.error || 'Elaborazione fallita');
+          }
+    
+          if (status.status === 'completed' && status.download_url) {
+            this.downloadProgress = 90;
+            this.clipJobStatusMessage = 'Creazione zip completata. Avvio download...';
+            await this.downloadZipWithProgress(status.download_url, 'clips.zip', (percent) => {
+              this.downloadProgress = 90 + Math.round(percent / 10); // Ultimi 10%
+              this.clipJobStatusMessage = `Download... (${percent}%)`;
+            });
+            break;
+          }
+    
+          if (status.status === 'zipping') {
+            if (status.processed_clips) {
+              currentClip = status.processed_clips;
+              this.clipJobStatusMessage = `Zip clip (${currentClip}/${totalClips})`;
+              this.downloadProgress = 60 + Math.round((currentClip / totalClips) * 30); // Dal 60 al 90%
+            }
+          } 
+          if (status.status === 'processing') {
+            if (status.processed_clips) {
+              // Simula avanzamento basato sul numero di clip
+              currentClip = status.processed_clips;
+              this.clipJobStatusMessage = `Creazione clip (${currentClip}/${totalClips})`;
+              this.downloadProgress = Math.round((currentClip / totalClips) * 60); // Fino al 60%
+            }
+          }
+    
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
 
         if (data.download_url) {
           await this.downloadZipWithProgress(data.download_url, "clips.zip", (percent) => {
@@ -267,8 +336,9 @@ export const useVideoStore = defineStore("video", {
 
     async cleanupVideos(): Promise<void> {
       try {
+        if (!this.selectedFile) return;
         this.isUploading = true; // Mostra lo spinner
-        await axios.delete(import.meta.env.VITE_BE_URL + "/video/clean-bucket/");
+        await axios.delete(import.meta.env.VITE_BE_URL + "/video/clean-bucket/" + "?file_name=" + this.selectedFile.name);
         this.isUploading = false; // Nasconde lo spinner
         this.resetStore();
         alert("Cartelle pulite con successo!");

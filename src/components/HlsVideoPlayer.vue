@@ -51,15 +51,13 @@ const loadHlsVideo = async () => {
         hlsInstance.value.attachMedia(video);
         // Inizia la riproduzione una volta che il flusso è pronto
         hlsInstance.value.on(Hls.Events.MANIFEST_PARSED, function () {
-            video.play();
+            // video.play();
         });
-
-
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari e altri browser che supportano nativamente HLS
         video.src = props.videoUrl;
         video.addEventListener('loadedmetadata', function () {
-            video.play();
+            // video.play();
         });
     } else {
         console.error("Il tuo browser non supporta HLS.");

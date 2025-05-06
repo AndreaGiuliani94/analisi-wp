@@ -43,7 +43,19 @@
         <ConfirmModal :isOpen="showConfirmModal" title="Conferma Eliminazione"
           message="Questa operazione eliminerà tutti i file caricati e convertiti. Vuoi procedere?"
           @confirm="confirmCleanup" @close="showConfirmModal = false" />
+      </div>
 
+      <!-- Loanding spinner e message-->
+      <div v-if="videoStore.isUploading" class="flex justify-center mt-4">
+          <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <div v-if="videoStore.clipJobStatusMessage">
+            {{ videoStore.clipJobStatusMessage }}
+          </div>
+        </div>
         <!-- Progress Bar -->
         <div v-if="videoStore.downloadProgress > 0" class="w-full bg-gray-200 rounded-full mt-4">
           <div class="bg-blue-500 text-xs font-medium text-white text-center p-1 leading-none rounded-full"
@@ -51,8 +63,6 @@
             {{ videoStore.downloadProgress.toFixed(0) }}%
           </div>
         </div>
-
-      </div>
 
     </div>
   </div>

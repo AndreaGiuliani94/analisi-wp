@@ -27,7 +27,7 @@
 
   <div class="flex flex-col">
     <div class="h-5"></div>
-    <button @click="videoStore.removeInterval(index)" class="bg-red-500 px-2 h-8 rounded hover:bg-red-600">
+    <button @click="videoStore.removeInterval(index)" class="bg-red-500 px-2 h-8 rounded hover:bg-red-600" :disabled="videoStore.isUploading">
       <XMarkIcon class="size-5 font-bold text-white" />
     </button>
   </div>
