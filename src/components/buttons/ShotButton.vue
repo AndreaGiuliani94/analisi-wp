@@ -174,7 +174,7 @@ const emit = defineEmits<{
 const shotOptions: Record<string, string[]> = {
   'EVEN': ['1', '2', '3', '4', '5', 'CB', 'Ripartenza'],
   'SUP': ['1', '2', '3', '4', 'P5', 'P6', 'Ripartenza'],
-  'OUT': ['Parato', 'Fuori']
+  'OUT': ['Parato', 'Fuori', 'Stoppato']
 }
 
 const activeStep = ref<'first' | 'second'>('first')

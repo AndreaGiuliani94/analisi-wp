@@ -1,12 +1,16 @@
 <template>
   <div :class="[
-    player.active  || (team.name !== 'SC QUINTO') ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
+    player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
     class="p-2 w-1/5 transition-colors flex justify-start items-center border border-gray-300 rounded-lg font-medium"
-    @click="handleClick(team.name == 'SC QUINTO' ? 0 : 1)" @mousedown="startHold" @mouseup="stopHold" @mouseleave="stopHold">
+    @click="handleClick(team.name == 'SC QUINTO' ? 0 : 1)" 
+    @mousedown="startHold" 
+    @mouseup="stopHold" 
+    @mouseleave="stopHold">
     <template v-if="isEditing">
       <input v-model="editableName" class="bg-transparent border-none outline-none w-full"
-        @blur="saveEdit(team.name == 'SC QUINTO' ? 0 : 1)" @keyup.enter="saveEdit(team.name == 'SC QUINTO' ? 0 : 1)"
+        @blur="saveEdit(team.name == 'SC QUINTO' ? 0 : 1)" 
+        @keyup.enter="saveEdit(team.name == 'SC QUINTO' ? 0 : 1)"
         ref="inputField" />
     </template>
     <template v-else>
@@ -14,8 +18,8 @@
         {{ player.number }}. {{ player.name }}
       </span>
     </template>
-    <ExclamationTriangleIcon v-if="player.exclutions.length == 3"
-      class="inline-flex ml-auto size-3 text-red-600" />
+    <ExclamationTriangleIcon v-if="store.isOut(player)"
+      class="inline-flex ml-auto size-4 text-red-600" />
   </div>
 
   <div v-if="team.name == 'SC QUINTO'"
@@ -27,56 +31,62 @@
 
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
-      :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'SC QUINTO'"
-      :exclution-state="(player.exclutions[0] ? player.exclutions[0].type.charAt(0) + '-' +  player.exclutions[0].position.charAt(0) : '')"
-      @handleExclution="addExclution($event, 1)"/>
+      :exclution-state="getExclutionState(0)"
+      @handleExclution="addExclution($event, 0)"
+      @remove="removeExclution(0)" />
     <ExclutionButton 
-      :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'SC QUINTO'"
-      :exclution-state="(player.exclutions[1] ? player.exclutions[1].type.charAt(0) + '-' +  player.exclutions[1].position.charAt(0) : '')"
-      @handleExclution="addExclution($event, 2)"/>
+      :exclution-state="getExclutionState(1)"
+      @handleExclution="addExclution($event, 1)"
+      @remove="removeExclution(1)" />
     <ExclutionButton 
-      :disabled="(!player.active || player.exclutions.length >= 3) && team.name == 'SC QUINTO'"
-      :exclution-state="(player.exclutions[2] ? player.exclutions[2].type.charAt(0) + '-' +  player.exclutions[2].position.charAt(0) : '')"
-      @handleExclution="addExclution($event, 3)"/>
+      :exclution-state="getExclutionState(2)"
+      @handleExclution="addExclution($event, 2)" 
+      @remove="removeExclution(2)" />
   </div>
 
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
     <ShotButton 
-      :disabled="(!player.active || player.exclutions.length >= 3)  && team.name == 'SC QUINTO'" 
-      :type="'EVEN'" :is-goal="true" @handleShot="addShot"/>
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3)  && team.name == 'SC QUINTO'" 
-      :type="'EVEN'" :is-goal="false" @handleShot="addShot"/>
+      :disabled="!player.active" 
+      :type="'EVEN'" 
+      :is-goal="true" 
+      @handleShot="addShot"/>
+    <ShotButton 
+      :disabled="!player.active" 
+      :type="'EVEN'" 
+      :is-goal="false" 
+      @handleShot="addShot"/>
     <div class="h-6 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
   </div>
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3)  && team.name == 'SC QUINTO'" 
-      :type="'SUP'" :is-goal="true" @handleShot="addShot"/>
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3)  && team.name == 'SC QUINTO'" 
-      :type="'SUP'" :is-goal="false" @handleShot="addShot"/>
+    <ShotButton 
+      :disabled="!player.active" 
+      :type="'SUP'" 
+      :is-goal="true" 
+      @handleShot="addShot"/>
+    <ShotButton 
+      :disabled="!player.active" 
+      :type="'SUP'" 
+      :is-goal="false" 
+      @handleShot="addShot"/>
     <div class="h-6 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
   </div>
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3)  && team.name == 'SC QUINTO'" 
-      :type="'PENALTY'" :is-goal="true" @handleShot="addShot"/>
-    <ShotButton :disabled="(!player.active || player.exclutions.length >= 3)  && team.name == 'SC QUINTO'" 
-      :type="'PENALTY'" :is-goal="false" @handleShot="addShot"/>
+    <ShotButton 
+      :disabled="!player.active" 
+      :type="'PENALTY'" 
+      :is-goal="true" 
+      @handleShot="addShot"/>
+    <ShotButton 
+      :disabled="!player.active"
+      :type="'PENALTY'" 
+      :is-goal="false" 
+      @handleShot="addShot"/>
     <div class="h-6 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
   </div>
   <div class="inline-flex ml-3 mr-2" role="group">
     <div class="h-6 flex items-center"> {{ getAllShots().goals + '/' + getAllShots().shots }}</div>
   </div>
 
-  <!-- <div class="inline-flex rounded-md ml-auto h-full" role="group">
-    <button @click="store.addShoot(player.number, (team.name == 'SC QUINTO' ? 0 : 1))"
-      :disabled="(!player.active || player.exclutions >= 3) && team.name == 'SC QUINTO' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
-      class="px-3 py-2 text-sm font-medium text-white bg-sky-500 border border-gray-200 active:bg-sky-800 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">S</button>
-    <button @click="store.addGoal(player.number, (team.name == 'SC QUINTO' ? 0 : 1))"
-      :disabled="(!player.active || player.exclutions >= 3) && team.name == 'SC QUINTO' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
-      class="px-3 py-2 text-sm font-medium text-white bg-sky-500 border-t border-b border-gray-200  active:bg-sky-800 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">G</button>
-    <button @click="store.addExclution(player.number, (team.name == 'SC QUINTO' ? 0 : 1))"
-      :disabled="(!player.active || player.exclutions >= 3) && team.name == 'SC QUINTO' || (team.name == 'AWAY' && store.opponentsTimerActivated)"
-      class="px-3 py-2 text-sm font-medium text-white bg-sky-500 border border-gray-200 rounded-e-lg active:bg-sky-800 transition-colors disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200">E</button>
-  </div> -->
 </template>
 
 <script setup lang="ts">
@@ -146,10 +156,27 @@ const saveEdit = (team: number) => {
 
 const addExclution = (payload : { type: string, position: string}, exclNumber: number) => {
   store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, exclNumber);
-}
+};
 
 const addShot = (payload : { type: string, position: string, outcome: string }) => {
   store.addShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.outcome)
+};
+
+const removeExclution = (exclNumber: number) => {
+  store.removeExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), exclNumber);
+};
+
+const getExclutionState = (index: number) => {
+  if(props.player.exclutions[index]) {
+    if(props.player.exclutions[index].type === 'EDCS'){
+      return props.player.exclutions[index].type.toUpperCase().substring(0,2);
+    }
+    else {
+      return props.player.exclutions[0].type.charAt(0) + '-' +  props.player.exclutions[0].position.charAt(0)
+    }
+  }
+  return '';
 }
+
 
 </script>

@@ -45,9 +45,19 @@
                   {{ item }}
                 </button>
               </MenuItem>
+              <MenuItem v-slot="{ active, close }">
+                <button
+                  @click="removeExclusion(close)"
+                  class="group flex w-full items-center justify-center rounded-md p-1 text-sm"
+                  :class="active ? 'bg-gray-200 text-gray-900' : 'text-gray-600'"
+                >
+                  <XCircleIcon 
+                  class="size-5 pe-1"/> Rimuovi 
+                </button>
+              </MenuItem>
             </template>
 
-            <template v-else>
+            <template v-else-if="activeStep === 'second'">
               <MenuItem
                 v-for="sub in availableSecondOptions"
                 :key="sub"
@@ -84,6 +94,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+import { XCircleIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps<{
   disabled?: boolean,
@@ -92,6 +103,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'handleExclution', payload: { type: string, position: string }): void
+  (e: 'remove'): void
 }>()
 
 // Stati possibili: 'idle', 'selected'
@@ -101,8 +113,8 @@ const firstSelection = ref<string | null>(null)
 const selectedOption = ref<string | null>(null)
 
 const secondLevelOptions: Record<string, string[]> = {
-  'Espulsione': ['1', '2', '3', '4', '5', 'CB', 'Ripartenza'],
-  'Rigore': ['1', '2', '3', '4', '5', 'CB', 'Ripartenza'],
+  'Espulsione': ['Perimetro', 'Centroboa', 'Ripartenza'],
+  'Rigore': ['Perimetro', 'Centroboa', 'Ripartenza'],
   'EDCS': ['Brutalità', 'Gioco Violento', 'Proteste']
 }
 
@@ -112,7 +124,10 @@ const handleFirstSelect = (item: string) => {
 }
 
 const handleSecondSelect = (item: string, close: () => void) => {
-  selectedOption.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
+  if(firstSelection.value === 'EDCS') 
+    selectedOption.value = `${item.toUpperCase().substring(0,1)}`
+  else 
+    selectedOption.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
   state.value = 'selected'
   if(firstSelection.value) {
     emit('handleExclution', {
@@ -131,6 +146,14 @@ const availableSecondOptions = computed(() => {
 const resetSelection = () => {
   activeStep.value = 'first'
   firstSelection.value = null
+}
+
+const removeExclusion = (close: () => void) => {
+  state.value = 'idle';
+  resetSelection();
+  selectedOption.value = '';
+  emit('remove');
+  close();
 }
 
 </script>

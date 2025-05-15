@@ -227,24 +227,41 @@ export const useElementStore = defineStore("elementStore", {
       el = (team === 0) ? this.match.homeTeam.players.find((el) => el.number === number) : this.match.awayTeam.players.find((el) => el.number === number) ;
       
       if (el) {
-        if(el.exclutions.length < exclNumber) {
+        if(el.exclutions.length <= exclNumber) {
           el.exclutions.push({
             position: position,
             type: type
           })
         } else {
-          el.exclutions[exclNumber - 1] = {
+          el.exclutions[exclNumber] = {
             position: position, 
             type: type
           }
         }
         
         this.saveEvents(type, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
-      }
-      if (el?.exclutions.length == 3) {
+        
+        if (this.isOut(el)) {
         this.toggleElement(el.number, team);
-        if (this.activeCount != 7) this.stopGlobalTimer;
+        if (this.activeCount != 7) 
+          this.stopGlobalTimer;
       }
+      }
+    },
+    isOut(player: Player): boolean {
+      return player.exclutions.length === 3 || player.exclutions.some(excl => excl.type==="EDCS")
+    },
+    removeExclution(number: number, team: number, exclNumber: number) {
+      var el;
+      el = (team === 0) ? this.match.homeTeam.players.find((el) => el.number === number) : this.match.awayTeam.players.find((el) => el.number === number) ;
+      
+      if (el) {
+        if(el.exclutions[exclNumber]) {
+          el.exclutions.splice(exclNumber, 1)
+        }
+      }
+
+      this.saveData();
     },
     addTimeOut(number: number, team: string) {
       number === 1 ? (team === 'HOME' ? this.match.homeTeam.timeOut1 = true : this.match.awayTeam.timeOut1 = true ) :  (team === 'HOME' ? this.match.homeTeam.timeOut2 = true : this.match.awayTeam.timeOut2 = true );
