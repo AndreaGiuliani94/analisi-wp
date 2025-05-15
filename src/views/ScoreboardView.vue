@@ -27,7 +27,7 @@
     <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
       <div class="ms-2.5 mb-1.5 flex justify-start items-center">
         <a class="text-red-700 flex justify-start items-center cursor-pointer"
-        @click="$router.push('/game/report')">
+        @click="openModal(store.match.homeTeam)">
           <span>SC QUINTO</span>
           <ArrowRightIcon class="size-5 ms-2"/>
         </a>
@@ -62,7 +62,7 @@
     <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
       <div class="ms-2.5 mb-1.5 flex justify-start items-center">
         <a class="text-red-700 flex justify-start items-center cursor-pointer"
-        @click="$router.push('/game/report')">
+        @click="openModal(store.match.awayTeam)">
           <span>{{store.match.awayTeam.name}}</span>
           <ArrowRightIcon class="size-5 ms-2"/>
         </a>
@@ -113,6 +113,10 @@
       class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed">
       <CalendarDaysIcon class="size-6 me-1" />Eventi</button>
   </div>
+
+  <!-- Modale con statistiche -->
+  <QuickReportModal :isOpen="showConfirmModal" :team="team"
+        @confirm="confirmCleanup" @close="showConfirmModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -121,6 +125,8 @@ import PlayerItem from '@/components/PlayerItem.vue';
 import ClockManager from '@/components/ClockManager.vue';
 import { ArrowLeftIcon, ArrowPathIcon, ArrowRightIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+import QuickReportModal from '@/components/modals/QuickReportModal.vue';
+import type { Team } from '@/components/Interfaces/Team';
 
 const store = useElementStore();
 
@@ -144,6 +150,20 @@ onBeforeUnmount(() => {
 
 const toggleTimeOut = (number: number, team: string) => {
   store.addTimeOut(number, team);
+}
+
+const showConfirmModal = ref(false);
+
+
+const confirmCleanup = async () => {
+    showConfirmModal.value = false;
+};
+
+const team = ref();
+
+const openModal = (team_: Team) => {
+  showConfirmModal.value = true;
+  team.value = team_;
 }
 
 </script>
