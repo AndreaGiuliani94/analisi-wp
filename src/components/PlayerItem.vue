@@ -55,7 +55,7 @@
       :type="'EVEN'" 
       :is-goal="false" 
       @handleShot="addShot"/>
-    <div class="h-6 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
+    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
   </div>
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
     <ShotButton 
@@ -68,7 +68,7 @@
       :type="'SUP'" 
       :is-goal="false" 
       @handleShot="addShot"/>
-    <div class="h-6 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
+    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
   </div>
   <div class="inline-flex items-start ml-2 gap-1 " role="group">
     <ShotButton 
@@ -81,10 +81,10 @@
       :type="'PENALTY'" 
       :is-goal="false" 
       @handleShot="addShot"/>
-    <div class="h-6 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
+    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
   </div>
   <div class="inline-flex ml-3 mr-2" role="group">
-    <div class="h-6 flex items-center"> {{ getAllShots().goals + '/' + getAllShots().shots }}</div>
+    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ getAllShots().goals + '/' + getAllShots().shots }}</div>
   </div>
 
 </template>
@@ -172,7 +172,7 @@ const getExclutionState = (index: number) => {
       return props.player.exclutions[index].type.toUpperCase().substring(0,2);
     }
     else {
-      return props.player.exclutions[0].type.charAt(0) + '-' +  props.player.exclutions[0].position.charAt(0)
+      return props.player.exclutions[index].type.charAt(0) + '-' +  props.player.exclutions[index].position.charAt(0)
     }
   }
   return '';

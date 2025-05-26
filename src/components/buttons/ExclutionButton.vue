@@ -6,13 +6,13 @@
         class="flex items-center justify-center min-w-6 h-6 border rounded-full text-xs font-bold
                transition cursor-pointer
                "
-        :class=" (state === 'selected' || props.exclutionState) ?
+        :class=" (props.exclutionState) ?
           'bg-red-800 text-white border-red-800 disabled:text-gray-200 disabled:border-red-800 disabled:bg-red-800 disabled:cursor-not-allowed': 
           'bg-white text-red-800 border-red-800 disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200 disabled:cursor-not-allowed'
         "
         :disabled="props.disabled"
       >
-      {{ props.exclutionState ? props.exclutionState : selectedOption || '' }}
+      {{ props.exclutionState ? props.exclutionState : '' }}
 
       </MenuButton>
 
@@ -45,16 +45,18 @@
                   {{ item }}
                 </button>
               </MenuItem>
-              <MenuItem v-slot="{ active, close }">
-                <button
-                  @click="removeExclusion(close)"
-                  class="group flex w-full items-center justify-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
-                >
-                  <XCircleIcon 
-                  class="size-5 pe-1"/> Rimuovi 
-                </button>
-              </MenuItem>
+              <template v-if="props.exclutionState">
+                <MenuItem v-slot="{ active, close }">
+                  <button
+                    @click="removeExclusion(close)"
+                    class="group flex w-full items-center justify-center rounded-md p-1 text-sm"
+                    :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
+                  >
+                    <XCircleIcon 
+                    class="size-5 pe-1"/> Rimuovi 
+                  </button>
+                </MenuItem>
+              </template>
             </template>
 
             <template v-else-if="activeStep === 'second'">

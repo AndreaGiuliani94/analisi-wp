@@ -1,14 +1,14 @@
 <template>
     <div class="w-full rounded-md font-light mb-4">
         <div v-if="videoStore.selectedFile">
-            <div class="rounded-md flex justify-between items-center bg-amber-200 border-amber-400 border-2 p-3">
+            <div class="rounded-md flex justify-between items-center bg-blue-50 border-blue-950 border-2 p-3 text-blue-950">
                 <span>{{ videoStore.selectedFile?.name }}</span>
                 <div class="flex justify-between gap-2">
                     <button
-                        class="bg-sky-500 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300 "
+                        class="bg-blue-950 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300 "
                         @click="videoStore.loadVideo"
                         :disabled="!videoStore.selectedFile || videoStore.isUploading">Upload</button>
-                    <button class="bg-red-500 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300"
+                    <button class="bg-red-800 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300"
                         @click="showConfirmModal = true"
                         :disabled="videoStore.isUploading">Remove</button>
                     <!-- <button class="bg-amber-500 text-white font-medium rounded-md cursor-pointer px-2 py-1" @click="videoStore.testS3Connection">
@@ -20,7 +20,7 @@
         </div>
         <div v-else v-bind="getRootProps()">
             <div class="border-dashed border-2 rounded-md flex flex-col items-center justify-center p-10 transition-all cursor-pointer"
-                :class="[isDragActive ? 'border-amber-400 bg-amber-100' : 'border-gray-400 bg-gray-50 hover:bg-gray-100']">
+                :class="[isDragActive ? 'border-blue-950 bg-blue-50' : 'border-gray-400 bg-gray-50 hover:bg-gray-100']">
                 <input v-bind="getInputProps()" />
                 <CloudArrowUpIcon class="size-20 mb-3 opacity-80" />
                 <p v-if="isDragActive">Drop the file here...</p>

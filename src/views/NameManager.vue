@@ -6,20 +6,11 @@
         :icon="TrashIcon"
         :onClick="store.clearDistinta">
       </NavButton>
-      <!-- <button @click="store.clearDistinta()"
-        class="inline-flex items-center text-blue-950 border-blue-950 border-2 bg-white active:bg-blue-950 active:outline-none active:text-white font-medium rounded-full text-xs px-1 text-center shadow-lg cursor-pointer">
-        <TrashIcon class="size-4 me-1 mt-1 mb-1" /> Pulisci
-      </button> -->
-
       <NavButton
         :label="'Reset'"
         :icon="ArrowPathIcon"
         :onClick="store.resetAll">
       </NavButton>
-      <!-- <button @click="store.resetAll()"
-        class="inline-flex items-center text-blue-950 border-blue-950 border-2 bg-white active:bg-blue-950 active:outline-none active:text-white font-medium rounded-full text-xs px-1 text-center shadow-lg cursor-pointer ml-auto">
-        <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" /> Reset
-      </button> -->
     </div>
   </div>
   <h1 class="text-3xl text-center font-bold mb-4 text-blue-950">Distinta</h1>

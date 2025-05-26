@@ -4,7 +4,7 @@
       <ListboxLabel class="text-sm font-medium">*Categoria:</ListboxLabel>
       <div class="relative">
         <ListboxButton
-          class="relative z-5 h-8 w-full rounded-md bg-white border-1 border-gray-300 pl-3 pr-10 text-left sm:text-sm active:ring-2 active:ring-sky-300">
+          class="relative z-5 h-8 w-full rounded-md bg-white border-1 border-gray-300 pl-3 pr-10 text-left sm:text-sm active:ring-2 active:ring-blue-300 active:border-blue-400">
 
           <span class="truncate">{{ modelValue || "Seleziona una categoria" }}</span>
           <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -26,7 +26,7 @@
               v-slot="{ active, selected }" :value="tactic">
               <li :class="[
                 'relative cursor-pointer select-none py-2 pl-10 pr-4 rounded',
-                active ? 'bg-sky-300 text-white' : ''
+                active ? 'bg-blue-950 text-white' : ''
               ]">
               <span
                   :class="[
@@ -37,7 +37,7 @@
                 >
                 <span
                   v-if="selected"
-                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-sky-500"
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-green-500"
                 >
                   <CheckIcon class="h-5 w-5" aria-hidden="true" />
                 </span>
@@ -51,7 +51,7 @@
               v-slot="{ active, selected }" :value="tactic">
               <li :class="[
                 'relative cursor-pointer select-none py-2 pl-10 pr-4 rounded',
-                active ? 'bg-amber-400 text-white' : ''
+                active ? 'bg-amber-500 text-white' : ''
               ]">
                 <span
                   :class="[
@@ -62,7 +62,7 @@
                 >
                 <span
                   v-if="selected"
-                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-500"
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-green-500"
                 >
                   <CheckIcon class="h-5 w-5" aria-hidden="true" />
                 </span>

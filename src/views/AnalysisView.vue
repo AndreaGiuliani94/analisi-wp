@@ -2,7 +2,7 @@
   <div class="max-w-3xl mx-auto p-6 bg-whiterounded-lg">
     <h2 class="text-2xl text-center font-semibold mb-4 text-blue-950">Analisi video</h2>
 
-    <div class="border border-blue-950 text-blue-950 p-4 rounded-lg flex flex-col justify-center">
+    <div class="border border-gray-300 text-blue-950 p-4 rounded-lg flex flex-col justify-center">
       <!-- Upload Video -->
       <FileUpload />
 
@@ -21,19 +21,19 @@
           <IntervalItem :interval="interval" :index="index"></IntervalItem>
         </div>
 
-        <div class="flex justify-between">
+        <div class="flex justify-between font-medium">
           <button @click="videoStore.addInterval"
             class="mt-3 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:border-gray-500 disabled:bg-gray-300"
             :disabled="videoStore.isUploading">
             <PlusIcon class="size-6 font-bold"/>
           </button>
           <button @click="videoStore.sendIntervals"
-            class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-red-900 ddisabled:border-gray-500 disabled:bg-gray-300"
+            class="mt-4 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-900 active:bg-white active:text-blue-950 disabled:border-gray-500 disabled:bg-gray-300"
             :disabled="videoStore.intervals.length === 0 || hasErrors || isIntervalEmpy || videoStore.isUploading">
             Taglia Video
           </button>
           <button @click="showConfirmModal = true"
-            class="mt-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:border-gray-500 disabled:bg-gray-300"
+            class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-white active:text-red-800 disabled:border-gray-500 disabled:bg-gray-300"
             :disabled="videoStore.isUploading">
             Resetta
           </button>

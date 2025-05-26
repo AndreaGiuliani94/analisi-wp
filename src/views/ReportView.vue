@@ -1,13 +1,14 @@
 <template>
     <div class="w-full">
-        <div class="flex justify-start items-center gap-2">
-            <button @click="$router.push('/game/live')"
-                class="text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-                <ArrowLeftIcon class="size-4 me-1" /> Live
-            </button>
+        <div class="flex justify-start items-center">
+            <NavButton
+                :label="'Live'"
+                :icon="ArrowLeftIcon"
+                to="/game/live">
+            </NavButton>
         </div>
     </div>
-    <h1 class="text-3xl text-center font-bold p-2 m-2 text-blue-950">Report di {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</h1>
+    <h1 class="text-xl text-center font-bold p-2 text-blue-950">Report di {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</h1>
     <div class="relative overflow-x-auto shadow-md rounded-lg">
         <div class="m-2.5 align-middle font-bold text-lg text-red-800">
             <span>{{ store.match.homeTeam.name }}</span>
@@ -23,7 +24,7 @@
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">Falli</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-blue-950">
                 <tr v-for="element in store.actualPlayers" :key="element.number" class="border border-gray-300">
                     <td class="pl-2.5 py-3 font-medium whitespace-nowrap ">{{ element.number }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.name }}</td>
@@ -69,6 +70,7 @@
 import ExportButton from '@/components/buttons/ExportButton.vue';
 import { useElementStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
+import NavButton from '@/components/buttons/NavButton.vue';
 const store = useElementStore();
 
 </script>
