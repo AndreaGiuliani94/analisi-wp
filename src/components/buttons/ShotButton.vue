@@ -11,7 +11,7 @@
                disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
         :class="props.disabled
           ? 'cursor-not-allowed'
-          : 'text-white bg-sky-500 border border-sky-500'"
+          : 'text-white bg-blue-950 border border-blue-950'"
         :disabled="props.disabled"
       >
       {{ props.isGoal ? 'G' : 'T' }}
@@ -27,7 +27,7 @@
       >
         <MenuItems
           v-if="!props.disabled"
-          class="absolute mt-1 bg-white border border-sky-200 
+          class="absolute mt-1 bg-white border border-blue-950 
           rounded-md shadow-lg z-50"
         >
           <div class="p-1">
@@ -40,7 +40,7 @@
                   <button  v-if="!props.isGoal"
                     @click.stop.prevent="handleFirstSelect(item, close)"
                     class="group flex w-full items-center rounded-md p-1 text-sm"
-                    :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
+                    :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'"
                   >
                     {{ item }}
                   </button>
@@ -48,7 +48,7 @@
                   <button  v-else
                     @click="handleFirstSelect(item, close)"
                     class="group flex w-full items-center rounded-md p-1 text-sm"
-                    :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
+                    :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'"
                   >
                     {{ item }}
                   </button>
@@ -64,7 +64,7 @@
                 <button
                   @click="handleSecondSelect(sub, close)"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
+                  :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'"
                 >
                   {{ sub }}
                 </button>
@@ -75,7 +75,7 @@
                 <button
                   @click.stop.prevent="resetSelection"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-gray-200 text-gray-900' : 'text-gray-600'"
+                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
                 >
                   ← Indietro
                 </button>
@@ -96,7 +96,7 @@
           disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
           :class="props.disabled
           ? 'cursor-not-allowed'
-          : 'text-white bg-sky-500 border border-sky-500'"
+          : 'text-white bg-blue-950 border border-blue-950'"
           :disabled="props.disabled"
           @click="handleZeroSelect"
         >
@@ -112,7 +112,7 @@
                     disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
                 :class="props.disabled
                 ? 'cursor-not-allowed'
-                : 'text-white bg-sky-500 border border-sky-500'"
+                : 'text-white bg-blue-950 border border-blue-950'"
                 :disabled="props.disabled"
             >
             {{ 'T' }}
@@ -128,7 +128,7 @@
             >
                 <MenuItems
                 v-if="!props.disabled"
-                class="absolute mt-1 bg-white border border-sky-200
+                class="absolute mt-1 bg-white border border-blue-950
                 rounded-md shadow-lg z-50"
                 >
                     <div class="p-1">                    
@@ -140,7 +140,7 @@
                             <button
                             @click="handleSecondSelect(sub, close)"
                             class="group flex w-full items-center rounded-md p-1 text-sm"
-                            :class="active ? 'bg-sky-500 text-white' : 'text-gray-900'"
+                            :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'"
                             >
                                 {{ sub }}
                             </button>

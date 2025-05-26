@@ -1,53 +1,43 @@
 <template>
-  <!-- <div ref="headerRef" class="fixed top-0 px-4 pt-4 left-0 w-full z-50 bg-white"> -->
-    <div class="w-full">
-      <div class="flex justify-between items-start gap-2">
-        <button @click="$router.push('/game')"
-          class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-          <ArrowLeftIcon class="size-4 me-1 mt-1 mb-1" />Distinta
-        </button>
-        <div>
-          <div class="text-xl font-bold text-center text-blue-950">{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
-          <div class="text-xl font-bold text-center text-blue-950">{{ store.match.quarter }} T</div>
-        </div>
-        <button @click="store.resetTimer()"
-          class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
-          <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" />Restart
-        </button>
+  <div class="w-full">
+    <div class="flex justify-between items-start gap-2">
+      <NavButton
+        :label="'Distinta'"
+        :icon="ArrowLeftIcon"
+        to="/game">
+      </NavButton>
+      <div>
+        <div class="text-xl font-bold text-center text-blue-950">{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
+        <div class="text-xl font-bold text-center text-blue-950">{{ store.match.quarter }} T</div>
       </div>
-    
+      <NavButton
+        :label="'Restart'"
+        :icon="ArrowPathIcon"
+        :onClick="store.resetTimer">
+      </NavButton>
     </div>
-    
-    <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
+  
+  </div>
+  
+  <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
 
-    <ClockManager />
+  <ClockManager />
 
   <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
 
     <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
       <div class="ms-2.5 mb-1.5 flex justify-start items-center">
-        <a class="text-red-700 flex justify-start items-center cursor-pointer"
+        <a class="text-red-800 flex justify-start items-center cursor-pointer"
         @click="openModal(store.match.homeTeam)">
           <span>SC QUINTO</span>
           <ArrowRightIcon class="size-5 ms-2"/>
         </a>
         <div class="ml-auto flex items-center justify-end gap-1">
-          <span>TO</span>
-          <button class=" w-6 h-6 rounded-full border
-          text-sm font-bold transition cursor-pointer
-          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
-          :class="store.match.homeTeam.timeOut1 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
-          @click="toggleTimeOut(1,'HOME')"
-          >
-          </button>
-          <button class=" w-6 h-6 rounded-full border
-          text-sm font-bold transition cursor-pointer
-          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
-          :class="store.match.homeTeam.timeOut2 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
-          @click="toggleTimeOut(2,'HOME')"
-          >
-          </button>
-
+          <span class="text-blue-950">TO</span>
+          <TimeOutButton 
+          :number="1" :teamName="'HOME'" :used="store.match.homeTeam.timeOut1" @toggleTimeOut="toggleTimeOut($event)" />
+          <TimeOutButton 
+          :number="2" :teamName="'HOME'" :used="store.match.homeTeam.timeOut2" @toggleTimeOut="toggleTimeOut($event)" />
         </div>
       </div>
       
@@ -61,28 +51,17 @@
 
     <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
       <div class="ms-2.5 mb-1.5 flex justify-start items-center">
-        <a class="text-red-700 flex justify-start items-center cursor-pointer"
+        <a class="text-red-800 flex justify-start items-center cursor-pointer"
         @click="openModal(store.match.awayTeam)">
           <span>{{store.match.awayTeam.name}}</span>
           <ArrowRightIcon class="size-5 ms-2"/>
         </a>
         <div class="ml-auto flex items-center justify-end gap-1">
-          <span>TO</span>
-          <button class=" w-6 h-6 rounded-full border
-          text-sm font-bold transition cursor-pointer
-          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
-          :class="store.match.awayTeam.timeOut1 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
-          @click="toggleTimeOut(1,'AWAY')"
-          >
-          </button>
-          <button class=" w-6 h-6 rounded-full border
-          text-sm font-bold transition cursor-pointer
-          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
-          :class="store.match.awayTeam.timeOut2 ? 'bg-amber-600 border-amber-600' : 'border-amber-600'"
-          @click="toggleTimeOut(2,'AWAY')"
-          >
-          </button>
-
+          <span class="text-blue-950">TO</span>
+          <TimeOutButton 
+          :number="1" :teamName="'HOME'" :used="store.match.homeTeam.timeOut1" @toggleTimeOut="toggleTimeOut($event)" />
+          <TimeOutButton 
+          :number="2" :teamName="'HOME'" :used="store.match.homeTeam.timeOut2" @toggleTimeOut="toggleTimeOut($event)" />
           <!--
           <label class="inline-flex items-center cursor-pointer ml-auto">
             <input type="checkbox" v-model="store.opponentsTimerActivated" class="sr-only peer">
@@ -127,6 +106,8 @@ import { ArrowLeftIcon, ArrowPathIcon, ArrowRightIcon, CalendarDaysIcon, TableCe
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/components/Interfaces/Team';
+import TimeOutButton from '@/components/buttons/TimeOutButton.vue';
+import NavButton from '@/components/buttons/NavButton.vue';
 
 const store = useElementStore();
 
@@ -148,12 +129,11 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateHeaderHeight)
 })
 
-const toggleTimeOut = (number: number, team: string) => {
-  store.addTimeOut(number, team);
+const toggleTimeOut = (payload : { number: number, teamName: string}) => {
+  store.toggleTimeOut(payload.number, payload.teamName);
 }
 
 const showConfirmModal = ref(false);
-
 
 const confirmCleanup = async () => {
     showConfirmModal.value = false;

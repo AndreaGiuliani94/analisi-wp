@@ -1,19 +1,30 @@
 <template>
   <div class="w-full">
-    <div class="flex justify-start items-center gap-2">
-      <button @click="store.clearDistinta()"
-        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer">
+    <div class="flex justify-between items-center">
+      <NavButton
+        :label="'Pulisci'"
+        :icon="TrashIcon"
+        :onClick="store.clearDistinta">
+      </NavButton>
+      <!-- <button @click="store.clearDistinta()"
+        class="inline-flex items-center text-blue-950 border-blue-950 border-2 bg-white active:bg-blue-950 active:outline-none active:text-white font-medium rounded-full text-xs px-1 text-center shadow-lg cursor-pointer">
         <TrashIcon class="size-4 me-1 mt-1 mb-1" /> Pulisci
-      </button>
-      <button @click="store.resetAll()"
-        class="inline-flex items-center text-white bg-red-600 active:bg-red-800 active:outline-none active:ring-4 active:ring-red-300 font-medium rounded-full text-xs px-2 py-1 text-center shadow-lg cursor-pointer ml-auto">
+      </button> -->
+
+      <NavButton
+        :label="'Reset'"
+        :icon="ArrowPathIcon"
+        :onClick="store.resetAll">
+      </NavButton>
+      <!-- <button @click="store.resetAll()"
+        class="inline-flex items-center text-blue-950 border-blue-950 border-2 bg-white active:bg-blue-950 active:outline-none active:text-white font-medium rounded-full text-xs px-1 text-center shadow-lg cursor-pointer ml-auto">
         <ArrowPathIcon class="size-4 me-1 mt-1 mb-1" /> Reset
-      </button>
+      </button> -->
     </div>
   </div>
   <h1 class="text-3xl text-center font-bold mb-4 text-blue-950">Distinta</h1>
   <div
-    class="px-2.5 py-1.5 border border-gray-300 rounded-md mb-2.5 flex flex-col md:flex-row justify-between gap-3">
+    class="mb-2.5 flex flex-col md:flex-row justify-between gap-3">
     <div
       class="px-2.5 py-1.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
       <div class="m-2.5 align-middle font-medium text-lg text-red-700">
@@ -60,6 +71,7 @@
 import { onMounted } from 'vue';
 import { useElementStore } from '../stores/gameStore';
 import { ArrowPathIcon, PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
+import NavButton from '@/components/buttons/NavButton.vue';
 const store = useElementStore();
 onMounted(() => {
   store.loadStore();

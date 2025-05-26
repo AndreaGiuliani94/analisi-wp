@@ -19,7 +19,7 @@
       </span>
     </template>
     <ExclamationTriangleIcon v-if="store.isOut(player)"
-      class="inline-flex ml-auto size-4 text-red-600" />
+      class="inline-flex ml-auto size-4 text-red-500" />
   </div>
 
   <div v-if="team.name == 'SC QUINTO'"

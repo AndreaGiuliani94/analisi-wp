@@ -7,8 +7,8 @@
                transition cursor-pointer
                "
         :class=" (state === 'selected' || props.exclutionState) ?
-          'bg-red-600 text-white border-red-600 disabled:text-gray-200 disabled:border-red-800 disabled:bg-red-800 disabled:cursor-not-allowed': 
-          'bg-white text-red-600 border-red-600 disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200 disabled:cursor-not-allowed'
+          'bg-red-800 text-white border-red-800 disabled:text-gray-200 disabled:border-red-800 disabled:bg-red-800 disabled:cursor-not-allowed': 
+          'bg-white text-red-800 border-red-800 disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200 disabled:cursor-not-allowed'
         "
         :disabled="props.disabled"
       >
@@ -26,7 +26,7 @@
       >
         <MenuItems
           v-if="!props.disabled"
-          class="mt-1 absolute bg-white border border-red-200 
+          class="mt-1 absolute bg-white border border-red-800 
           rounded-md shadow-lg z-50"
         >
           <div class="p-1">
@@ -40,7 +40,7 @@
                 <button
                   @click.stop.prevent="handleFirstSelect(item)"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-red-500 text-white' : 'text-gray-900'"
+                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
                   {{ item }}
                 </button>
@@ -49,7 +49,7 @@
                 <button
                   @click="removeExclusion(close)"
                   class="group flex w-full items-center justify-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-gray-200 text-gray-900' : 'text-gray-600'"
+                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
                 >
                   <XCircleIcon 
                   class="size-5 pe-1"/> Rimuovi 
@@ -66,7 +66,7 @@
                 <button
                   @click="handleSecondSelect(sub, close)"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-red-500 text-white' : 'text-gray-900'"
+                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
                   {{ sub }}
                 </button>
@@ -77,7 +77,7 @@
                 <button
                   @click.stop.prevent="resetSelection"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-gray-200 text-gray-900' : 'text-gray-600'"
+                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
                 >
                   ← Indietro
                 </button>

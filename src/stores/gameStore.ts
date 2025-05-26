@@ -175,7 +175,7 @@ export const useElementStore = defineStore("elementStore", {
         player.shotsEven = [];
         player.shotsSup = [];
         player.shotsPenalty = [];
-        player.active = false;
+        player.active = true;
       });
       this.countdown = 480;
       this.events = [];
@@ -265,6 +265,14 @@ export const useElementStore = defineStore("elementStore", {
     },
     addTimeOut(number: number, team: string) {
       number === 1 ? (team === 'HOME' ? this.match.homeTeam.timeOut1 = true : this.match.awayTeam.timeOut1 = true ) :  (team === 'HOME' ? this.match.homeTeam.timeOut2 = true : this.match.awayTeam.timeOut2 = true );
+      this.saveData();
+    },
+    toggleTimeOut(number: number, team: string) {
+      if(team === 'HOME') {
+        number === 1 ? ( this.match.homeTeam.timeOut1 = !this.match.homeTeam.timeOut1 ) : ( this.match.homeTeam.timeOut2 = !this.match.homeTeam.timeOut2 )
+      } else {
+        number === 1 ? ( this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1 ) : ( this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2 )
+      }
       this.saveData();
     },
     saveData() {
