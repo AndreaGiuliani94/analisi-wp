@@ -84,7 +84,7 @@
     <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
   </div>
   <div class="inline-flex ml-3 mr-2" role="group">
-    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ getAllShots().goals + '/' + getAllShots().shots }}</div>
+    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}</div>
   </div>
 
 </template>
@@ -116,16 +116,6 @@ const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
 
-const getAllShots = () => {
-  var totalShots = [];
-  totalShots.push(...props.player.shotsEven, ...props.player.shotsSup, ...props.player.shotsPenalty)
-  var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === 'GOAL' )
-  return {
-    goals: totalGoals.length,
-    shots: totalShots.length
-  }
-}
-
 const startHold = () => {
   isHolding.value = false; // Reset del flag prima di iniziare
   holdTimeout.value = setTimeout(() => {
@@ -154,8 +144,8 @@ const saveEdit = (team: number) => {
   store.updatePlayerName(props.player.number, editableName.value, team);
 };
 
-const addExclution = (payload : { type: string, position: string}, exclNumber: number) => {
-  store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, exclNumber);
+const addExclution = (payload : { type: string, position: string, ball: boolean}, exclNumber: number) => {
+  store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.ball, exclNumber);
 };
 
 const addShot = (payload : { type: string, position: string, outcome: string }) => {

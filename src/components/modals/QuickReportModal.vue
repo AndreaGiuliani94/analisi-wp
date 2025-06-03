@@ -2,45 +2,62 @@
 
 <TransitionRoot appear :show="isOpen" as="template">
     <Dialog as="div" @close="closeModal" class="fixed inset-0 overflow-y-auto text-blue-950">
-    <div class="flex items-center justify-center min-h-screen px-4">
-        <DialogOverlay class="fixed inset-0 bg-black opacity-40 z-10" />
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <DialogOverlay class="fixed inset-0 bg-black opacity-40 z-10" />
 
-        <!-- Contenitore della modale -->
-        <div class="bg-white p-2 rounded-lg shadow-xl max-w-md w-full transform transition-all z-20">
-            <div class="flex items-start">
-                <DialogTitle class="text-lg font-bold pl-2">{{ team.name }}
-                </DialogTitle>
-                <button  class="ml-auto bg-gray-300 p-0.5 min-w-4 min-h-4 rounded text-sm border-1 hover:bg-gray-400 active:bg-gray-500">
-                <XMarkIcon class="size-4"
-                 @click="closeModal"></XMarkIcon> <!-- da vedere se lasciare il bottone per la chiususra... -->
-                </button>
+            <!-- Contenitore della modale -->
+            <div class="bg-white p-2 rounded-lg shadow-xl max-w-md w-full transform transition-all z-20">
+                <div class="flex items-start">
+                    <DialogTitle class="text-lg font-bold pl-2 text-red-800">{{ team.name }}
+                    </DialogTitle>
+                </div>
+                <div class="mt-1">
+                    <TabGroup>
+                        <TabList class="flex space-x-1 rounded-xl bg-gray-200 p-1">
+                            <Tab
+                                v-for="tab in tabs"
+                                v-slot="{ selected }"
+                                :key="tab"
+                                class="w-full text-sm font-medium text-blue-950 rounded-lg focus:outline-none"
+                            >
+                                <div 
+                                class="rounded-lg leading-3 py-2.5"
+                                :class="{ 'bg-blue-950 text-white': selected, 'bg-white': !selected }">
+                                    {{ tab }}
+                                </div>
+                            </Tab>
+                        </TabList>
+
+                        <TabPanels class="">
+                        <TabPanel>
+                            <MenUpTab :team="team"></MenUpTab>
+                        </TabPanel>
+                        <TabPanel>
+                            <EvenTab :team="team"></EvenTab>
+                        </TabPanel>
+                        <TabPanel>
+                            <ExclutionsTab :team="team"></ExclutionsTab>
+                        </TabPanel>
+                        </TabPanels>
+                    </TabGroup>
+                </div>
             </div>
-            <DialogDescription class="mt-2 ">
-                <!-- Mettere statistiche di squadra, vedere se con grid o tabella o altro... -->
-            </DialogDescription>
-
-            <!-- Bottoni azione non servono -->
-            <!-- <div class="mt-4 flex justify-end">
-                <button @click="closeModal" class="mr-4 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 active:bg-gray-500">
-                Annulla
-                </button>
-                <button @click="confirmAction"
-                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 active:bg-red-700">
-                Conferma
-                </button>
-            </div> -->
         </div>
-    </div>
     </Dialog>
 </TransitionRoot>
 
 </template>
   
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, DialogDescription, TransitionRoot } from "@headlessui/vue";
+import { Dialog, DialogOverlay, DialogTitle, TransitionRoot, Tab, TabGroup,
+  TabList,
+  TabPanels,
+  TabPanel } from "@headlessui/vue";
 import type { Team } from "../Interfaces/Team";
 import type { PropType } from "vue";
-import { XMarkIcon } from "@heroicons/vue/24/outline";
+import MenUpTab from "../tabs/MenUpTab.vue";
+import EvenTab from "../tabs/EvenTab.vue";
+import ExclutionsTab from "../tabs/ExclutionsTab.vue";
 
 const props = defineProps({
 isOpen: Boolean,
@@ -50,14 +67,12 @@ team: {
 }
 });
 
+const tabs = ['Superiorità', 'Pari', 'Falli']
+
 const emit = defineEmits(["confirm", "close"]);
 
 const closeModal = () => {
-emit("close");
+    emit("close");
 };
 
-const confirmAction = () => {
-emit("confirm");
-closeModal();
-};
 </script>

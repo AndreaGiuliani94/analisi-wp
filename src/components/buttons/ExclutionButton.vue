@@ -66,7 +66,7 @@
                 v-slot="{ active, close }"
               >
                 <button
-                  @click="handleSecondSelect(sub, close)"
+                  @click.stop.prevent="handleSecondSelect(sub, close)"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
@@ -78,6 +78,33 @@
               <MenuItem v-slot="{ active }">
                 <button
                   @click.stop.prevent="resetSelection"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
+                >
+                  ← Indietro
+                </button>
+              </MenuItem>
+
+            </template>
+            <template v-else-if="activeStep === 'third'">
+              <MenuItem
+                v-for="sub in thirdLevelOptions"
+                :key="sub"
+                v-slot="{ active, close }"
+              >
+                <button
+                  @click="handleThirdSelect(sub, close)"
+                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
+                >
+                  {{ sub }}
+                </button>
+              </MenuItem>
+
+              <!-- Pulsante per tornare indietro -->
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click.stop.prevent="back"
                   class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
                 >
@@ -104,15 +131,16 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'handleExclution', payload: { type: string, position: string }): void
+  (e: 'handleExclution', payload: { type: string, position: string, ball: boolean }): void
   (e: 'remove'): void
 }>()
 
 // Stati possibili: 'idle', 'selected'
-const state = ref<'idle' | 'selected'>('idle')
-const activeStep = ref<'first' | 'second'>('first')
-const firstSelection = ref<string | null>(null)
-const selectedOption = ref<string | null>(null)
+const state = ref<'idle' | 'selected'>('idle');
+const activeStep = ref<'first' | 'second' | 'third'>('first');
+const firstSelection = ref<string | null>(null);
+const secondSelection = ref<string | null>(null);
+const selectedCode = ref<string | null>(null);
 
 const secondLevelOptions: Record<string, string[]> = {
   'Espulsione': ['Perimetro', 'Centroboa', 'Ripartenza'],
@@ -120,21 +148,41 @@ const secondLevelOptions: Record<string, string[]> = {
   'EDCS': ['Brutalità', 'Gioco Violento', 'Proteste']
 }
 
+const thirdLevelOptions: string[] = ['Con palla', 'Senza palla'];
+
 const handleFirstSelect = (item: string) => {
-  firstSelection.value = item
-  activeStep.value = 'second'
+  firstSelection.value = item;
+  activeStep.value = 'second';
 }
 
 const handleSecondSelect = (item: string, close: () => void) => {
-  if(firstSelection.value === 'EDCS') 
-    selectedOption.value = `${item.toUpperCase().substring(0,1)}`
-  else 
-    selectedOption.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
+  if(firstSelection.value === 'EDCS') {
+    selectedCode.value = `${item.toUpperCase().substring(0,1)}`
+    state.value = 'selected'
+    if(firstSelection.value) {
+      emit('handleExclution', {
+        type: firstSelection.value,
+        position: item,
+        ball: false
+      })
+    }
+    resetSelection();
+    close();
+  }
+  else {
+    selectedCode.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
+    secondSelection.value = item;
+    activeStep.value = 'third';
+  }
+}
+
+const handleThirdSelect = (item: string, close: () => void) => {
   state.value = 'selected'
-  if(firstSelection.value) {
+  if(firstSelection.value && secondSelection.value) {
     emit('handleExclution', {
       type: firstSelection.value,
-      position: item
+      position: secondSelection.value,
+      ball: item == "Con palla"
     })
   }
   resetSelection();
@@ -148,12 +196,18 @@ const availableSecondOptions = computed(() => {
 const resetSelection = () => {
   activeStep.value = 'first'
   firstSelection.value = null
+  secondSelection.value = null
+}
+
+const back = () => {
+  activeStep.value = 'second';
+  secondSelection.value = null;
 }
 
 const removeExclusion = (close: () => void) => {
   state.value = 'idle';
   resetSelection();
-  selectedOption.value = '';
+  selectedCode.value = '';
   emit('remove');
   close();
 }

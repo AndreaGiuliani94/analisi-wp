@@ -4,6 +4,7 @@ import router from "@/router";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Event } from "@/components/Interfaces/Event";
 import type { Match } from "@/components/Interfaces/Match";
+import type { Exclution } from "@/components/Interfaces/Exclution";
 
 export const useElementStore = defineStore("elementStore", {
   state: () => {
@@ -222,7 +223,7 @@ export const useElementStore = defineStore("elementStore", {
         this.saveEvents("GOAL", el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
       }
     },
-    addExclution(number: number, team: number, type: string, position: string, exclNumber: number) {
+    addExclution(number: number, team: number, type: string, position: string, ball: boolean, exclNumber: number) {
       var el;
       el = (team === 0) ? this.match.homeTeam.players.find((el) => el.number === number) : this.match.awayTeam.players.find((el) => el.number === number) ;
       
@@ -230,16 +231,22 @@ export const useElementStore = defineStore("elementStore", {
         if(el.exclutions.length <= exclNumber) {
           el.exclutions.push({
             position: position,
-            type: type
+            type: type,
+            ball: ball,
+            quarter: this.match.quarter,
+            time: this.formatTime(this.countdown)
           })
         } else {
           el.exclutions[exclNumber] = {
             position: position, 
-            type: type
+            type: type,
+            ball: ball,
+            quarter: this.match.quarter,
+            time: this.formatTime(this.countdown)
           }
         }
         
-        this.saveEvents(type, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
+        this.saveEvents(type + " - " + position, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
         
         if (this.isOut(el)) {
         this.toggleElement(el.number, team);
@@ -257,6 +264,7 @@ export const useElementStore = defineStore("elementStore", {
       
       if (el) {
         if(el.exclutions[exclNumber]) {
+          this.removeEvent((team===0 ? this.match.homeTeam.name : this.match.awayTeam.name), el, el.exclutions[exclNumber])
           el.exclutions.splice(exclNumber, 1)
         }
       }
@@ -274,6 +282,15 @@ export const useElementStore = defineStore("elementStore", {
         number === 1 ? ( this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1 ) : ( this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2 )
       }
       this.saveData();
+    },
+    getAllShoots(player: Player) {
+      var totalShots = [];
+      totalShots.push(...player.shotsEven, ...player.shotsSup, ...player.shotsPenalty)
+      var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === 'GOAL' )
+      return {
+        goals: totalGoals.length,
+        shots: totalShots.length
+      }
     },
     saveData() {
       localStorage.setItem("match", JSON.stringify(this.match));
@@ -301,6 +318,13 @@ export const useElementStore = defineStore("elementStore", {
         quarter: this.match.quarter,
       };
       this.events.push(event);
+      this.saveData();
+    },
+    removeEvent(team: string, player: Player, excl: Exclution) {
+      const index = this.events.findIndex(e => e.team == team && e.player.number == player.number && e.time == excl.time && e.quarter == excl.quarter);
+      if(index != -1) {
+        this.events.splice(index, 1);
+      }
       this.saveData();
     },
     back(seconds: number) {

@@ -20,7 +20,10 @@
                     <th scope="col" class="px-4 py-3 whitespace-nowrap">Nome</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">In campo</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">In panchina</th>
-                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Gol</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Pari</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Sup</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Rigori</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Totali</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">Falli</th>
                 </tr>
             </thead>
@@ -30,8 +33,11 @@
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.activeTime) }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.benchTime) }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsEven.length + '/' + element.shotsEven.length }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.exclutions }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsEven.length }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsSup.length }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsPenalty.length }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ getAllShoots(element) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ getExclutions(element) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -47,7 +53,10 @@
                     <th scope="col" class="px-4 py-3 whitespace-nowrap">Nome</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">In campo</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">In panchina</th>
-                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Gol</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Pari</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Sup</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Rigori</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap ">Totali</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap ">Falli</th>
                 </tr>
             </thead>
@@ -57,8 +66,11 @@
                     <td class="px-4 py-3 whitespace-nowrap ">{{ element.name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.activeTime) }}</td>
                     <td class="px-4 py-3 whitespace-nowrap ">{{ store.formatTime(element.benchTime) }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsEven.length + '/' + element.shotsEven.length }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.exclutions }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsEven.length }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsSup.length }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ element.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsPenalty.length }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ getAllShoots(element) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap ">{{ getExclutions(element) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -71,6 +83,24 @@ import ExportButton from '@/components/buttons/ExportButton.vue';
 import { useElementStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
+import type { Player } from '@/components/Interfaces/Player';
 const store = useElementStore();
+
+const getAllShoots = (element: Player) => {
+    return store.getAllShoots(element).goals + '/' + store.getAllShoots(element).shots;
+}
+
+const getExclutions = (element: Player) => {
+    var str: string = '';
+    for (let index = 0; index < element.exclutions.length; index++) {
+        const excl = element.exclutions[index];
+        str += (index > 0 ? ', ' : '') + (excl.type + ' - ' + excl.position);
+        if(excl.type !== 'EDCS') {
+            str += ' - ';
+            str += excl.ball ? 'Con palla' : 'Senza palla';
+        }
+    }
+    return str;
+}
 
 </script>
