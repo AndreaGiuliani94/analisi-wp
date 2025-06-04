@@ -31,7 +31,7 @@
                 Dx: {{ getParati(['1', '2']) }}
             </div>
             <div>
-                Sx: {{ getParati(['3', '4']) }}
+                Sx: {{ getParati(['4', '5']) }}
             </div>
             <div>
                 Centrale: {{ getParati(['3']) }}
@@ -51,7 +51,7 @@
                 Dx: {{ getFuori(['1', '2']) }}
             </div>
             <div>
-                Sx: {{ getFuori(['3', '4']) }}
+                Sx: {{ getFuori(['4', '5']) }}
             </div>
             <div>
                 Centrale: {{ getFuori(['3']) }}
@@ -71,7 +71,7 @@
                 Dx: {{ getStoppati(['1', '2']) }}
             </div>
             <div>
-                Sx: {{ getStoppati(['3', '4']) }}
+                Sx: {{ getStoppati(['4', '5']) }}
             </div>
             <div>
                 Centrale: {{ getStoppati(['3']) }}
