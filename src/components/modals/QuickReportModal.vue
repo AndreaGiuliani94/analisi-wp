@@ -2,18 +2,18 @@
 
 <TransitionRoot appear :show="isOpen" as="template">
     <Dialog as="div" @close="closeModal" class="fixed inset-0 overflow-y-auto text-blue-950">
-        <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="flex items-start mt-[35%] justify-center min-h-screen px-4">
             <DialogOverlay class="fixed inset-0 bg-black opacity-40 z-10" />
 
             <!-- Contenitore della modale -->
-            <div class="bg-white p-2 rounded-lg shadow-xl max-w-md w-full transform transition-all z-20">
+            <div class="bg-white p-2 rounded-lg shadow-xl min-w-xl transform transition-all z-20">
                 <div class="flex items-start">
                     <DialogTitle class="text-lg font-bold pl-2 text-red-800">{{ team.name }}
                     </DialogTitle>
                 </div>
                 <div class="mt-1">
                     <TabGroup>
-                        <TabList class="flex space-x-1 rounded-xl bg-gray-200 p-1">
+                        <TabList class="flex space-x-2 rounded-xl bg-gray-200 p-1">
                             <Tab
                                 v-for="tab in tabs"
                                 v-slot="{ selected }"

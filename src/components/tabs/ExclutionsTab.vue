@@ -1,54 +1,66 @@
 <template>
-  <div class="p-2 grid grid-cols-3">
-    <div>
-        <div class="font-semibold">
-            Espulsioni
+    <div class="p-2 grid grid-cols-3">
+        <div>
+            <div class="font-semibold">
+                Espulsioni: {{ getExclutions().exclutions.length }}
+            </div>
+            <div>
+                Esterne: {{ getFouls('ESPULSIONE', 'PERIMETRO') }}
+            </div>
+            <div>
+                Ripartenze: {{ getFouls('ESPULSIONE', 'RIPARTENZA') }}
+            </div>
+            <div>
+                Centroboa: {{ getFouls('ESPULSIONE', 'CENTROBOA') }}
+            </div>
+            <div>
+                Con palla: {{ getFoulsWith('ESPULSIONE') }}
+            </div>
+            <div>
+                Senza palla: {{ getFoulsWithout('ESPULSIONE') }}
+            </div>
         </div>
         <div>
-            Esterne: {{ getExclEsterne() + '/' + getExclutions().exclutions.length }}
+            <div class="font-semibold">
+                Rigori: {{ getExclutions().penalties.length }}
+            </div>
+            <div>
+                Esterne: {{ getFouls('RIGORE', 'PERIMETRO') }}
+            </div>
+            <div>
+                Ripartenze: {{ getFouls('RIGORE', 'RIPARTENZA') }}
+            </div>
+            <div>
+                Centroboa: {{ getFouls('RIGORE', 'CENTROBOA') }}
+            </div>
+            <div>
+                Con palla: {{ getFoulsWith('RIGORE') }}
+            </div>
+            <div>
+                Senza palla: {{ getFoulsWithout('RIGORE') }}
+            </div>
         </div>
         <div>
-            Ripartenze: {{ getExclRipertenza() + '/' + getExclutions().exclutions.length }}
-        </div>
-        <div>
-            Centroboa: {{ getExclCentro() + '/' + getExclutions().exclutions.length }}
+            <div class="font-semibold">
+                Totali: {{ (getExclutions().exclutions.length + getExclutions().penalties.length) }}
+            </div>
+            <div>
+                Esterne: {{ (getFouls('ESPULSIONE', 'PERIMETRO') + getFouls('RIGORE', 'PERIMETRO')) }}
+            </div>
+            <div>
+                Ripartenze: {{ (getFouls('ESPULSIONE', 'RIPARTENZA') + getFouls('RIGORE', 'RIPARTENZA')) }}
+            </div>
+            <div>
+                Centroboa: {{ (getFouls('ESPULSIONE', 'CENTROBOA') + getFouls('RIGORE', 'CENTROBOA')) }}
+            </div>
+            <div>
+                Con palla: {{ getFoulsWith('') }}
+            </div>
+            <div>
+                Senza palla: {{ getFoulsWithout('') }}
+            </div>
         </div>
     </div>
-    <div>
-        <div class="font-semibold">
-            Rigori
-        </div>
-        <div>
-            Esterne: {{ getPenEsterne() + '/' + getExclutions().penalties.length }}
-        </div>
-        <div>
-            Ripartenze: {{ getPenRipertenza() + '/' + getExclutions().penalties.length }}
-        </div>
-        <div>
-            Centroboa: {{ getPenCentro() + '/' + getExclutions().penalties.length }}
-        </div>
-    </div>
-    <div>
-        <div class="font-semibold">
-            Totali
-        </div>
-        <div>
-            Esterne: {{ (getExclEsterne() + getPenEsterne()) + '/' + (getExclutions().exclutions.length + getExclutions().penalties.length)  }}
-        </div>
-        <div>
-            Ripartenze: {{ (getExclRipertenza() + getPenRipertenza()) + '/' + (getExclutions().exclutions.length + getExclutions().penalties.length)  }}
-        </div>
-        <div>
-            Centroboa: {{ (getExclCentro() + getPenCentro()) + '/' + (getExclutions().exclutions.length + getExclutions().penalties.length)  }}
-        </div>
-        <div>
-            Con palla: {{ getFoulsWith() + '/' + (getExclutions().exclutions.length + getExclutions().penalties.length)  }}
-        </div>
-        <div>
-            Senza palla: {{ getFoulsWithout() + '/' + (getExclutions().exclutions.length + getExclutions().penalties.length)  }}
-        </div>
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -76,36 +88,30 @@ const getExclutions = () => {
       }
 }
 
-const getExclEsterne = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === 'ESPULSIONE' && excl.position.toUpperCase() === 'PERIMETRO' ).length
+const getFouls = (type: string, position: string) => {
+    return getAllFouls().filter(excl => excl.type.toUpperCase() === type.toUpperCase() && excl.position.toUpperCase() === position.toUpperCase() ).length
 }
 
-const getExclRipertenza = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === 'ESPULSIONE' && excl.position.toUpperCase() === 'RIPARTENZA' ).length
+const getFoulsWith = (type: string) => {
+    switch(type.toUpperCase()) {
+        case 'ESPULSIONE':
+            return getAllFouls().filter(excl => excl.type.toUpperCase() === 'ESPULSIONE' && excl.ball ).length;
+        case 'RIGORE':
+            return getAllFouls().filter(excl => excl.type.toUpperCase() === 'RIGORE' && excl.ball ).length;
+        default:
+            return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && excl.ball ).length
+    }
 }
 
-const getExclCentro = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === 'ESPULSIONE' && excl.position.toUpperCase() === 'CENTROBOA' ).length
-}
-
-const getPenEsterne = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === 'RIGORE' && excl.position.toUpperCase() === 'PERIMETRO' ).length
-}
-
-const getPenRipertenza = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === 'RIGORE' && excl.position.toUpperCase() === 'RIPARTENZA' ).length
-}
-
-const getPenCentro = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === 'RIGORE' && excl.position.toUpperCase() === 'CENTROBOA' ).length
-}
-
-const getFoulsWith = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && excl.ball ).length
-}
-
-const getFoulsWithout = () => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && !excl.ball  ).length
+const getFoulsWithout = (type: string) => {
+    switch(type.toUpperCase()) {
+        case 'ESPULSIONE':
+            return getAllFouls().filter(excl => excl.type.toUpperCase() === 'ESPULSIONE' && !excl.ball ).length;
+        case 'RIGORE':
+            return getAllFouls().filter(excl => excl.type.toUpperCase() === 'RIGORE' && !excl.ball ).length;
+        default:
+            return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && !excl.ball ).length
+    }
 }
 
 </script>
