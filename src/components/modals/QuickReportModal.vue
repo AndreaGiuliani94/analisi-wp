@@ -8,7 +8,7 @@
             <!-- Contenitore della modale -->
             <div class="bg-white p-2 rounded-lg shadow-xl min-w-xl transform transition-all z-20">
                 <div class="flex items-start">
-                    <DialogTitle class="text-lg font-bold pl-2 text-red-800">{{ team.name }}
+                    <DialogTitle class="text-lg font-semibold pl-2 text-red-800">{{ team.name }}
                     </DialogTitle>
                 </div>
                 <div class="mt-1">
@@ -18,7 +18,7 @@
                                 v-for="tab in tabs"
                                 v-slot="{ selected }"
                                 :key="tab"
-                                class="w-full text-sm font-medium text-blue-950 rounded-lg focus:outline-none"
+                                class="w-full font-medium text-blue-950 rounded-lg focus:outline-none"
                             >
                                 <div 
                                 class="rounded-lg leading-3 py-2.5"

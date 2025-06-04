@@ -1,26 +1,27 @@
 <template>
-    <div class="px-2 pt-2 font-bold">
-        Totali: {{ getAllMenUps().goals.length + '/' + getAllMenUps().shoots.length }}
-    </div>
-    <div class="px-2 grid grid-cols-4">
-        <div class="">
-            <div class="font-semibold">
-                Goal: {{ getAllMenUps().goals.length }}
-            </div>
-            <div>
-                Dx: {{ getGoals(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getGoals(['3', '4']) }}
-            </div>
-            <div>
-                Pali: {{ getGoals(['P5', 'P6']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getGoals(['Ripartenza']) }}
-            </div>
+    <div class="p-2">
+        <div class="font-bold">
+            Totali: {{ getAllMenUps().goals.length + '/' + getAllMenUps().shoots.length }}
         </div>
-        <div>
+        <div class="grid grid-cols-4">
+            <div class="">
+                <div class="font-semibold">
+                    Goal: {{ getAllMenUps().goals.length }}
+                </div>
+                <div>
+                    Dx: {{ getGoals(['1', '2']) }}
+                </div>
+                <div>
+                    Sx: {{ getGoals(['3', '4']) }}
+                </div>
+                <div>
+                    Pali: {{ getGoals(['P5', 'P6']) }}
+                </div>
+                <div>
+                    Ripartenze: {{ getGoals(['Ripartenza']) }}
+                </div>
+            </div>
+            <div>
             <div class="font-semibold">
                 Parati: {{ getAllMenUps().parati.length }}
             </div>
@@ -70,6 +71,7 @@
             <div>
                 Ripartenze: {{ getStoppati(['Ripartenza']) }}
             </div>
+        </div>
         </div>
     </div>
 </template>

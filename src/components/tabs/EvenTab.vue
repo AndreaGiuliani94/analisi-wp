@@ -1,86 +1,88 @@
 <template>
-    <div class="px-2 pt-2 font-bold">
-        Totali: {{ getAllMenUps().goals.length + '/' + getAllMenUps().shoots.length }}
-    </div>
-    <div class="px-2 grid grid-cols-4">
-        <div>
-            <div class="font-semibold">
-                Goal: {{ getAllMenUps().goals.length }}
-            </div>
-            <div>
-                Dx: {{ getGoals(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getGoals(['4', '5']) }}
-            </div>
-            <div>
-                Centrale: {{ getGoals(['3']) }}
-            </div>
-            <div>
-                Centroboa: {{ getGoals(['Centroboa']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getGoals(['Ripartenza']) }}
-            </div>
+    <div class="p-2">
+        <div class="font-bold">
+            Totali: {{ getAllMenUps().goals.length + '/' + getAllMenUps().shoots.length }}
         </div>
-        <div>
-            <div class="font-semibold">
-                Parati: {{ getAllMenUps().parati.length }}
+        <div class="grid grid-cols-4">
+            <div>
+                <div class="font-semibold">
+                    Goal: {{ getAllMenUps().goals.length }}
+                </div>
+                <div>
+                    Dx: {{ getGoals(['1', '2']) }}
+                </div>
+                <div>
+                    Sx: {{ getGoals(['4', '5']) }}
+                </div>
+                <div>
+                    Centrale: {{ getGoals(['3']) }}
+                </div>
+                <div>
+                    Centroboa: {{ getGoals(['Centroboa']) }}
+                </div>
+                <div>
+                    Ripartenze: {{ getGoals(['Ripartenza']) }}
+                </div>
             </div>
             <div>
-                Dx: {{ getParati(['1', '2']) }}
+                <div class="font-semibold">
+                    Parati: {{ getAllMenUps().parati.length }}
+                </div>
+                <div>
+                    Dx: {{ getParati(['1', '2']) }}
+                </div>
+                <div>
+                    Sx: {{ getParati(['4', '5']) }}
+                </div>
+                <div>
+                    Centrale: {{ getParati(['3']) }}
+                </div>
+                <div>
+                    Centroboa: {{ getParati(['Centroboa']) }}
+                </div>
+                <div>
+                    Ripartenze: {{ getParati(['Ripartenza']) }}
+                </div>
             </div>
             <div>
-                Sx: {{ getParati(['4', '5']) }}
+                <div class="font-semibold">
+                    Fuori: {{ getAllMenUps().fuori.length }}
+                </div>
+                <div>
+                    Dx: {{ getFuori(['1', '2']) }}
+                </div>
+                <div>
+                    Sx: {{ getFuori(['4', '5']) }}
+                </div>
+                <div>
+                    Centrale: {{ getFuori(['3']) }}
+                </div>
+                <div>
+                    Centroboa: {{ getFuori(['Centroboa']) }}
+                </div>
+                <div>
+                    Ripartenze: {{ getFuori(['Ripartenza']) }}
+                </div>
             </div>
             <div>
-                Centrale: {{ getParati(['3']) }}
-            </div>
-            <div>
-                Centroboa: {{ getParati(['Centroboa']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getParati(['Ripartenza']) }}
-            </div>
-        </div>
-        <div>
-            <div class="font-semibold">
-                Fuori: {{ getAllMenUps().fuori.length }}
-            </div>
-            <div>
-                Dx: {{ getFuori(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getFuori(['4', '5']) }}
-            </div>
-            <div>
-                Centrale: {{ getFuori(['3']) }}
-            </div>
-            <div>
-                Centroboa: {{ getFuori(['Centroboa']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getFuori(['Ripartenza']) }}
-            </div>
-        </div>
-        <div>
-            <div class="font-semibold">
-                Stoppati: {{ getAllMenUps().stoppati.length }}
-            </div>
-            <div>
-                Dx: {{ getStoppati(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getStoppati(['4', '5']) }}
-            </div>
-            <div>
-                Centrale: {{ getStoppati(['3']) }}
-            </div>
-            <div>
-                Centroboa: {{ getStoppati(['Centroboa']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getStoppati(['Ripartenza']) }}
+                <div class="font-semibold">
+                    Stoppati: {{ getAllMenUps().stoppati.length }}
+                </div>
+                <div>
+                    Dx: {{ getStoppati(['1', '2']) }}
+                </div>
+                <div>
+                    Sx: {{ getStoppati(['4', '5']) }}
+                </div>
+                <div>
+                    Centrale: {{ getStoppati(['3']) }}
+                </div>
+                <div>
+                    Centroboa: {{ getStoppati(['Centroboa']) }}
+                </div>
+                <div>
+                    Ripartenze: {{ getStoppati(['Ripartenza']) }}
+                </div>
             </div>
         </div>
     </div>
