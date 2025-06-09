@@ -1,20 +1,17 @@
 <template>
-  <div class="">
-
-  </div>
   <div v-if="props.type === 'EVEN' || props.type === 'SUP'">
     <Menu as="div">
       <MenuButton
         :as="'button'"
         class="flex items-center justify-center w-6 h-6 rounded-full border
-               text-sm font-bold transition cursor-pointer
+               transition cursor-pointer
                disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
         :class="props.disabled
           ? 'cursor-not-allowed'
           : 'text-white bg-blue-950 border border-blue-950'"
         :disabled="props.disabled"
       >
-      {{ props.isGoal ? 'G' : 'T' }}
+      <PlusIcon class="size-4 stroke-[2.5] text-white"></PlusIcon>
       </MenuButton>
 
       <transition
@@ -37,16 +34,8 @@
                   :key="item"
                   v-slot="{ active, close }"
                 >
-                  <button  v-if="!props.isGoal"
+                  <button
                     @click.stop.prevent="handleFirstSelect(item, close)"
-                    class="group flex w-full items-center rounded-md p-1 text-sm"
-                    :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'"
-                  >
-                    {{ item }}
-                  </button>
-
-                  <button  v-else
-                    @click="handleFirstSelect(item, close)"
                     class="group flex w-full items-center rounded-md p-1 text-sm"
                     :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'"
                   >
@@ -57,7 +46,7 @@
 
             <template v-else>
               <MenuItem
-                v-for="sub in shotOptions['OUT']"
+                v-for="sub in shotOptions['OUTCOME']"
                 :key="sub"
                 v-slot="{ active, close }"
               >
@@ -90,32 +79,19 @@
   </div>
 
   <div v-else-if="props.type==='PENALTY'">
-    <div v-if="props.isGoal">
-        <button class="flex items-center justify-center w-6 h-6 rounded-full border
-          text-sm font-bold transition cursor-pointer
-          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
-          :class="props.disabled
-          ? 'cursor-not-allowed'
-          : 'text-white bg-blue-950 border border-blue-950'"
-          :disabled="props.disabled"
-          @click="handleZeroSelect"
-        >
-            {{ 'G' }}
-        </button>
-    </div>
-    <div v-else>
+    <div>
         <Menu as="div">
             <MenuButton
                 :as="'button'"
                 class="flex items-center justify-center w-6 h-6 rounded-full border
-                    text-sm font-bold transition cursor-pointer
+                    transition cursor-pointer
                     disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200"
                 :class="props.disabled
                 ? 'cursor-not-allowed'
                 : 'text-white bg-blue-950 border border-blue-950'"
                 :disabled="props.disabled"
             >
-            {{ 'T' }}
+            <PlusIcon class="size-4 stroke-[2.5] text-white"></PlusIcon>
             </MenuButton>
 
             <transition
@@ -133,7 +109,7 @@
                 >
                     <div class="p-1">                    
                         <MenuItem
-                            v-for="sub in shotOptions['OUT']"
+                            v-for="sub in shotOptions['OUTCOME']"
                             :key="sub"
                             v-slot="{ active, close }"
                         >
@@ -160,11 +136,11 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+import { PlusIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps<{
   disabled: boolean;
   type: string;
-  isGoal: boolean;
 }>()
 
 const emit = defineEmits<{
@@ -174,37 +150,27 @@ const emit = defineEmits<{
 const shotOptions: Record<string, string[]> = {
   'EVEN': ['1', '2', '3', '4', '5', 'CB', 'Ripartenza'],
   'SUP': ['1', '2', '3', '4', 'P5', 'P6', 'Ripartenza'],
-  'OUT': ['Parato', 'Fuori', 'Stoppato']
+  'OUTCOME': ['Goal', 'Parato', 'Fuori', 'Stoppato']
 }
 
 const activeStep = ref<'first' | 'second'>('first')
 const firstSelection = ref<string | null>(null)
-const selectedOption = ref<string | null>(null)
-
-const handleZeroSelect = () => {
-  emit('handleShot', {
-      type: props.type,
-      position: '',
-      outcome: 'GOAL'
-    })
-}
 
 const handleFirstSelect = (item: string, close: () => void) => {
   firstSelection.value = item
-  if(!props.isGoal){
+  if(item !== 'GOAL'){
     activeStep.value = 'second'
   } else {
     emit('handleShot', {
       type: props.type,
-      position: item ? item : '',
-      outcome: 'GOAL'
+      position: '',
+      outcome: item
     })
     close();
   }
 }
 
 const handleSecondSelect = (item: string, close: () => void) => {
-  selectedOption.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
   emit('handleShot', {
       type: props.type,
       position: firstSelection.value ? firstSelection.value : '',

@@ -22,8 +22,8 @@
       class="inline-flex ml-auto size-4 text-red-500" />
   </div>
 
-  <div v-if="team.name == 'SC QUINTO'"
-    class="font-medium ml-1 w-1/12">{{ player.active ? '🕒' :
+  <div v-if="team.name == 'SC QUINTO' "
+    class="font-medium ml-1 w-1/12 text-blue-950">{{ player.active ? '🕒' :
       '⏳'
     }}{{
       store.formatTime(player.actualTime) }}
@@ -44,47 +44,34 @@
       @remove="removeExclution(2)" />
   </div>
 
-  <div class="inline-flex items-start ml-2 gap-1 " role="group">
+  <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+    <div class="h-6 w-8 flex items-center justify-end">PARI</div>
     <ShotButton 
       :disabled="!player.active" 
       :type="'EVEN'" 
-      :is-goal="true" 
       @handleShot="addShot"/>
-    <ShotButton 
-      :disabled="!player.active" 
-      :type="'EVEN'" 
-      :is-goal="false" 
-      @handleShot="addShot"/>
-    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
+    <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
   </div>
-  <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton 
-      :disabled="!player.active" 
-      :type="'SUP'" 
-      :is-goal="true" 
-      @handleShot="addShot"/>
+  <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+    <div class="h-6 w-8 flex items-center justify-end">SUP</div>
     <ShotButton 
       :disabled="!player.active" 
       :type="'SUP'" 
       :is-goal="false" 
       @handleShot="addShot"/>
-    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
+    <div class="h-6 w-8 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
   </div>
-  <div class="inline-flex items-start ml-2 gap-1 " role="group">
-    <ShotButton 
-      :disabled="!player.active" 
-      :type="'PENALTY'" 
-      :is-goal="true" 
-      @handleShot="addShot"/>
+  <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+    <div class="h-6 w-8 flex items-center justify-end">RIG</div>
     <ShotButton 
       :disabled="!player.active"
       :type="'PENALTY'" 
       :is-goal="false" 
       @handleShot="addShot"/>
-    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
+    <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
   </div>
-  <div class="inline-flex ml-3 mr-2" role="group">
-    <div class="h-6 flex items-center min-w-8 max-w-8 pl-1"> {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}</div>
+  <div class="inline-flex ml-3 mr-2 text-blue-950" role="group">
+    <div class="h-6 w-8 flex items-center"> {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}</div>
   </div>
 
 </template>
