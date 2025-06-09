@@ -75,7 +75,7 @@
             </tbody>
         </table>
     </div>
-    <ExportButton :elements="store.actualPlayers.concat(store.actualOpponents)" />
+    <ExportButton @exportToExcel="downloadExcel" />
 </template>
 
 <script setup lang="ts">
@@ -84,6 +84,7 @@ import { useElementStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
 import type { Player } from '@/components/Interfaces/Player';
+import { exportTeamsToExcel } from '@/utils/export';
 const store = useElementStore();
 
 const getAllShoots = (element: Player) => {
@@ -94,13 +95,22 @@ const getExclutions = (element: Player) => {
     var str: string = '';
     for (let index = 0; index < element.exclutions.length; index++) {
         const excl = element.exclutions[index];
-        str += (index > 0 ? ', ' : '') + (excl.type + ' - ' + excl.position);
+        str += (index > 0 ? ', ' : '') + excl.quarter + 'T ' + excl.time + ' ' + (excl.type + ' ' + excl.position);
         if(excl.type !== 'EDCS') {
-            str += ' - ';
+            str += ' ';
             str += excl.ball ? 'Con palla' : 'Senza palla';
         }
     }
     return str;
+}
+
+const downloadExcel = () => {
+    exportTeamsToExcel({
+        match: store.match,
+        formatTime: store.formatTime,
+        getAllShoots,
+        getExclutions,
+  });
 }
 
 </script>
