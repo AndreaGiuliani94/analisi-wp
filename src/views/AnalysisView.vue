@@ -2,7 +2,7 @@
   <div class="max-w-3xl mx-auto p-6 bg-whiterounded-lg">
     <h2 class="text-2xl text-center font-semibold mb-4 text-blue-950">Analisi video</h2>
 
-    <div class="border border-gray-300 text-blue-950 p-4 rounded-lg flex flex-col justify-center">
+    <div class="border border-blue-950 text-blue-950 p-4 rounded-lg flex flex-col justify-center">
       <!-- Upload Video -->
       <FileUpload />
 
@@ -90,7 +90,7 @@ const hasErrors = computed(() =>
 );
 
 const isIntervalEmpy = computed(()=>
-  videoStore.intervals.some(interval => !interval.category || !interval.start || !interval.end)
+  videoStore.intervals.some(interval => !interval.category || !interval.start || !interval.end || !interval.title)
 );
 
 </script>

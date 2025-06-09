@@ -93,6 +93,11 @@ export const useVideoStore = defineStore("video", {
       }
     },
 
+    validateTitle(index: number): void {
+      if(!this.intervals[index].title.trim())
+        this.intervals[index].errors['title'] = 'Inserire un titolo'
+    },
+
     async loadVideo(): Promise<void> {
       await this.uploadVideo();
       await this.fetchTactics();
