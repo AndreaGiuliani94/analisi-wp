@@ -1,20 +1,24 @@
 <template>
   <div class="w-full">
-    <div class="flex justify-between items-start gap-2">
-      <NavButton
+    <div class="grid grid-cols-3">
+      <div class="justify-self-start">
+        <NavButton
         :label="'Distinta'"
         :icon="ArrowLeftIcon"
-        to="/game">
-      </NavButton>
-      <div>
-        <div class="text-xl font-bold text-center text-blue-950">{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
-        <div class="text-xl font-bold text-center text-blue-950">{{ store.match.quarter }} T</div>
+          to="/game">
+        </NavButton>
       </div>
-      <NavButton
-        :label="'Restart'"
-        :icon="ArrowPathIcon"
-        :onClick="store.resetTimer">
-      </NavButton>
+      <div class="text-xl font-bold text-center text-blue-950">
+        <div >{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
+        <div >{{ store.match.quarter }} T</div>
+      </div>
+      <div class="justify-self-end">
+        <NavButton
+          :label="'Restart'"
+          :icon="ArrowPathIcon"
+          :onClick="store.resetTimer">
+        </NavButton>
+      </div>
     </div>
   
   </div>
@@ -29,8 +33,8 @@
       <div class="ms-2.5 mb-1.5 flex justify-start items-center">
         <a class="text-red-800 flex justify-start items-center cursor-pointer"
         @click="openModal(store.match.homeTeam)">
-          <span>SC QUINTO</span>
-          <ArrowRightIcon class="size-5 ms-2"/>
+          <span class="font-semibold">SC QUINTO</span>
+          <ArrowRightIcon class="size-5 ms-1.5"/>
         </a>
         <div class="ml-auto flex items-center justify-end gap-1">
           <span class="text-blue-950">TO</span>
@@ -53,8 +57,8 @@
       <div class="ms-2.5 mb-1.5 flex justify-start items-center">
         <a class="text-red-800 flex justify-start items-center cursor-pointer"
         @click="openModal(store.match.awayTeam)">
-          <span>{{store.match.awayTeam.name}}</span>
-          <ArrowRightIcon class="size-5 ms-2"/>
+          <span class="font-semibold">{{store.match.awayTeam.name}}</span>
+          <ArrowRightIcon class="size-5 ms-1.5"/>
         </a>
         <div class="ml-auto flex items-center justify-end gap-1">
           <span class="text-blue-950">TO</span>

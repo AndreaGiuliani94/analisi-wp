@@ -1,5 +1,5 @@
 <template>
-    <div class="p-2 grid grid-cols-3">
+    <div class="p-2 pt-1 grid grid-cols-3">
         <div>
             <div class="font-semibold">
                 Espulsioni: {{ getExclutions().exclutions.length }}

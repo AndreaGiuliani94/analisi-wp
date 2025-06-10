@@ -31,7 +31,7 @@
             </tbody>
         </table>
     </div>
-    <ExportButton :elements="store.events"/>
+    <ExportButton @exportToExcel="downloadExcel" />
 </template>
 
 <script setup lang="ts">
@@ -39,6 +39,11 @@ import ExportButton from '@/components/buttons/ExportButton.vue';
 import { useElementStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
+import { exportEventsToExcel } from '@/utils/export';
 const store = useElementStore();
+
+const downloadExcel = () => {
+    exportEventsToExcel(store.events, store.match);
+}
 
 </script>

@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import type { Player } from "@/components/Interfaces/Player"; 
 import type { Match } from "@/components/Interfaces/Match";
+import type { Event } from "@/components/Interfaces/Event";
 
 interface ExportOptions {
   match: Match;
@@ -47,4 +48,32 @@ export function exportTeamsToExcel({
   XLSX.utils.book_append_sheet(wb, wsAway, match.awayTeam.name);
 
   XLSX.writeFile(wb, match.homeTeam.name + '_' + match.awayTeam.name + ".xlsx");
+}
+
+export function exportEventsToExcel(events: Event[], match: Match) {
+
+  const mapEventsToRows = (events: Event[]) =>
+    events.map((event) => ({
+      Tempo: event.quarter,
+      Minuto: event.time,
+      Squadra: event.team,
+      Giocatore: event.player.number + '. ' + event.player.name,
+      Evento: event.description
+    }));
+  const wb = XLSX.utils.book_new();
+
+  const ws = XLSX.utils.json_to_sheet(mapEventsToRows(events));
+
+  // Auto-colonne larghe
+  const setAutoColWidths = (ws: XLSX.WorkSheet, rows: any[]) => {
+    ws["!cols"] = Object.keys(rows[0] || {}).map((key) => ({
+      wch: key.length + 10,
+    }));
+  };
+
+  setAutoColWidths(ws, events);
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Eventi');
+
+  XLSX.writeFile(wb, match.homeTeam.name + '_' + match.awayTeam.name + "_eventi.xlsx");
 }

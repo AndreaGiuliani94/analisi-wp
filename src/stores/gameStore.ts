@@ -246,7 +246,7 @@ export const useElementStore = defineStore("elementStore", {
           }
         }
         
-        this.saveEvents(type + " - " + position, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
+        this.saveEvents(type + ' ' + position + ' ' + (ball ? 'Con palla' : 'Senza palla'), el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
         
         if (this.isOut(el)) {
         this.toggleElement(el.number, team);

@@ -1,5 +1,5 @@
 <template>
-    <div class="p-2">
+    <div class="p-2 pt-1">
         <div class="font-bold">
             Totali: {{ getAllMenUps().goals.length + '/' + getAllMenUps().shoots.length }}
         </div>
