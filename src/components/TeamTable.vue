@@ -15,21 +15,67 @@
                 </tr>
             </thead>
             <tbody class="text-blue-950">
-                <tr v-for="element in team.players" :key="element.number" class="border border-gray-300">
-                    <td class="text-center p-1.5">{{ element.number }}</td>
-                    <td class="truncate p-1.5">{{ element.name }}</td>
-                    <td class="p-1.5">{{ store.formatTime(element.activeTime) }}</td>
-                    <td class="p-1.5">{{ store.formatTime(element.benchTime) }}</td>
-                    <td class="p-1.5">{{ element.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsEven.length }}</td>
-                    <td class="p-1.5">{{ element.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsSup.length }}</td>
-                    <td class="p-1.5">{{ element.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + element.shotsPenalty.length }}</td>
-                    <td class="p-1.5">{{ getAllShoots(element) }}</td>
-                    <td class="whitespace-normal break-words p-1.5">
-                        <div v-for="(ex, i) in element.exclutions.slice(0, 3)" :key="i">
-                            {{ getExclution(ex) }}
+
+                <template v-for="player in team.players" :key="player.number">
+                    <!-- Riga principale -->
+                    <tr class="border border-gray-300">
+                        <td class="text-center p-1.5">{{ player.number }}</td>
+                        <td @click="toggle(player.number)" class="p-1.5" :class="[expandedRows.includes(player.number) ? 'underline' : '']">
+                            <span class="inline-flex items-center">
+                                <svg
+                                    :class="[
+                                        'w-4 h-4 transition-transform duration-300',
+                                        expandedRows.includes(player.number) ? 'rotate-90' : ''
+                                    ]"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    viewBox="0 0 24 24"
+                                    >
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                                {{ player.name }}
+                            </span>
+                        </td>
+                        <td class="p-1.5">{{ store.formatTime(player.activeTime) }}</td>
+                        <td class="p-1.5">{{ store.formatTime(player.benchTime) }}</td>
+                        <td class="p-1.5">{{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</td>
+                        <td class="p-1.5">{{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</td>
+                        <td class="p-1.5">{{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</td>
+                        <td class="p-1.5">{{ getAllShoots(player) }}</td>
+                        <td class="whitespace-normal break-words p-1.5">
+                            <div v-for="(ex, i) in player.exclutions.slice(0, 3)" :key="i">
+                                {{ getExclution(ex) }}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Riga espansa -->
+                    <Transition name="fade">
+                    <tr v-if="expandedRows.includes(player.number)" class="bg-blue-50">
+                        <td colspan="9" class="px-4 py-2 border-x border-b border-blue-200">
+                        <div class="text-sm space-y-1">
+                            <p><strong>Dettaglio Tiri:</strong></p>
+                            <ul class="list-disc list-inside">
+                            <li>Pari: {{ player.shotsEven.length }}</li>
+                            <li>Sup: {{ player.shotsSup.length }}</li>
+                            <li>Rigori: {{ player.shotsPenalty.length }}</li>
+                            </ul>
+
+                            <p class="mt-2"><strong>Falli:</strong></p>
+                            <ul class="list-disc list-inside">
+                            <li
+                                v-for="(ex, i) in player.exclutions.slice(0, 3)" :key="i"
+                            >
+                                {{ getExclution(ex) }}
+                            </li>
+                            </ul>
                         </div>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
+                    </Transition>
+
+                </template>
             </tbody>
         </table>
     </div>
@@ -37,18 +83,28 @@
 
 <script setup lang="ts">
 
-import type { PropType } from 'vue';
 import { useElementStore } from '../stores/gameStore';
 import type { Team } from './Interfaces/Team';
 import type { Exclution } from './Interfaces/Exclution';
 import type { Player } from './Interfaces/Player';
+import { ref } from 'vue';
 
 const store = useElementStore();
 
 const props = defineProps<{
-  team: Team;
-  getAllShoots: (player: Player) => string;
+    team: Team;
+    getAllShoots: (player: Player) => string;
 }>();
+
+const expandedRows = ref<number[]>([])
+
+function toggle(playerNumber: number) {
+  if (expandedRows.value.includes(playerNumber)) {
+    expandedRows.value = expandedRows.value.filter(n => n !== playerNumber)
+  } else {
+    expandedRows.value.push(playerNumber)
+  }
+}
 
 const getExclution = (exclution: Exclution) => {
     var str: string = '';
@@ -61,3 +117,14 @@ const getExclution = (exclution: Exclution) => {
 }
 
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s ease-in;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
