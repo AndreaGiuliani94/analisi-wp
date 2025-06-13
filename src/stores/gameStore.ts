@@ -395,7 +395,7 @@ function initializeAwayTeam(this: any) {
       shotsSup: [],
       shotsPenalty: [],
       exclutions: [],
-      active: false,
+      active: true,
     }))
   };
 }
