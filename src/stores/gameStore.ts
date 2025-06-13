@@ -6,7 +6,7 @@ import type { Event } from "@/components/Interfaces/Event";
 import type { Match } from "@/components/Interfaces/Match";
 import type { Exclution } from "@/components/Interfaces/Exclution";
 
-export const useElementStore = defineStore("elementStore", {
+export const useGameStore = defineStore("elementStore", {
   state: () => {
     const savedEvents = localStorage.getItem("events");
     const savedMatch = localStorage.getItem("match");

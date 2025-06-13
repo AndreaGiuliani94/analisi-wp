@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { useElementStore } from "@/stores/gameStore";
+import { useGameStore } from "@/stores/gameStore";
 import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
@@ -96,7 +96,7 @@ const props = defineProps({
   },
 });
 
-const store = useElementStore();
+const store = useGameStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
 const isEditing = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);

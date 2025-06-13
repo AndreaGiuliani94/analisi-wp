@@ -60,10 +60,10 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useElementStore } from '../stores/gameStore';
+import { useGameStore } from '../stores/gameStore';
 import { ArrowPathIcon, PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
-const store = useElementStore();
+const store = useGameStore();
 onMounted(() => {
   store.loadStore();
 });

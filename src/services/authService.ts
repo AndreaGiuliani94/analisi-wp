@@ -1,16 +1,22 @@
-import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "@/stores/authStore";
 
-const API_URL = "http://localhost:8000";
-
-export const loginWithGoogle = async (googleToken: string) => {
-  const response = await axios.post(`${API_URL}/google-login`, {
-    token: googleToken,
+export const loginWithGoogle = async (code: any) => {
+  const res = await fetch(import.meta.env.VITE_BE_URL + "/auth/google", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+    credentials: "include"
   });
+  return res;
+};
 
-  const token = response.data.access_token;
-  const auth = useAuthStore();
-  auth.setAuth(token);
+export const logout = async () => {
+  const res = await fetch(import.meta.env.VITE_BE_URL + "/auth/logout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include"
+  });
+  return res;
 };
 
 // Token JWT finto (mock)
@@ -23,5 +29,5 @@ export const loginWithGoogleMock = async (_googleToken: string) => {
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   // Mocka login: salva token finto nello store
-  auth.setAuth(mockToken);
+  // auth.setAuth(mockToken);
 };

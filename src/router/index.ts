@@ -7,14 +7,16 @@ import DashboardView from '@/views/DashboardView.vue';
 import AnalysisView from '@/views/AnalysisView.vue';
 import LoginView from '@/views/LoginView.vue';
 import ProfileView from '@/views/ProfileView.vue';
-import { useAuthStore } from '@/stores/auth';
+import CallbackView from '@/views/CallbackView.vue';
+import { useAuthStore } from '@/stores/authStore';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/login", component: LoginView },
+    { path: "/login", name: 'Login', component: LoginView },
+    { path: "/auth/callback", component: CallbackView },
     { path: "/profile", component: ProfileView, meta: { requiresAuth: true } },
-    { path: "/dashboard", component: DashboardView, meta: { requiresAuth: true } },
+    { path: "/dashboard", component: DashboardView },
     { path: "/:pathMatch(.*)*", redirect: "/login" },
     { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } },
     { path: '/game', component: NameManager, meta: { requiresAuth: true } },
@@ -25,14 +27,19 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach((to, from, next) => {
-  const auth = useAuthStore();
-  auth.loadFromStorage(); // assicurati che lo stato sia caricato
-  if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    next("/login");
-  } else {
-    next();
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth) {
+    if (!authStore.accessToken) {
+      const ok = await authStore.refresh()
+      if (!ok) {
+        return next({ name: 'Login' })
+      }
+    }
   }
-});
+
+  next()
+})
 
 export default router

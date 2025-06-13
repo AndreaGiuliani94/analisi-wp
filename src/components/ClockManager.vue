@@ -36,9 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import { useElementStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/gameStore';
 import { BackwardIcon, ForwardIcon, PauseIcon, PlayIcon } from '@heroicons/vue/20/solid';
 
-const store = useElementStore();
+const store = useGameStore();
 
 </script>

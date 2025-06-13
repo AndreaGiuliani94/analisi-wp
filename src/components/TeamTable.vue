@@ -83,13 +83,13 @@
 
 <script setup lang="ts">
 
-import { useElementStore } from '../stores/gameStore';
+import { useGameStore } from '../stores/gameStore';
 import type { Team } from './Interfaces/Team';
 import type { Exclution } from './Interfaces/Exclution';
 import type { Player } from './Interfaces/Player';
 import { ref } from 'vue';
 
-const store = useElementStore();
+const store = useGameStore();
 
 const props = defineProps<{
     team: Team;

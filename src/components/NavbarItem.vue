@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { UserCircleIcon, WrenchScrewdriverIcon, UserIcon } from '@heroicons/vue/24/outline';
 import Icon from './icons/Icon.vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores/authStore';
 
 const auth = useAuthStore();
 

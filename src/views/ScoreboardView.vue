@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { useElementStore } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/gameStore';
 import PlayerItem from '@/components/PlayerItem.vue';
 import ClockManager from '@/components/ClockManager.vue';
 import { ArrowLeftIcon, ArrowPathIcon, ArrowRightIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
@@ -113,7 +113,7 @@ import type { Team } from '@/components/Interfaces/Team';
 import TimeOutButton from '@/components/buttons/TimeOutButton.vue';
 import NavButton from '@/components/buttons/NavButton.vue';
 
-const store = useElementStore();
+const store = useGameStore();
 
 const headerRef = ref<HTMLElement | null>(null)
 const headerHeight = ref(0)

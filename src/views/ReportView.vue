@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import ExportButton from '@/components/buttons/ExportButton.vue';
-import { useElementStore } from '../stores/gameStore';
+import { useGameStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
 import type { Player } from '@/components/Interfaces/Player';
@@ -62,7 +62,7 @@ import { Tab, TabGroup,
   TabPanel } from "@headlessui/vue";
 import TeamPanel from '@/components/TeamPanel.vue';
 
-const store = useElementStore();
+const store = useGameStore();
 
 const tabs = [store.match.homeTeam.name, store.match.awayTeam.name]
 
