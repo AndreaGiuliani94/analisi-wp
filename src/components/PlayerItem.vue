@@ -48,7 +48,7 @@
     <div class="h-6 w-8 flex items-center justify-end">PARI</div>
     <ShotButton 
       :disabled="!player.active" 
-      :type="'EVEN'" 
+      :type="ShotCategory.EVEN" 
       @handleShot="addShot"/>
     <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
   </div>
@@ -56,7 +56,7 @@
     <div class="h-6 w-8 flex items-center justify-end">SUP</div>
     <ShotButton 
       :disabled="!player.active" 
-      :type="'SUP'" 
+      :type="ShotCategory.SUP" 
       :is-goal="false" 
       @handleShot="addShot"/>
     <div class="h-6 w-8 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
@@ -65,7 +65,7 @@
     <div class="h-6 w-8 flex items-center justify-end">RIG</div>
     <ShotButton 
       :disabled="!player.active"
-      :type="'PENALTY'" 
+      :type="ShotCategory.PENALTY" 
       :is-goal="false" 
       @handleShot="addShot"/>
     <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
@@ -84,6 +84,7 @@ import type { Team } from "./Interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import ShotButton from "./buttons/ShotButton.vue";
+import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 
 const props = defineProps({
   player: {
@@ -135,7 +136,7 @@ const addExclution = (payload : { type: string, position: string, ball: boolean}
   store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.ball, exclNumber);
 };
 
-const addShot = (payload : { type: string, position: string, outcome: string }) => {
+const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
   store.addShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.outcome)
 };
 

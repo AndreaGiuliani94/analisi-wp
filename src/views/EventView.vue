@@ -1,14 +1,24 @@
 <template>
     <div class="w-full">
-        <div class="flex justify-start items-center">
+        <div class="grid grid-cols-3">
+            <!-- Colonna sinistra: bottone -->
+            <div class="justify-self-start">
             <NavButton
                 :label="'Live'"
                 :icon="ArrowLeftIcon"
-                to="/game/live">
-            </NavButton>
+                to="/game/live" />
+            </div>
+            <!-- Colonna centrale: titolo -->
+             <h1 class="text-xl text-center font-bold p-2 text-blue-950">
+                Eventi di 
+                <div>{{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</div>
+            </h1>
+            <!-- Colonna destra: export button-->
+            <div class="justify-self-end">
+                <ExportButton @exportToExcel="downloadExcel" />
+            </div>
         </div>
     </div>
-    <h1 class="text-xl text-center font-bold p-2 text-blue-950">Eventi di {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</h1>
     <div class="relative overflow-x-auto shadow-md rounded-lg">
         <table class="w-full text-sm text-left border-collapse rounded-lg">
             <thead class="text-xs text-white uppercase bg-red-800 rounded-lg">
@@ -31,7 +41,6 @@
             </tbody>
         </table>
     </div>
-    <ExportButton @exportToExcel="downloadExcel" />
 </template>
 
 <script setup lang="ts">

@@ -33,7 +33,7 @@
 
             <template v-if="activeStep === 'first'">
               <MenuItem
-                v-for="item in Object.keys(secondLevelOptions)"
+                v-for="item in foulKeys"
                 :key="item"
                 v-slot="{ active }"
               >
@@ -42,7 +42,7 @@
                   class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
-                  {{ item }}
+                  {{ getFoulValue(item) }}
                 </button>
               </MenuItem>
               <template v-if="props.exclutionState">
@@ -124,6 +124,7 @@
 import { computed, ref } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { XCircleIcon } from "@heroicons/vue/24/outline";
+import { EDCSType, FoulDescription, FoulPosition, FoulType } from '@/enum/ExclutionDescription';
 
 const props = defineProps<{
   disabled?: boolean,
@@ -142,13 +143,19 @@ const firstSelection = ref<string | null>(null);
 const secondSelection = ref<string | null>(null);
 const selectedCode = ref<string | null>(null);
 
-const secondLevelOptions: Record<string, string[]> = {
-  'Espulsione': ['Perimetro', 'Centroboa', 'Ripartenza'],
-  'Rigore': ['Perimetro', 'Centroboa', 'Ripartenza'],
-  'EDCS': ['Brutalità', 'Gioco Violento', 'Proteste']
+const foulKeys = computed(() => Object.keys(secondLevelOptions) as (keyof typeof FoulType)[])
+
+const secondLevelOptions: Record<keyof typeof FoulType, string[]> = {
+  EXCL: Object.values(FoulPosition),
+  PEN: Object.values(FoulPosition),
+  EDCS: Object.values(EDCSType)
+};
+
+function getFoulValue(key: keyof typeof FoulType): FoulType {
+  return FoulType[key]
 }
 
-const thirdLevelOptions: string[] = ['Con palla', 'Senza palla'];
+const thirdLevelOptions: string[] = Object.values(FoulDescription);
 
 const handleFirstSelect = (item: string) => {
   firstSelection.value = item;
@@ -180,9 +187,9 @@ const handleThirdSelect = (item: string, close: () => void) => {
   state.value = 'selected'
   if(firstSelection.value && secondSelection.value) {
     emit('handleExclution', {
-      type: firstSelection.value,
+      type: FoulType[firstSelection.value as (keyof typeof FoulType)],
       position: secondSelection.value,
-      ball: item == "Con palla"
+      ball: item == FoulDescription.WITH
     })
   }
   resetSelection();
@@ -190,7 +197,7 @@ const handleThirdSelect = (item: string, close: () => void) => {
 }
 
 const availableSecondOptions = computed(() => {
-  return firstSelection.value ? secondLevelOptions[firstSelection.value] || [] : []
+  return firstSelection.value ? secondLevelOptions[firstSelection.value as keyof typeof secondLevelOptions] || [] : []
 })
 
 const resetSelection = () => {

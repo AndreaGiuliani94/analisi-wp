@@ -53,25 +53,7 @@
                     <!-- Riga espansa -->
                     <Transition name="fade">
                     <tr v-if="expandedRows.includes(player.number)" class="bg-blue-50">
-                        <td colspan="9" class="px-4 py-2 border-x border-b border-blue-200">
-                        <div class="text-sm space-y-1">
-                            <p><strong>Dettaglio Tiri:</strong></p>
-                            <ul class="list-disc list-inside">
-                            <li>Pari: {{ player.shotsEven.length }}</li>
-                            <li>Sup: {{ player.shotsSup.length }}</li>
-                            <li>Rigori: {{ player.shotsPenalty.length }}</li>
-                            </ul>
-
-                            <p class="mt-2"><strong>Falli:</strong></p>
-                            <ul class="list-disc list-inside">
-                            <li
-                                v-for="(ex, i) in player.exclutions.slice(0, 3)" :key="i"
-                            >
-                                {{ getExclution(ex) }}
-                            </li>
-                            </ul>
-                        </div>
-                        </td>
+                        <PlayerDetail :player="player" :get-exclution="getExclution"></PlayerDetail>
                     </tr>
                     </Transition>
 
@@ -88,6 +70,7 @@ import type { Team } from './Interfaces/Team';
 import type { Exclution } from './Interfaces/Exclution';
 import type { Player } from './Interfaces/Player';
 import { ref } from 'vue';
+import PlayerDetail from './PlayerDetail.vue';
 
 const store = useGameStore();
 

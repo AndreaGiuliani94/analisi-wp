@@ -1,5 +1,5 @@
 <template>
-  <div v-if="props.type === 'EVEN' || props.type === 'SUP'">
+  <div v-if="props.type === ShotCategory.EVEN || ShotCategory.SUP">
     <Menu as="div">
       <MenuButton
         :as="'button'"
@@ -46,7 +46,7 @@
 
             <template v-else>
               <MenuItem
-                v-for="sub in shotOptions['OUTCOME']"
+                v-for="sub in shotOptions[ShotCategory.OUTCOME]"
                 :key="sub"
                 v-slot="{ active, close }"
               >
@@ -78,7 +78,7 @@
     </Menu>
   </div>
 
-  <div v-else-if="props.type==='PENALTY'">
+  <div v-else-if="props.type===ShotCategory.PENALTY">
     <div>
         <Menu as="div">
             <MenuButton
@@ -109,7 +109,7 @@
                 >
                     <div class="p-1">                    
                         <MenuItem
-                            v-for="sub in shotOptions['OUTCOME']"
+                            v-for="sub in shotOptions[ShotCategory.PENALTY]"
                             :key="sub"
                             v-slot="{ active, close }"
                         >
@@ -137,6 +137,7 @@
 import { ref } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PlusIcon } from '@heroicons/vue/24/outline';
+import { EvenShot, MenUpShot, ShotOutcome, ShotCategory } from '@/enum/ShotDescription';
 
 const props = defineProps<{
   disabled: boolean;
@@ -144,25 +145,26 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'handleShot', payload: { type: string, position: string, outcome: string }): void
+  (e: 'handleShot', payload: { type: ShotCategory, position: string, outcome: ShotOutcome }): void
 }>()
 
 const shotOptions: Record<string, string[]> = {
-  'EVEN': ['1', '2', '3', '4', '5', 'CB', 'Ripartenza'],
-  'SUP': ['1', '2', '3', '4', 'P5', 'P6', 'Ripartenza'],
-  'OUTCOME': ['Goal', 'Parato', 'Fuori', 'Stoppato']
-}
+  [ShotCategory.EVEN]: Object.values(EvenShot),
+  [ShotCategory.SUP]: Object.values(MenUpShot),
+  [ShotCategory.PENALTY]: [ShotOutcome.GOAL, ShotOutcome.SAVED, ShotOutcome.MISSED],
+  [ShotCategory.OUTCOME]: Object.values(ShotOutcome)
+};
 
 const activeStep = ref<'first' | 'second'>('first')
 const firstSelection = ref<string | null>(null)
 
 const handleFirstSelect = (item: string, close: () => void) => {
   firstSelection.value = item
-  if(item !== 'GOAL'){
+  if(item !== ShotOutcome.GOAL){
     activeStep.value = 'second'
   } else {
     emit('handleShot', {
-      type: props.type,
+      type: props.type as ShotCategory,
       position: '',
       outcome: item
     })
@@ -172,9 +174,9 @@ const handleFirstSelect = (item: string, close: () => void) => {
 
 const handleSecondSelect = (item: string, close: () => void) => {
   emit('handleShot', {
-      type: props.type,
+      type: props.type as ShotCategory,
       position: firstSelection.value ? firstSelection.value : '',
-      outcome: item
+      outcome: item as ShotOutcome
     });
   resetSelection();
   close();

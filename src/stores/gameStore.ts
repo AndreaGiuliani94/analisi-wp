@@ -5,6 +5,7 @@ import type { Player } from "@/components/Interfaces/Player";
 import type { Event } from "@/components/Interfaces/Event";
 import type { Match } from "@/components/Interfaces/Match";
 import type { Exclution } from "@/components/Interfaces/Exclution";
+import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 
 export const useGameStore = defineStore("elementStore", {
   state: () => {
@@ -181,35 +182,36 @@ export const useGameStore = defineStore("elementStore", {
       this.countdown = 480;
       this.events = [];
     },
-    addShoot(number: number, team: number, type: string, position: string, outcome: string) {
+    addShoot(number: number, team: number, type: ShotCategory, position: string, outcome: ShotOutcome) {
       var el;
       if (team === 0) el = this.match.homeTeam.players.find((el) => el.number === number);
       else el = this.match.awayTeam.players.find((el) => el.number === number);
       if (el) {
         switch (type) {
-          case 'EVEN':
+          case ShotCategory.EVEN:
             el.shotsEven.push({position: position, outcome: outcome});
             break;
-          case 'SUP':
+          case ShotCategory.SUP:
             el.shotsSup.push({position: position, outcome: outcome});
             break;
-          case 'PENALTY':
+          case ShotCategory.PENALTY:
             el.shotsPenalty.push({position: position, outcome: outcome});
             break;
           default:
             break;
         }
-        switch (outcome.toUpperCase()) {
-          case 'GOAL':
-            this.addGoal(number, team);
+        switch (outcome) {
+          case ShotOutcome.GOAL:
+            this.addGoal(number, team, type, position, outcome);
             break;
           default:
-            this.saveEvents("SHOT", el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
+            var description = outcome + " - " + type + ", " + position + " "; 
+            this.saveEvents("Tiro - " + description, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
             break;
         }
       }
     },
-    addGoal(number: number, team: number) {
+    addGoal(number: number, team: number, type: string, position: string, outcome: string) {
       var el;
       if (team === 0) {
         el = this.match.homeTeam.players.find((el) => el.number === number);
@@ -220,7 +222,8 @@ export const useGameStore = defineStore("elementStore", {
         this.match.awayTeam.score++;
       }
       if (el) {
-        this.saveEvents("GOAL", el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
+        var description = outcome + " - " + type + ", " + position + " "; 
+        this.saveEvents(description, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
       }
     },
     addExclution(number: number, team: number, type: string, position: string, ball: boolean, exclNumber: number) {

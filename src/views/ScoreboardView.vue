@@ -90,11 +90,11 @@
 
   <div class="flex justify-center items-center gap-10 p-2 m-5" role="group">
     <button @click="$router.push('/game/report')"
-      class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors">
-      <TableCellsIcon class="size-6 me-1" />Report</button>
+      class="p-2 inline-flex items-center text-base font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors">
+      <TableCellsIcon class="size-5 me-1" />Report</button>
     <button @click="$router.push('/game/events')" :disabled="store.events.length == 0"
-      class="p-2.5 inline-flex items-center text-regular font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed">
-      <CalendarDaysIcon class="size-6 me-1" />Eventi</button>
+      class="p-2 inline-flex items-center text-base font-medium bg-green-600 text-white rounded-md cursor-pointer shadow-md active:bg-green-800 active:outline-none active:ring-2 active:ring-green-300 transition-colors disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed">
+      <CalendarDaysIcon class="size-5 me-1" />Eventi</button>
   </div>
 
   <!-- Modale con statistiche -->

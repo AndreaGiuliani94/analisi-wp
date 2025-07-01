@@ -1,85 +1,30 @@
 <template>
     <div class="p-2 pt-1">
         <div class="font-bold">
-            Totali: {{ getAllMenUps().goals.length + '/' + getAllMenUps().shoots.length }}
+            Totali: {{ totals.goals }}/{{ totals.shots }}
         </div>
-        <div class="grid grid-cols-4">
-            <div class="">
+        <div class="grid grid-cols-4 gap-4">
+            <div v-for="(category, index) in categories" :key="index">
                 <div class="font-semibold">
-                    Goal: {{ getAllMenUps().goals.length }}
+                    {{ category.label }}: {{ totals[category.key] }}
                 </div>
-                <div>
-                    Dx: {{ getGoals(['1', '2']) }}
-                </div>
-                <div>
-                    Sx: {{ getGoals(['3', '4']) }}
-                </div>
-                <div>
-                    Pali: {{ getGoals(['P5', 'P6']) }}
-                </div>
-                <div>
-                    Ripartenze: {{ getGoals(['Ripartenza']) }}
+                <div v-for="(zone, zIndex) in supZones" :key="zIndex">
+                    {{ zone.label }}:
+                    {{ getZoneValue(category.key, zone.values) }}
                 </div>
             </div>
-            <div>
-            <div class="font-semibold">
-                Parati: {{ getAllMenUps().parati.length }}
-            </div>
-            <div>
-                Dx: {{ getParati(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getParati(['3', '4']) }}
-            </div>
-            <div>
-                Pali: {{ getParati(['P5', 'P6']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getParati(['Ripartenza']) }}
-            </div>
-        </div>
-        <div>
-            <div class="font-semibold">
-                Fuori: {{ getAllMenUps().fuori.length }}
-            </div>
-            <div>
-                Dx: {{ getFuori(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getFuori(['3', '4']) }}
-            </div>
-            <div>
-                Pali: {{ getFuori(['P5', 'P6']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getFuori(['Ripartenza']) }}
-            </div>
-        </div>
-        <div>
-            <div class="font-semibold">
-                Stoppati: {{ getAllMenUps().stoppati.length }}
-            </div>
-            <div>
-                Dx: {{ getStoppati(['1', '2']) }}
-            </div>
-            <div>
-                Sx: {{ getStoppati(['3', '4']) }}
-            </div>
-            <div>
-                Pali: {{ getStoppati(['P5', 'P6']) }}
-            </div>
-            <div>
-                Ripartenze: {{ getStoppati(['Ripartenza']) }}
-            </div>
-        </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 import type { Team } from '../Interfaces/Team';
 import type { Shot } from '../Interfaces/Shot';
+import { MenUpShot, ShotOutcome } from '@/enum/ShotDescription';
+import { categories } from '@/const/consts';
+import type { CategoryKey } from '../Interfaces/Shot/Category';
+import { supZones } from '../Interfaces/Shot/Zone';
 
 const props = defineProps({
     team: {
@@ -88,36 +33,39 @@ const props = defineProps({
     }
 });
 
+const totals = computed(() => ({
+  goals: menUps.value.goals.length,
+  shots: menUps.value.shots.length,
+  parati: menUps.value.parati.length,
+  fuori: menUps.value.fuori.length,
+  stoppati: menUps.value.stoppati.length
+}))
+
+const menUps = computed(() => getAllMenUps())
+
 const getAllMenUps = () => {
-    var totalShoots: Shot[] = [];
-    props.team.players.forEach(pl => totalShoots.push(...pl.shotsSup));
-    var totalGoals = totalShoots.filter(shoot => shoot.outcome.toUpperCase() === 'GOAL' );
-    var totalParati = totalShoots.filter(shoot => shoot.outcome.toUpperCase() === 'PARATO' );
-    var totalFuori = totalShoots.filter(shoot => shoot.outcome.toUpperCase() === 'FUORI' );
-    var totalStoppati = totalShoots.filter(shoot => shoot.outcome.toUpperCase() === 'STOPPATO' );
+    var totalShots: Shot[] = [];
+    props.team.players.forEach(pl => totalShots.push(...pl.shotsSup));
+    var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.GOAL.toUpperCase() );
+    var totalParati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.SAVED.toUpperCase() );
+    var totalFuori = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.MISSED.toUpperCase() );
+    var totalStoppati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.BLOCKED.toUpperCase() );
     return {
         goals: totalGoals,
-        shoots: totalShoots,
+        shots: totalShots,
         parati: totalParati,
         fuori: totalFuori,
         stoppati: totalStoppati
       }
 }
 
-const getGoals = (positions: string[]) => {
-    return getAllMenUps().goals.filter(shoot => positions.includes(shoot.position)).length;
+function getShotsByCategory(category: CategoryKey, positions: string[]): number {
+  return getAllMenUps()[category].filter(shot => positions.includes(shot.position)).length
 }
 
-const getParati = (positions: string[]) => {
-    return getAllMenUps().parati.filter(shoot => positions.includes(shoot.position)).length;
-}
-
-const getFuori = (positions: string[]) => {
-    return getAllMenUps().fuori.filter(shoot => positions.includes(shoot.position)).length;
-}
-
-const getStoppati = (positions: string[]) => {
-    return getAllMenUps().stoppati.filter(shoot => positions.includes(shoot.position)).length;
+function getZoneValue(category: CategoryKey, values: (MenUpShot | string)[]): number {
+  const stringPositions = values.map(v => v.toString())
+  return getShotsByCategory(category, stringPositions)
 }
 
 </script>
