@@ -4,16 +4,10 @@
             <div class="rounded-md flex justify-between items-center bg-blue-50 border-blue-950 border-2 p-3 text-blue-950">
                 <span>{{ videoStore.selectedFile?.name }}</span>
                 <div class="flex justify-between gap-2">
-                    <button
-                        class="bg-blue-950 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300 "
-                        @click="videoStore.loadVideo"
-                        :disabled="!videoStore.selectedFile || videoStore.isUploading">Upload</button>
-                    <button class="bg-red-800 text-white font-medium rounded-md cursor-pointer px-2 py-1 disabled:border-gray-500 disabled:bg-gray-300"
-                        @click="showConfirmModal = true"
-                        :disabled="videoStore.isUploading">Remove</button>
-                    <!-- <button class="bg-amber-500 text-white font-medium rounded-md cursor-pointer px-2 py-1" @click="videoStore.testS3Connection">
-                        Test S3
-                    </button> -->
+                    <ActionButton type="button" color="blue" label="Upload" @click="videoStore.loadVideo"
+                        :disabled="!videoStore.selectedFile || videoStore.isUploading || videoStore.videoUploaded" />
+                    <ActionButton type="button" color="red" label="Remove" @click="showConfirmModal = true"
+                        :disabled="videoStore.isUploading"/>
                 </div>
 
             </div>
@@ -40,6 +34,7 @@ import { ref } from "vue";
 import { useDropzone, type FileRejectReason } from "vue3-dropzone";
 import ConfirmModal from "./modals/ConfirmModal.vue";
 import { CloudArrowUpIcon } from "@heroicons/vue/24/outline";
+import ActionButton from "./buttons/ActionButton.vue";
 
 
 const videoStore = useVideoStore();

@@ -21,22 +21,12 @@
           <IntervalItem :interval="interval" :index="index"></IntervalItem>
         </div>
 
-        <div class="flex justify-between font-medium">
-          <button @click="videoStore.addInterval"
-            class="mt-3 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:border-gray-500 disabled:bg-gray-300"
-            :disabled="videoStore.isUploading">
-            <PlusIcon class="size-6 font-bold"/>
-          </button>
-          <button @click="videoStore.sendIntervals"
-            class="mt-4 bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-900 active:bg-white active:text-blue-950 disabled:border-gray-500 disabled:bg-gray-300"
-            :disabled="videoStore.intervals.length === 0 || hasErrors || isIntervalEmpy || videoStore.isUploading">
-            Taglia Video
-          </button>
-          <button @click="showConfirmModal = true"
-            class="mt-4 bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 active:bg-white active:text-red-800 disabled:border-gray-500 disabled:bg-gray-300"
-            :disabled="videoStore.isUploading">
-            Resetta
-          </button>
+        <div class="flex justify-between font-medium mt-3">
+          <ActionButton :icon="PlusIcon" :disabled="videoStore.isUploading" @click="videoStore.addInterval" />
+          <ActionButton label="Taglia Video" color="blue" @click="videoStore.sendIntervals" 
+            :disabled="videoStore.intervals.length === 0 || hasErrors || isIntervalEmpy || videoStore.isUploading"/>
+          <ActionButton label="Resetta" color="red" @click="showConfirmModal = true"
+            :disabled="videoStore.isUploading" />
         </div>
 
         <!-- Modale di conferma -->
@@ -76,6 +66,7 @@ import { computed, ref } from "vue";
 import IntervalItem from "@/components/IntervalItem.vue";
 import { PlusIcon } from "@heroicons/vue/24/solid";
 import HlsVideoPlayer from "@/components/HlsVideoPlayer.vue";
+import ActionButton from "@/components/buttons/ActionButton.vue";
 
 const videoStore = useVideoStore();
 

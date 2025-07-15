@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, type Store } from "pinia";
 import * as XLSX from "xlsx";
 import router from "@/router";
 import type { Player } from "@/components/Interfaces/Player";
@@ -6,6 +6,7 @@ import type { Event } from "@/components/Interfaces/Event";
 import type { Match } from "@/components/Interfaces/Match";
 import type { Exclution } from "@/components/Interfaces/Exclution";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
+import { useSettingsStore, type SettingsStore } from "./settingsStore";
 
 export const useGameStore = defineStore("elementStore", {
   state: () => {
@@ -16,7 +17,7 @@ export const useGameStore = defineStore("elementStore", {
       globalInterval: null as number | null,
       activeCount: 0,
       activeOppCount: 0,
-      countdown: 480,
+      countdown: 0,
       countdownInterval: null as number | null,
       events: savedEvents ? JSON.parse(savedEvents) as Event[] : [],
       match: savedMatch ? JSON.parse(savedMatch) as Match : {} as Match,
@@ -30,13 +31,16 @@ export const useGameStore = defineStore("elementStore", {
   },
   actions: {
     loadStore() {
+      const settingsStore = useSettingsStore();
+      this.countdown = settingsStore.periodDuration * 60;
+      
       if(!this.match.homeTeam) {
-        initializeHomeTeam.call(this);
+        initializeHomeTeam.call(this, settingsStore);
       }
       if(!this.match.awayTeam) {
-        initializeAwayTeam.call(this);
+        initializeAwayTeam.call(this, settingsStore);
       }
-      if(this.match.quarter) {
+      if(this.match.quarter == 0) {
         this.match.quarter = 1;
       }
       this.saveData();
@@ -140,7 +144,6 @@ export const useGameStore = defineStore("elementStore", {
       this.events = [];
       this.activeCount = 0;
       this.activeOppCount = 0;
-      this.countdown = 480;
       this.stopGlobalTimer();
       this.saveData();
       this.loadStore();
@@ -152,6 +155,7 @@ export const useGameStore = defineStore("elementStore", {
       this.loadStore();
     },
     resetTimer() {
+      const settingsStore = useSettingsStore(); 
       this.match.quarter = 1;
       this.match.homeTeam.score = 0;
       this.match.homeTeam.timeOut1 = false;
@@ -177,9 +181,9 @@ export const useGameStore = defineStore("elementStore", {
         player.shotsEven = [];
         player.shotsSup = [];
         player.shotsPenalty = [];
-        player.active = true;
+        player.active = !settingsStore.enableOppTime;
       });
-      this.countdown = 480;
+      this.countdown = settingsStore.periodDuration * 60;
       this.events = [];
     },
     addShoot(number: number, team: number, type: ShotCategory, position: string, outcome: ShotOutcome) {
@@ -359,14 +363,14 @@ export const useGameStore = defineStore("elementStore", {
   },
 });
 
-function initializeHomeTeam(this: any) {
+function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
   this.match.homeTeam = {
     activatedTimer: true,
-    name: 'SC QUINTO',
+    name: settingsStore.homeTeamName,
     score: 0,
     timeOut1: false,
     timeOut2: false,
-    players: Array.from({ length: 15 }, (_, i) => ({
+    players: Array.from({ length: settingsStore.maxPlayers }, (_, i) => ({
       number: i + 1,
       name: "",
       activeTime: 0,
@@ -381,14 +385,14 @@ function initializeHomeTeam(this: any) {
   };
 }
 
-function initializeAwayTeam(this: any) {
+function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
   this.match.awayTeam = {
-    activatedTimer: false,
+    activatedTimer: settingsStore.enableOppTime,
     name: '',
     score: 0,
     timeOut1: false,
     timeOut2: false,
-    players: Array.from({ length: 15 }, (_, i) => ({
+    players: Array.from({ length: settingsStore.maxPlayers }, (_, i) => ({
       number: i + 1,
       name: "",
       activeTime: 0,
@@ -398,7 +402,7 @@ function initializeAwayTeam(this: any) {
       shotsSup: [],
       shotsPenalty: [],
       exclutions: [],
-      active: true,
+      active: !settingsStore.enableOppTime,
     }))
   };
 }

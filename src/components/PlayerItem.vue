@@ -3,14 +3,14 @@
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
     class="p-2 w-1/5 transition-colors flex justify-start items-center border border-gray-300 rounded-lg font-medium"
-    @click="handleClick(team.name == 'SC QUINTO' ? 0 : 1)" 
+    @click="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
     @mousedown="startHold" 
     @mouseup="stopHold" 
     @mouseleave="stopHold">
     <template v-if="isEditing">
       <input v-model="editableName" class="bg-transparent border-none outline-none w-full"
-        @blur="saveEdit(team.name == 'SC QUINTO' ? 0 : 1)" 
-        @keyup.enter="saveEdit(team.name == 'SC QUINTO' ? 0 : 1)"
+        @blur="saveEdit(team.name == settings.homeTeamName ? 0 : 1)" 
+        @keyup.enter="saveEdit(team.name == settings.homeTeamName ? 0 : 1)"
         ref="inputField" />
     </template>
     <template v-else>
@@ -22,14 +22,14 @@
       class="inline-flex ml-auto size-4 text-red-500" />
   </div>
 
-  <div v-if="team.name == 'SC QUINTO' "
+  <div v-if="team.activatedTimer"
     class="font-medium ml-1 w-1/12 text-blue-950">{{ player.active ? '🕒' :
       '⏳'
     }}{{
       store.formatTime(player.actualTime) }}
   </div>
 
-  <div class="inline-flex items-start ml-2 gap-1 " role="group">
+  <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
       :exclution-state="getExclutionState(0)"
       @handleExclution="addExclution($event, 0)"
@@ -44,35 +44,38 @@
       @remove="removeExclution(2)" />
   </div>
 
-  <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
-    <div class="h-6 w-8 flex items-center justify-end">PARI</div>
-    <ShotButton 
-      :disabled="!player.active" 
-      :type="ShotCategory.EVEN" 
-      @handleShot="addShot"/>
-    <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
-  </div>
-  <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
-    <div class="h-6 w-8 flex items-center justify-end">SUP</div>
-    <ShotButton 
-      :disabled="!player.active" 
-      :type="ShotCategory.SUP" 
-      :is-goal="false" 
-      @handleShot="addShot"/>
-    <div class="h-6 w-8 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
-  </div>
-  <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
-    <div class="h-6 w-8 flex items-center justify-end">RIG</div>
-    <ShotButton 
-      :disabled="!player.active"
-      :type="ShotCategory.PENALTY" 
-      :is-goal="false" 
-      @handleShot="addShot"/>
-    <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
-  </div>
-  <div class="inline-flex ml-3 mr-2 text-blue-950" role="group">
-    <div class="h-6 w-8 flex items-center"> {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}</div>
-  </div>
+  <template v-if="settings.enableShoot">
+    <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+      <div class="h-6 w-8 flex items-center justify-end">PARI</div>
+      <ShotButton 
+        :disabled="!player.active" 
+        :type="ShotCategory.EVEN" 
+        @handleShot="addShot"/>
+      <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
+    </div>
+    <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+      <div class="h-6 w-8 flex items-center justify-end">SUP</div>
+      <ShotButton 
+        :disabled="!player.active" 
+        :type="ShotCategory.SUP" 
+        :is-goal="false" 
+        @handleShot="addShot"/>
+      <div class="h-6 w-8 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
+    </div>
+    <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+      <div class="h-6 w-8 flex items-center justify-end">RIG</div>
+      <ShotButton 
+        :disabled="!player.active"
+        :type="ShotCategory.PENALTY" 
+        :is-goal="false" 
+        @handleShot="addShot"/>
+      <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
+    </div>
+    <div class="inline-flex ml-3 mr-2 text-blue-950" role="group">
+      <div class="h-6 w-8 flex items-center"> {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}</div>
+    </div>
+
+  </template>
 
 </template>
 
@@ -85,6 +88,7 @@ import ExclutionButton from "./buttons/ExclutionButton.vue";
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
+import { useSettingsStore } from "@/stores/settingsStore";
 
 const props = defineProps({
   player: {
@@ -98,6 +102,7 @@ const props = defineProps({
 });
 
 const store = useGameStore();
+const settings = useSettingsStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
 const isEditing = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);

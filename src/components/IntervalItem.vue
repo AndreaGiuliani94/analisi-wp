@@ -30,7 +30,7 @@
 
   <div class="flex flex-col">
     <div class="h-5"></div>
-    <button @click="videoStore.removeInterval(index)" class="bg-red-800 px-2 h-8 rounded hover:bg-red-800" :disabled="videoStore.isUploading">
+    <button @click="videoStore.removeInterval(index)" class="bg-red-800 px-2 h-8 rounded hover:bg-red-900 active:bg-red-900 active:ring-red-300" :disabled="videoStore.isUploading">
       <XMarkIcon class="size-5 font-bold text-white" />
     </button>
   </div>
@@ -42,6 +42,7 @@ import type { VideoInterval } from './Interfaces/VideoInterval';
 import CategoryListbox from './CategoryListbox.vue';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import TimeInput from './inputs/TimeInput.vue';
+import ActionButton from './buttons/ActionButton.vue';
 
 const videoStore = useVideoStore();
 
