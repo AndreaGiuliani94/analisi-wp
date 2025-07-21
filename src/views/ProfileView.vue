@@ -12,12 +12,12 @@
           {{ user?.email }}
         </h2>
 
-        <button
-          @click="handleLogout"
-          class="mt-6 min-w-30 bg-red-800 active:ring-2 active:ring-red-300 text-white font-semibold py-2 px-4 rounded-lg transition-all"
-        >
-          Esci
-        </button>
+        <SessionCreate></SessionCreate>
+
+        <div>
+          <ActionButton color="red" @click="handleLogout" label="Esci"></ActionButton>
+        </div>
+      
       </div>
     </div>
   </div>
@@ -25,26 +25,15 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/authStore";
-import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import SessionCreate from "../components/SessionsItem.vue";
+import ActionButton from "@/components/buttons/ActionButton.vue";
 
 const auth = useAuthStore();
 const router = useRouter();
 
 const user = auth.user;
 const initials = user?.email?.charAt(0)?.toUpperCase() || "?";
-
-// onMounted(async () => {
-//   const res = await fetch(import.meta.env.VITE_BE_URL + "/profile", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     credentials: "include",
-//   });
-
-//   console.log(res);
-
-// });
-
 
 const handleLogout = () => {
   auth.logout();

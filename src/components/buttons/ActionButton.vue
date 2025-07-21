@@ -6,7 +6,7 @@
         :disabled="disabled"
         class="p-2 inline-flex items-center text-regular font-medium rounded-md cursor-pointer shadow-md active:outline-none active:ring-2 transition-colors
             disabled:border-gray-500 disabled:bg-gray-300 disabled:shadow-none"
-        :class="colorClass"
+        :class="colorClass + ' ' + sizeClass + ' ' + justifyClass"
     >
         <component :is="icon" class="size-5" :class="label ? 'me-2' : '' " v-if="icon" />
         {{ label }}
@@ -25,6 +25,8 @@ const props = defineProps<{
     disabled?: boolean
     color?: 'green' | 'blue' | 'red' | 'gray'
     position?: 'center' | 'left' | 'right'
+    size?: 'full' | 'fit' | 'half'
+    justify?: 'start' | 'center' | 'end'
 }>()
 
 const emit = defineEmits<{
@@ -54,5 +56,17 @@ const alignmentClass = {
   left: 'justify-start',
   right: 'justify-end',
 }[props.position || 'center']
+
+const sizeClass = {
+  fit: '',
+  full: 'w-full',
+  half: 'w-1/2'
+}[props.size || 'fit']
+
+const justifyClass = {
+  start: 'justify-start',
+  center:'justify-center',
+  end: 'justify-end',
+}[props.justify || 'start']
 
 </script>

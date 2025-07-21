@@ -7,6 +7,7 @@ import type { Match } from "@/components/Interfaces/Match";
 import type { Exclution } from "@/components/Interfaces/Exclution";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
+import { useSessionStateStore } from "./sessionStateStore";
 
 export const useGameStore = defineStore("elementStore", {
   state: () => {
@@ -299,9 +300,11 @@ export const useGameStore = defineStore("elementStore", {
         shots: totalShots.length
       }
     },
-    saveData() {
+    async saveData() {
       localStorage.setItem("match", JSON.stringify(this.match));
       localStorage.setItem("events", JSON.stringify(this.events));
+      const sessionStore = useSessionStateStore();
+      await sessionStore.updateState(this.match, this.events);
     },
     formatTime(seconds: number) {
       const minutes = Math.floor(seconds / 60);

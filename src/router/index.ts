@@ -10,6 +10,8 @@ import ProfileView from '@/views/ProfileView.vue';
 import CallbackView from '@/views/CallbackView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import SettingsView from '@/views/SettingsView.vue';
+import SessionView from '@/views/SessionView.vue';
+import SessionCreate from '@/components/SessionsItem.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -19,13 +21,14 @@ const router = createRouter({
     { path: "/profile", component: ProfileView , meta: { requiresAuth: true }},
     { path: "/dashboard", component: DashboardView },
     { path: "/:pathMatch(.*)*", redirect: "/login" },
-    { path: '/dashboard', component: DashboardView },
-    { path: '/game', component: NameManager },
+    { path: '/game', component: NameManager, meta: { requiresAuth: true } },
     { path: '/game/live', component: ElementManager },
     { path: '/game/report', component: ReportView },
     { path: '/game/events', component: EventView },
     { path: '/analysis', component: AnalysisView },
     { path: '/settings', component: SettingsView },
+    { path: '/session', component: SessionCreate },
+    { path: '/session/join/:id', component: SessionView }
   ]
 });
 

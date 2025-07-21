@@ -1,9 +1,9 @@
-import { logout } from '@/services/authService';
+import { logout, refresh } from '@/services/authService';
 import { defineStore } from 'pinia';
 
 interface User {
   email: string;
-  name: string
+  name: string;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -30,10 +30,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async refresh() {
       try {
-        const res = await fetch(import.meta.env.VITE_BE_URL + '/auth/refresh', {
-          method: 'POST',
-          credentials: 'include'
-        })
+        const res = await refresh();
         if (res.ok) {
           const data = await res.json();
           this.accessToken = data.access_token;
