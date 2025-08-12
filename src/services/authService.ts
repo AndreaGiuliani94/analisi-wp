@@ -1,3 +1,4 @@
+import type { Credentials } from "@/components/Interfaces/Credentials";
 import { useAuthStore } from "@/stores/authStore";
 
 export const loginWithGoogle = async (code: any) => {
@@ -37,12 +38,17 @@ export const refresh = async () => {
   return res;
 }
 
-export const joinSession = async (sessionId: string) => {
-  const res = await fetch(import.meta.env.VITE_BE_URL + `/sessions/join/${sessionId}`, {
+export const registerWithCredentials = async (credentials: Credentials) => {
+  const res = await fetch(import.meta.env.VITE_BE_URL + '/auth/register', {
       method: 'POST',
-      credentials: 'include'
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: credentials.email,
+        password: credentials.password,
+        name: credentials.name,
+      }),
     })
-    return res;
+  return res;
 }
 
 // Token JWT finto (mock)

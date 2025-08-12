@@ -63,6 +63,8 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionRoot } from '@headlessui/
 import { ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
+import { registerWithCredentials } from '@/services/authService';
+import type { Credentials } from '../Interfaces/Credentials';
 
 const props = defineProps({
   isOpen: Boolean
@@ -85,15 +87,13 @@ const register = async () => {
   loading.value = true
 
   try {
-    const res = await fetch(import.meta.env.VITE_BE_URL + '/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-        name: name.value + ' ' + surname.value,
-      }),
-    })
+    const credentials: Credentials = {
+      email: email.value,
+      password: password.value,
+      name: name.value + ' ' + surname.value
+    }
+
+    const res = await registerWithCredentials(credentials)
 
     if (!res.ok) {
       const { detail } = await res.json()

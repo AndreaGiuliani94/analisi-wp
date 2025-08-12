@@ -15,8 +15,9 @@
 </template>
 
 <script setup lang="ts">
+export type RoleType = 'owner' | 'editor' | 'viewer'
 const props = defineProps<{
-  role: 'owner' | 'editor' | 'viewer'
+  role: RoleType
 }>()
 
 const roleLabelMap = {

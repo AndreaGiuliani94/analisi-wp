@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useGameStore } from './gameStore'
+import { getSession, updateSession } from '@/services/sessionService'
 
 interface SessionState {
     sessionId: string
@@ -20,25 +21,19 @@ export const useSessionStateStore = defineStore('sessionState', {
     }),
 
     actions: {
-        async init(sessionId: string) {
+        async loadSession(sessionId: string) {
             this.sessionId = sessionId
             localStorage.setItem("session_id", sessionId);
 
-            const { data, error } = await supabase
-                .from('session_state')
-                .select('*')
-                .eq('session_id', sessionId)
-                .single()
+            const res = await getSession(this.sessionId);
 
-            if (error) {
-                console.error(error)
-                return
-            }
+            const data = await res.json()
 
             this.match = data.match
             this.events = data.events
+            localStorage.setItem("match", JSON.stringify(this.match));
+            localStorage.setItem("events", JSON.stringify(this.events));
 
-            // 🔁 Sub Realtime
             this.subscribe()
         },
 
@@ -69,18 +64,10 @@ export const useSessionStateStore = defineStore('sessionState', {
         async updateState(match: any, events: any[]) {
             if (!this.sessionId) return
 
-            const { error } = await supabase
-                .from('session_state')
-                .update({
-                    match,
-                    events,
-                    updated_at: new Date().toISOString(), // opzionale
-                })
-                .eq('session_id', this.sessionId)
+            const res = await updateSession(this.sessionId, match, events);
 
-            if (error) {
-                console.error('Errore aggiornamento stato sessione:', error)
-            }
+            const data = await res.json()
+            console.log("Righe aggiornate:", data.updated_rows)
         }
     }
 })

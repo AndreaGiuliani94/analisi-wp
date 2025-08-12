@@ -10,8 +10,9 @@ import ProfileView from '@/views/ProfileView.vue';
 import CallbackView from '@/views/CallbackView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import SettingsView from '@/views/SettingsView.vue';
-import SessionView from '@/views/SessionView.vue';
 import SessionCreate from '@/components/SessionsItem.vue';
+import JoinSession from '@/views/session/JoinSession.vue';
+import SessionDetail from '@/views/session/SessionDetail.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -28,7 +29,8 @@ const router = createRouter({
     { path: '/analysis', component: AnalysisView },
     { path: '/settings', component: SettingsView },
     { path: '/session', component: SessionCreate },
-    { path: '/session/join/:id', component: SessionView }
+    { path: '/session/:id', component: SessionDetail },
+    { path: '/session/join/:id', component: JoinSession }
   ]
 });
 

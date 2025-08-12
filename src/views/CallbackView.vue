@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import { loginWithGoogle } from "@/services/authService";
 import { useAuthStore } from "@/stores/authStore";
 import { onMounted, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -20,12 +21,7 @@ onMounted(async () => {
     return;
   }
 
-  const res = await fetch(import.meta.env.VITE_BE_URL + "/auth/google", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code }),
-    credentials: "include",
-  });
+  const res = await loginWithGoogle(code);
 
   if (res.ok) {
     const data = await res.json();

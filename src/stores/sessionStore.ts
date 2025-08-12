@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { supabase } from '@/lib/supabase'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { getAllSessions } from '@/services/sessionService'
 
 interface SessionState {
     sessionId: string
@@ -22,10 +23,7 @@ export const useSessionStore = defineStore('session', {
 
     actions: {
         async getAllSessions() {
-            const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/all`, {
-                method: 'GET',
-                credentials: 'include'
-            });
+            const res = await getAllSessions()
             const data = await res.json()
             this.sessions = data
         }
