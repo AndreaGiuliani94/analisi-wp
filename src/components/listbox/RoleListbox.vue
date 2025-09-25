@@ -2,7 +2,7 @@
   <Listbox :modelValue="modelValue" @update:modelValue="updateValue">
     <div class="relative">
       <!-- Pulsante "select" -->
-        <ListboxButton v-slot="{ open }" class="relative cursor-pointer rounded bg-white flex justify-center items-center">
+        <ListboxButton v-slot="{ open }" class="relative z-5 cursor-pointer rounded bg-white flex justify-center items-center">
             <!-- Usa il badge qui -->
             <RoleBadge :role="modelValue" />
             <component
@@ -12,7 +12,7 @@
         </ListboxButton>
 
         <!-- Opzioni -->
-        <ListboxOptions class="absolute overflow-auto rounded bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
+        <ListboxOptions class="absolute z-10 overflow-auto rounded bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
             <ListboxOption
                 v-for="role in roles"
                 :key="role"

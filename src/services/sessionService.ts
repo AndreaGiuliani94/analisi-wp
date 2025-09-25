@@ -33,10 +33,16 @@ export const updateSession = async (sessionId: string, match: any, events: any) 
     return res;
 }
 
-export const createNewSession = async () => {
+export const createNewSession = async (title: string) => {
     const res = await fetch(import.meta.env.VITE_BE_URL + '/sessions/create', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title: title
+        })
     })
     return res;
 }

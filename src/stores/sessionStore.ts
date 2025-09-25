@@ -8,6 +8,7 @@ interface SessionState {
     data: string
     channel: RealtimeChannel | null
     participants: any[],
+    title: string,
     role: 'owner' | 'editor' | 'viewer',
 }
 

@@ -1,15 +1,17 @@
 <template>
   <div class="p-4">
-    <div v-if="sessionStore.sessions?.length > 0" class="m-2 text-lg">Sessioni aperte:
+    <div v-if="sessionStore.sessions?.length > 0" class="m-2 text-lg">Partite aperte:
       <div v-for="(session, index) in sessionStore.sessions" class="text-sm bg-gray-200 px-2 py-1 m-1 rounded">
         <RouterLink :to="`/session/${session.session_id}`" class="text-blue-600 hover:underline text-sm">
-          {{ frontendBaseUrl }}/session/{{ session.session_id }}
+          {{ session.sessions.title }}
         </RouterLink>
         <RoleBadge :role="session.role" />
       </div>
     </div>
-    <ActionButton @click="createSession" :disabled="loading" color="blue" label="Crea una nuova sessione">
+    <ActionButton @click="openModal" :disabled="loading" color="blue" label="Crea una nuova partita">
     </ActionButton>
+
+    <NewSessionModal :isOpen="showModal" @close="closeModal"/>
   </div>
 </template>
 
@@ -18,25 +20,22 @@ import ActionButton from '@/components/buttons/ActionButton.vue'
 import { useSessionStore } from '@/stores/sessionStore'
 import { onMounted, ref } from 'vue'
 import RoleBadge from './RoleBadge.vue'
-import { createNewSession } from '@/services/sessionService'
+import NewSessionModal from './modals/NewSessionModal.vue'
+
+const showModal = ref(false);
 
 const loading = ref(false)
 const sessionStore = useSessionStore()
 
-const frontendBaseUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173'
-
-const createSession = async () => {
+const openModal = async () => {
   loading.value = true
-  const res = await createNewSession();
+  showModal.value = true
+}
 
-  const data = await res.json()
-  sessionStore.getAllSessions()
-
-  const sessionId = data['session_id'];
-
-  console.log("session_id: " + sessionId);
-
+const closeModal = async () => {
+  showModal.value = false
   loading.value = false
+  sessionStore.getAllSessions()
 }
 
 onMounted(async () => {

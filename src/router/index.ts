@@ -23,14 +23,14 @@ const router = createRouter({
     { path: "/dashboard", component: DashboardView },
     { path: "/:pathMatch(.*)*", redirect: "/login" },
     { path: '/game', component: NameManager, meta: { requiresAuth: true } },
-    { path: '/game/live', component: ElementManager },
-    { path: '/game/report', component: ReportView },
-    { path: '/game/events', component: EventView },
-    { path: '/analysis', component: AnalysisView },
-    { path: '/settings', component: SettingsView },
-    { path: '/session', component: SessionCreate },
-    { path: '/session/:id', component: SessionDetail },
-    { path: '/session/join/:id', component: JoinSession }
+    { path: '/game/live', component: ElementManager, meta: { requiresAuth: true } },
+    { path: '/game/report', component: ReportView, meta: { requiresAuth: true } },
+    { path: '/game/events', component: EventView, meta: { requiresAuth: true } },
+    { path: '/analysis', component: AnalysisView, meta: { requiresAuth: true } },
+    { path: '/settings', component: SettingsView, meta: { requiresAuth: true } },
+    { path: '/session', component: SessionCreate, meta: { requiresAuth: true } },
+    { path: '/session/:id', component: SessionDetail, meta: { requiresAuth: true } },
+    { path: '/session/join/:id', component: JoinSession, meta: { requiresAuth: true } }
   ]
 });
 
