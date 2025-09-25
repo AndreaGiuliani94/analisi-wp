@@ -85,3 +85,12 @@ export const deleteParticipant = async (sessionId: string, userId: string) => {
     });
     return res;
 }
+
+export const deleteSession = async (sessionId: string) => {
+    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/session/${sessionId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return res;
+}

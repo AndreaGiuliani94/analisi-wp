@@ -1,23 +1,17 @@
-// stores/sessionState.ts
 import { defineStore } from 'pinia'
-import { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useGameStore } from './gameStore'
 import { getSession, updateSession } from '@/services/sessionService'
-
-interface SessionState {
-    sessionId: string
-    match: Record<string, any> | null
-    events: Record<string, any>[]
-    channel: RealtimeChannel | null
-}
+import type { SessionState } from '@/components/Interfaces/Session/SessionState'
 
 export const useSessionStateStore = defineStore('sessionState', {
     state: (): SessionState => ({
         sessionId: '',
         match: null,
         events: [],
-        channel: null
+        channel: null,
+        participants: [],
+        title: ''
     }),
 
     actions: {
