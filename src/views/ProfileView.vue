@@ -33,7 +33,10 @@ const auth = useAuthStore();
 const router = useRouter();
 
 const user = auth.user;
-const initials = user?.email?.charAt(0)?.toUpperCase() || "?";
+const initials = user?.name?.split(' ')
+    .filter(Boolean)
+    .map(n => n[0].toUpperCase())
+    .join('') || "?";
 
 const handleLogout = () => {
   auth.logout();

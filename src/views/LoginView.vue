@@ -24,7 +24,7 @@
           type="submit"
           :label="loading ? 'Accesso in corso...' : 'Accedi'"
           color="blue"
-          size="half"
+          width="half"
           justify="center"
           :disabled="loading"
         ></ActionButton>
@@ -32,7 +32,7 @@
         <ActionButton 
           :label="'Registrati'"
           color="blue"
-          size="half"
+          width="half"
           justify="center"
           :disabled="loading"
           @click="showRegisterModal = true"

@@ -1,18 +1,25 @@
 <template>
-  <Listbox :modelValue="modelValue" @update:modelValue="updateValue">
+  <Listbox :modelValue="modelValue" @update:modelValue="updateValue" :disabled="userRole !== 'owner'">
     <div class="relative">
       <!-- Pulsante "select" -->
-        <ListboxButton v-slot="{ open }" class="relative z-5 cursor-pointer rounded bg-white flex justify-center items-center">
+        <ListboxButton 
+          v-slot="{ open }" 
+          class="relative z-5 cursor-pointer rounded bg-gray-200 
+            flex justify-center items-center shadow disabled:cursor-default"
+            >
             <!-- Usa il badge qui -->
-            <RoleBadge :role="modelValue" />
-            <component
-                :is="open ? ChevronUpIcon : ChevronDownIcon"
-                class="w-4 h-4 text-gray-500"
-            />
+            <RoleBadge :role="modelValue" >
+              <component v-if="userRole == 'owner'"
+                  :is="open ? ChevronUpIcon : ChevronDownIcon"
+                  class="w-5 h-5"
+              />
+            </RoleBadge>
         </ListboxButton>
 
         <!-- Opzioni -->
-        <ListboxOptions class="absolute z-10 overflow-auto rounded bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
+        <ListboxOptions 
+          class="absolute z-10 overflow-auto rounded bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
+          >
             <ListboxOption
                 v-for="role in roles"
                 :key="role"
@@ -35,6 +42,7 @@ import { ChevronUpIcon } from '@heroicons/vue/24/solid';
 
 const props = defineProps<{
   modelValue: 'owner' | 'editor' | 'viewer'
+  userRole: string | undefined
 }>()
 
 const emit = defineEmits<{

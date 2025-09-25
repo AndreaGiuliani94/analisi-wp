@@ -66,13 +66,13 @@ const closeModal = async () => {
 }
 
 const openConfirmDelete = async (session: Session) => {
-  loading.value = true
   confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + session.sessions.title + '. Sicuro di voler procedere?'
   sessionToRemove.value = session;
   showRemoveConfirmModal.value = true;
 }
 
 const removeSession = async (sessionToRemove: Session | null) => {
+  loading.value = true
   if(sessionToRemove){
     const res = await deleteSession(sessionToRemove.session_id);
   } else {

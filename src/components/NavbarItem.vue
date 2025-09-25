@@ -25,7 +25,7 @@
                 <router-link v-if="auth.isLoggedIn" to="/profile" class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path === '/profile' }">
                     <UserCircleIcon class="size-5"></UserCircleIcon>
-                    <span class="hidden sm:inline">Profilo</span>
+                    <span class="hidden sm:inline">{{ initials }}</span>
                 </router-link>
                 <router-link v-else to="/login" class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path === '/login' }">
@@ -43,5 +43,11 @@ import Icon from './icons/Icon.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 const auth = useAuthStore();
+
+const user = auth.user;
+const initials = user?.name?.split(' ')
+    .filter(Boolean)
+    .map(n => n[0].toUpperCase())
+    .join('') || "?";
 
 </script>
