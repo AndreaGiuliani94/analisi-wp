@@ -1,5 +1,5 @@
 <template>
-  <Listbox :modelValue="modelValue" @update:modelValue="updateValue" :disabled="userRole !== 'owner'">
+  <Listbox :modelValue="modelValue" @update:modelValue="updateValue" :disabled="userRole !== 'owner' || modelValue === 'owner'">
     <div class="relative">
       <!-- Pulsante "select" -->
         <ListboxButton 
@@ -9,7 +9,7 @@
             >
             <!-- Usa il badge qui -->
             <RoleBadge :role="modelValue" >
-              <component v-if="userRole == 'owner'"
+              <component v-if="userRole == 'owner' && modelValue != 'owner'"
                   :is="open ? ChevronUpIcon : ChevronDownIcon"
                   class="w-5 h-5"
               />
@@ -34,11 +34,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import RoleBadge, { type RoleType } from '../RoleBadge.vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
-import { ChevronUpIcon } from '@heroicons/vue/24/solid';
+import { ChevronUpIcon } from '@heroicons/vue/20/solid';
 
 const props = defineProps<{
   modelValue: 'owner' | 'editor' | 'viewer'

@@ -72,8 +72,8 @@ const justifyClass = {
 }[props.justify || 'start']
 
 const sizeClass = {
-  sm: 'p-1.5 gap-1 text-xs',
-  md: 'p-2 gap-2 text-regular',
+  sm: 'p-1 gap-1 text-xs',
+  md: 'p-1.5 gap-2 text-regular',
   lg: 'p-2.5 gap-2 text-lg',
 }[props.size || 'md']
 

@@ -8,49 +8,57 @@
         <div v-if="loading">Caricamento...</div>
         <div v-if="error" class="text-red-600">{{ error }}</div>
 
-        <div v-if="!loading && session">
-          <h2 class="text-lg">Partecipanti</h2>
+        <div v-if="!loading && session" class="w-full">
+          <h2 class="text-lg font-medium">Partecipanti</h2>
           
           <div v-for="p in participants" :key="p.user_id">
-            <div class="flex w-full justify-between bg-gray-200 px-2 py-1 m-1 items-center gap-2 rounded">
-              <div class="">{{ p.name }} ({{ p.email }})</div>
-              <RoleListbox
-                v-model="p.role"
-                :userRole="userRole"
-                @update:modelValue="(newRole) => updateRole(p.user_id, newRole)"
-              />
-              <ActionButton
-                label="Rimuovi"
-                color="red"
-                :icon="XMarkIcon"
-                iconSize="size-4"
-                @click="removeParticipant(p.user_id)"
-                size="sm"
-                v-if="userRole == 'owner'"
-              ></ActionButton>
+            <div class="flex w-full justify-between bg-gray-200 px-2 py-1 my-1.5 items-center rounded gap-4">
+              <div class="flex-1 text-sm font-medium truncate">
+                {{ p.name }} ({{ p.email }})
+              </div>
+              <div class="flex items-center gap-2">
+                <RoleListbox
+                  v-model="p.role"
+                  :userRole="userRole"
+                  @update:modelValue="(newRole) => updateRole(p.user_id, newRole)"
+                />
+                <ActionButton
+                  color="red"
+                  :icon="XMarkIcon"
+                  iconSize="size-4"
+                  @click="removeParticipant(p.user_id)"
+                  size="sm"
+                  v-if="userRole == 'owner' && p.role != 'owner'"
+                ></ActionButton>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="flex justify-between gap-2">
+        <div v-if="!loading && session" class="flex justify-center gap-5 w-full">
           <ActionButton
             label="Entra"
             :icon="PlayIcon"
             :to="`/session/join/${sessionId}`"
             ></ActionButton>
 
+          <ShareButton
+            :sessionId="sessionId"
+            share-title="Partecipa alla mia sessione!"
+          />
+
           <ActionButton
             label="Elimina"
             :icon="TrashIcon"
             @click="openConfirmDelete()"
             color="red"
-          ></ActionButton>
-          
+          />
         </div>
 
-        
       </div>
+
     </div>
+
   </div>
   <ConfirmModal :isOpen="showRemoveConfirmModal" title="Conferma Rimozione"
         :message=confirmRemoveMessage
@@ -59,6 +67,7 @@
 </template>
 <script setup lang="ts">
 import ActionButton from '@/components/buttons/ActionButton.vue';
+import ShareButton from '@/components/buttons/ShareButton.vue';
 import type { Participant } from '@/components/Interfaces/Participant';
 import type { Session } from '@/components/Interfaces/Session';
 import RoleListbox from '@/components/listbox/RoleListbox.vue';

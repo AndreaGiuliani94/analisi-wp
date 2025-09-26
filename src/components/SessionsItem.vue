@@ -1,26 +1,35 @@
 <template>
-  <div class="p-4">
-    <div v-if="sessionStore.sessions?.length > 0" class="m-2 text-lg">Partite aperte:
-      <div v-for="(session, index) in sessionStore.sessions" class="text-sm bg-gray-200 px-2 py-1 m-1 flex justify-between items-center gap-2  rounded">
-        <RouterLink :to="`/session/${session.session_id}`" class="text-blue-600 hover:underline text-sm">
+  <div class="w-full">
+    <div v-if="sessionStore.sessions?.length > 0" class="mb-2 text-lg">Partite aperte:
+      <div v-for="(session, index) in sessionStore.sessions" class="text-sm bg-gray-200 px-2 py-1.5 my-1 flex justify-between items-center gap-2 rounded">
+        <RouterLink :to="`/session/${session.session_id}`" class="text-blue-600 hover:underline active:underline text-sm flex-1 truncate">
           {{ session.sessions.title }}
         </RouterLink>
-        <RoleBadge :role="session.role" />
+        
+        <div class="flex gap-2">
+          <RoleBadge :role="session.role" />
+        
 
-        <NavButton 
-          :icon="MagnifyingGlassIcon"
-          :to="`/session/${session.session_id}`"/>
+          <div class="flex gap-2">
+            <NavButton 
+              :icon="MagnifyingGlassIcon"
+              :to="`/session/${session.session_id}`"
+            />
+    
+            <NavButton 
+              :to="`/session/join/${session.session_id}`" 
+              :icon="ArrowRightIcon" 
+              color="green"
+            />
+    
+            <NavButton 
+              :icon="TrashIcon"
+              @click="openConfirmDelete(session)"
+              color="red"
+            />
 
-        <NavButton 
-          :to="`/session/join/${session.session_id}`" 
-          :icon="ArrowRightIcon" 
-          color="green"/>
-
-        <NavButton 
-          :icon="TrashIcon"
-          @click="openConfirmDelete(session)"
-          color="red"
-        />
+          </div>
+        </div>
 
       </div>
     </div>

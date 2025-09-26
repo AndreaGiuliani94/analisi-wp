@@ -2,7 +2,7 @@
 <template>
   <span
     :class="[
-      'inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full font-semibold',
+      'inline-flex items-center gap-0.5 px-2 py-1 text-xs rounded-full font-semibold',
       {
         'bg-green-100 text-green-700': props.role === 'owner',
         'bg-blue-100 text-blue-700': props.role === 'editor',
