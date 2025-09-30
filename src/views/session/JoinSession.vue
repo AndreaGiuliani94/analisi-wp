@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import { joinSession } from '@/services/sessionService'
 import { useSessionStateStore } from '@/stores/sessionStateStore'
+import { useSessionStore } from '@/stores/sessionStore'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -28,8 +29,10 @@ onMounted(async () => {
     if (!res.ok) {
       throw new Error('Errore durante l’unione alla sessione.')
     }
-    const sessionStore = useSessionStateStore();
-    await sessionStore.loadSession(sessionId);
+    const sessionStateStore = useSessionStateStore();
+    const sessionStore = useSessionStore()
+    await sessionStateStore.loadSession(sessionId);
+    await sessionStore.joinSession(sessionId);
     router.push(`/game`);
   } catch (err: any) {
     error.value = err.message || 'Errore sconosciuto'

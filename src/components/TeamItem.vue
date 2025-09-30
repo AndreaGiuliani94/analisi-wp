@@ -4,7 +4,11 @@ import { ArrowRightIcon } from '@heroicons/vue/20/solid';
 import type { Team } from './Interfaces/Team';
 import TimeOutButton from './buttons/TimeOutButton.vue';
 import type { Player } from './Interfaces/Player';
+import { useSessionStore } from '@/stores/sessionStore';
+import { useAuthStore } from '@/stores/authStore';
 
+const sessionStore = useSessionStore()
+const authStore = useAuthStore()
 
 const props = defineProps<{
   team: Team
@@ -18,7 +22,10 @@ const emit = defineEmits<{
 }>()
 
 const handleTimeOutToggle = (number: 1 | 2) => {
-  emit('toggleTimeOut', { teamName: props.teamKey, number })
+  const userRole = sessionStore.currentSession.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer"
+  if(userRole && userRole !== 'viewer'){
+    emit('toggleTimeOut', { teamName: props.teamKey, number })
+  }
 }
 
 const handleOpenModal = () => {

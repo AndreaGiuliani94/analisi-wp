@@ -9,7 +9,7 @@ import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
 import { useSessionStateStore } from "./sessionStateStore";
 
-export const useGameStore = defineStore("elementStore", {
+export const useGameStore = defineStore("gameStore", {
   state: () => {
     const savedEvents = localStorage.getItem("events");
     const savedMatch = localStorage.getItem("match");
@@ -41,7 +41,7 @@ export const useGameStore = defineStore("elementStore", {
       if(!this.match.awayTeam) {
         initializeAwayTeam.call(this, settingsStore);
       }
-      if(this.match.quarter == 0) {
+      if(!this.match.quarter || this.match.quarter == 0) {
         this.match.quarter = 1;
       }
       this.saveData();

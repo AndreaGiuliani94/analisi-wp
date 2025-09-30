@@ -31,14 +31,17 @@
 
   <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
+      :disabled="userRole === 'viewer'"
       :exclution-state="getExclutionState(0)"
       @handleExclution="addExclution($event, 0)"
       @remove="removeExclution(0)" />
     <ExclutionButton 
+      :disabled="userRole === 'viewer'"
       :exclution-state="getExclutionState(1)"
       @handleExclution="addExclution($event, 1)"
       @remove="removeExclution(1)" />
     <ExclutionButton 
+      :disabled="userRole === 'viewer'"
       :exclution-state="getExclutionState(2)"
       @handleExclution="addExclution($event, 2)" 
       @remove="removeExclution(2)" />
@@ -48,7 +51,7 @@
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">PARI</div>
       <ShotButton 
-        :disabled="!player.active" 
+        :disabled="!player.active || userRole === 'viewer'" 
         :type="ShotCategory.EVEN" 
         @handleShot="addShot"/>
       <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
@@ -56,7 +59,7 @@
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">SUP</div>
       <ShotButton 
-        :disabled="!player.active" 
+        :disabled="!player.active || userRole === 'viewer'" 
         :type="ShotCategory.SUP" 
         :is-goal="false" 
         @handleShot="addShot"/>
@@ -65,7 +68,7 @@
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">RIG</div>
       <ShotButton 
-        :disabled="!player.active"
+        :disabled="!player.active || userRole === 'viewer'"
         :type="ShotCategory.PENALTY" 
         :is-goal="false" 
         @handleShot="addShot"/>
@@ -81,7 +84,7 @@
 
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
-import { ref, nextTick, type PropType } from "vue";
+import { ref, nextTick, type PropType, onMounted } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
@@ -89,6 +92,8 @@ import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
 import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useSessionStore } from "@/stores/sessionStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const props = defineProps({
   player: {
@@ -103,11 +108,18 @@ const props = defineProps({
 
 const store = useGameStore();
 const settings = useSettingsStore();
+const sessionStore = useSessionStore();
+const authStore = useAuthStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
 const isEditing = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
+const userRole = ref('');
+
+onMounted(()=>{
+   sessionStore.getCurrentSession().then(res => userRole.value = res.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer")
+})
 
 const startHold = () => {
   isHolding.value = false; // Reset del flag prima di iniziare
@@ -127,14 +139,20 @@ const stopHold = () => {
 };
 
 const handleClick = (team: number) => {
-  if (!isHolding.value && !isEditing.value) {
-    store.toggleElement(props.player.number, team);
+  const userRole = sessionStore.currentSession.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer"
+  if(userRole && userRole !== 'viewer') {
+    if (!isHolding.value && !isEditing.value) {
+      store.toggleElement(props.player.number, team);
+    }
   }
 };
 
 const saveEdit = (team: number) => {
-  isEditing.value = false;
-  store.updatePlayerName(props.player.number, editableName.value, team);
+  const userRole = sessionStore.currentSession.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer"
+  if(userRole && userRole !== 'viewer'){
+    isEditing.value = false;
+    store.updatePlayerName(props.player.number, editableName.value, team);
+  }
 };
 
 const addExclution = (payload : { type: string, position: string, ball: boolean}, exclNumber: number) => {

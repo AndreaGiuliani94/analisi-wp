@@ -3,12 +3,12 @@
     <div class="bg-white p-8 rounded-2xl border-2 border-gray-300 shadow-lg w-2/3 text-center">
       <div class="flex flex-col items-center gap-4">
 
-        <h1 class="text-xl font-bold text-center">{{ session?.name || sessionId }}</h1>
+        <h1 class="text-xl font-bold text-center">{{ sessionName || sessionId }}</h1>
 
         <div v-if="loading">Caricamento...</div>
         <div v-if="error" class="text-red-600">{{ error }}</div>
 
-        <div v-if="!loading && session" class="w-full">
+        <div v-if="!loading && sessionName" class="w-full">
           <h2 class="text-lg font-medium">Partecipanti</h2>
           
           <div v-for="p in participants" :key="p.user_id">
@@ -35,7 +35,7 @@
           </div>
         </div>
 
-        <div v-if="!loading && session" class="flex justify-center gap-5 w-full">
+        <div v-if="!loading && sessionName" class="flex justify-center gap-5 w-full">
           <ActionButton
             label="Entra"
             :icon="PlayIcon"
@@ -69,35 +69,34 @@
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import ShareButton from '@/components/buttons/ShareButton.vue';
 import type { Participant } from '@/components/Interfaces/Participant';
-import type { Session } from '@/components/Interfaces/Session';
 import RoleListbox from '@/components/listbox/RoleListbox.vue';
 import ConfirmModal from '@/components/modals/ConfirmModal.vue';
 import router from '@/router';
-import { updateParticipantRole, getSessionDetails, deleteParticipant, deleteSession } from '@/services/sessionService';
+import { updateParticipantRole, deleteParticipant, deleteSession } from '@/services/sessionService';
+import { useSessionStore } from '@/stores/sessionStore';
 import { PlayIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/solid';
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const sessionId = route.params.id as string;
-const session = ref<Session | null>(null);
+const sessionName = ref('')
 const participants = ref<Participant[]>([])
 const loading = ref(false);
 const error = ref('');
 const userRole = ref('');
 const showRemoveConfirmModal = ref(false);
 const confirmRemoveMessage = ref('');
+const sessionStore = useSessionStore();
 
 // Fetch session details + participants
 async function fetchSession() {
   loading.value = true;
   try {
-    const res = await getSessionDetails(sessionId)
-    if (!res.ok) throw new Error('Errore caricamento sessione');
-    const data = await res.json();
-    session.value = data;
-    participants.value = data.participants;
-    userRole.value = data.user_role;
+    await sessionStore.getSessionDetails(sessionId);
+    participants.value = sessionStore.currentSession.participants;
+    userRole.value = sessionStore.currentSession.user_role;
+    sessionName.value = sessionStore.currentSession.name;
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -105,8 +104,8 @@ async function fetchSession() {
   }
 }
 
-onMounted(() => {
-  fetchSession();
+onMounted(async () => {
+  await fetchSession();
 });
 
 // Modifica ruolo
@@ -133,13 +132,13 @@ async function removeParticipant(userId: string) {
 }
 
 const openConfirmDelete = async () => {
-  confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + session.value?.name + '. Sicuro di voler procedere?'
+  confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + sessionName + '. Sicuro di voler procedere?'
   showRemoveConfirmModal.value = true;
 }
 
 const removeSession = async (sessionId: string) => {
   loading.value = true
-  const res = await deleteSession(sessionId);
+  await deleteSession(sessionId);
 
   showRemoveConfirmModal.value = false
   loading.value = false

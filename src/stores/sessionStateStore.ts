@@ -3,16 +3,19 @@ import { supabase } from '@/lib/supabase'
 import { useGameStore } from './gameStore'
 import { getSession, updateSession } from '@/services/sessionService'
 import type { SessionState } from '@/components/Interfaces/Session/SessionState'
+import type { Match } from '@/components/Interfaces/Match'
+import type { Event } from "@/components/Interfaces/Event";
 
 export const useSessionStateStore = defineStore('sessionState', {
-    state: (): SessionState => ({
-        sessionId: '',
-        match: null,
-        events: [],
-        channel: null,
-        participants: [],
-        title: ''
-    }),
+    state: (): SessionState => {
+        return {
+            sessionId: '',
+            match: null,
+            events: [],
+            channel: null,
+            title: ''
+        }
+    },
 
     actions: {
         async loadSession(sessionId: string) {
@@ -27,6 +30,10 @@ export const useSessionStateStore = defineStore('sessionState', {
             this.events = data.events
             localStorage.setItem("match", JSON.stringify(this.match));
             localStorage.setItem("events", JSON.stringify(this.events));
+            
+            const gameStore = useGameStore()
+            gameStore.match = this.match as Match;
+            gameStore.events = this.events as Event[];
 
             this.subscribe()
         },
@@ -56,12 +63,22 @@ export const useSessionStateStore = defineStore('sessionState', {
         },
 
         async updateState(match: any, events: any[]) {
-            if (!this.sessionId) return
+            if (!this.sessionId) {
+                console.log("sessionId non trovato, lo recupero da local storage");
+                const sessionIdLS = localStorage.getItem("session_id");
+                if (sessionIdLS !== null) {
+                    console.log("LocalStorageSessionId: " + sessionIdLS);
+                    this.sessionId = sessionIdLS;
+                } else {
+                    console.log("session_id non trovato in localStorage");
+                    return;
+                }
+            }
 
             const res = await updateSession(this.sessionId, match, events);
 
-            const data = await res.json()
-            console.log("Righe aggiornate:", data.updated_rows)
+            const data = await res.json();
+            console.log("Righe aggiornate:", data.updated_rows);
         }
     }
 })

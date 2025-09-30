@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="w-full" :class="{'mb-5': userRole && userRole ==='viewer'}">
     <div class="grid grid-cols-3">
       <div class="justify-self-start">
         <NavButton
@@ -10,7 +10,7 @@
       </div>
       <div class="text-xl font-bold text-center text-blue-950">
         <div >{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
-        <div >{{ store.match.quarter }} T</div>
+        <div v-if="userRole && userRole !== 'viewer'">{{ store.match.quarter }} T</div>
       </div>
       <div class="justify-self-end">
         <NavButton
@@ -23,9 +23,13 @@
   
   </div>
   
-  <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
+  <div v-if="userRole && userRole !== 'viewer'">
 
-  <ClockManager />
+    <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
+  
+    <ClockManager />
+
+  </div>
 
   <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
 
@@ -59,11 +63,17 @@ import type { Team } from '@/components/Interfaces/Team';
 import NavButton from '@/components/buttons/NavButton.vue';
 import TeamItem from '@/components/TeamItem.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
+import { useSessionStore } from '@/stores/sessionStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const store = useGameStore();
+const sessionStore = useSessionStore()
+const authStore = useAuthStore()
 
 const headerRef = ref<HTMLElement | null>(null)
 const headerHeight = ref(0)
+
+const userRole = ref('')
 
 const updateHeaderHeight = () => {
   if (headerRef.value) {
@@ -71,7 +81,12 @@ const updateHeaderHeight = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const sessionIdLS = localStorage.getItem("session_id");
+  if (sessionIdLS !== null && authStore.user != null) {
+      userRole.value = (await sessionStore.getCurrentSession()).participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer";
+      console.log("Ruolo utente:", userRole.value);
+  }
   updateHeaderHeight()
   window.addEventListener('resize', updateHeaderHeight)
 })

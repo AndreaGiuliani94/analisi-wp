@@ -2,7 +2,9 @@
   <div class="w-full">
     <div v-if="sessionStore.sessions?.length > 0" class="mb-2 text-lg">Partite aperte:
       <div v-for="(session, index) in sessionStore.sessions" class="text-sm bg-gray-200 px-2 py-1.5 my-1 flex justify-between items-center gap-2 rounded">
-        <RouterLink :to="`/session/${session.session_id}`" class="text-blue-600 hover:underline active:underline text-sm flex-1 truncate">
+        <RouterLink :to="`/session/${session.session_id}`" 
+          class="text-blue-600 hover:underline active:underline flex-1 truncate"
+          :class="{'font-bold text-base': session.session_id == (sessionStore.currentSession.session_id || sessionIdLS)}">
           {{ session.sessions.title }}
         </RouterLink>
         
@@ -59,6 +61,7 @@ const showCreateSessionModal = ref(false);
 const showRemoveConfirmModal = ref(false);
 const confirmRemoveMessage = ref('');
 const sessionToRemove = ref<Session | null>(null);
+const sessionIdLS = localStorage.getItem("session_id");
 
 const loading = ref(false)
 const sessionStore = useSessionStore()

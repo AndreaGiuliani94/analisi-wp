@@ -12,7 +12,7 @@
           {{ user?.email }}
         </h2>
 
-        <SessionCreate></SessionCreate>
+        <SessionsItem></SessionsItem>
 
         <div>
           <ActionButton color="red" @click="handleLogout" label="Esci"></ActionButton>
@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
-import SessionCreate from "../components/SessionsItem.vue";
+import SessionsItem from "../components/SessionsItem.vue";
 import ActionButton from "@/components/buttons/ActionButton.vue";
 
 const auth = useAuthStore();
