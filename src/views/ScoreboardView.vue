@@ -14,6 +14,7 @@
       </div>
       <div class="justify-self-end">
         <NavButton
+          v-if="userRole && userRole !== 'viewer'"
           :label="'Restart'"
           :icon="ArrowPathIcon"
           :onClick="store.resetTimer">
@@ -43,7 +44,7 @@
 
   </div>
 
-  <div class="flex justify-center items-center gap-10 p-2 m-5" role="group">
+  <div class="flex justify-center items-center gap-10" role="group">
     <ActionButton :icon="TableCellsIcon" label="Report" to="/game/report" color="green" position="center"/>
     <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="store.events.length == 0"/>
   </div>
@@ -65,6 +66,7 @@ import TeamItem from '@/components/TeamItem.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useUserRole } from '@/composables/useUserRole';
 
 const store = useGameStore();
 const sessionStore = useSessionStore()
@@ -73,7 +75,7 @@ const authStore = useAuthStore()
 const headerRef = ref<HTMLElement | null>(null)
 const headerHeight = ref(0)
 
-const userRole = ref('')
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 
 const updateHeaderHeight = () => {
   if (headerRef.value) {
@@ -84,7 +86,6 @@ const updateHeaderHeight = () => {
 onMounted(async () => {
   const sessionIdLS = localStorage.getItem("session_id");
   if (sessionIdLS !== null && authStore.user != null) {
-      userRole.value = (await sessionStore.getCurrentSession()).participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer";
       console.log("Ruolo utente:", userRole.value);
   }
   updateHeaderHeight()

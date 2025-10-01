@@ -94,6 +94,7 @@ import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useUserRole } from "@/composables/useUserRole";
 
 const props = defineProps({
   player: {
@@ -115,11 +116,7 @@ const isEditing = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
-const userRole = ref('');
-
-onMounted(()=>{
-   sessionStore.getCurrentSession().then(res => userRole.value = res.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer")
-})
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 
 const startHold = () => {
   isHolding.value = false; // Reset del flag prima di iniziare
@@ -139,8 +136,7 @@ const stopHold = () => {
 };
 
 const handleClick = (team: number) => {
-  const userRole = sessionStore.currentSession.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer"
-  if(userRole && userRole !== 'viewer') {
+  if(userRole && userRole.value !== 'viewer') {
     if (!isHolding.value && !isEditing.value) {
       store.toggleElement(props.player.number, team);
     }
@@ -148,8 +144,7 @@ const handleClick = (team: number) => {
 };
 
 const saveEdit = (team: number) => {
-  const userRole = sessionStore.currentSession.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer"
-  if(userRole && userRole !== 'viewer'){
+  if(userRole && userRole.value !== 'viewer'){
     isEditing.value = false;
     store.updatePlayerName(props.player.number, editableName.value, team);
   }

@@ -5,10 +5,10 @@ import type { Team } from './Interfaces/Team';
 import TimeOutButton from './buttons/TimeOutButton.vue';
 import type { Player } from './Interfaces/Player';
 import { useSessionStore } from '@/stores/sessionStore';
-import { useAuthStore } from '@/stores/authStore';
+import { useUserRole } from '@/composables/useUserRole';
 
 const sessionStore = useSessionStore()
-const authStore = useAuthStore()
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 
 const props = defineProps<{
   team: Team
@@ -22,8 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const handleTimeOutToggle = (number: 1 | 2) => {
-  const userRole = sessionStore.currentSession.participants.find(p => p.email == authStore.user?.email)?.role ?? "viewer"
-  if(userRole && userRole !== 'viewer'){
+  if(userRole && userRole.value !== 'viewer'){
     emit('toggleTimeOut', { teamName: props.teamKey, number })
   }
 }

@@ -7,22 +7,22 @@
                 <span class="hidden sm:inline">Match Live WP</span>
             </router-link>
             <div class="space-x-4 flex">
-                <router-link  to="/game" class="flex items-center space-x-1"
+                <router-link :to="userRole !== 'viewer' ? '/game' : '/game/live'" class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path.includes('/game') }">
                     <Icon name="water_polo" size="w-5 h-5" />
                     <span class="hidden sm:inline">Partita</span>
                 </router-link>
-                <router-link  to="/analysis" class="flex items-center space-x-1"
+                <router-link v-if="userRole !== 'viewer'" to="/analysis" class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path.includes('/analysis') }">
                     <Icon name="analisi" size="w-5 h-5" view-box="0 0 122.88 108.06" />
                     <span class="hidden sm:inline">Analisi</span>
                 </router-link>
-                <router-link to="/settings" class="flex items-center space-x-1"
+                <router-link v-if="userRole !== 'viewer'" to="/settings" class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path === '/settings' }">
                     <WrenchScrewdriverIcon class="size-5"></WrenchScrewdriverIcon>
                     <span class="hidden sm:inline">Impostazioni</span>
                 </router-link>
-                <router-link v-if="auth.isLoggedIn" to="/profile" class="flex items-center space-x-1"
+                <router-link v-if="authStore.isLoggedIn" to="/profile" class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path === '/profile' }">
                     <UserCircleIcon class="size-5"></UserCircleIcon>
                     <span class="hidden sm:inline">{{ initials }}</span>
@@ -41,13 +41,17 @@
 import { UserCircleIcon, WrenchScrewdriverIcon, UserIcon } from '@heroicons/vue/24/outline';
 import Icon from './icons/Icon.vue';
 import { useAuthStore } from '@/stores/authStore';
+import { storeToRefs } from 'pinia';
+import { useInitials } from '@/composables/useInitials';
+import { useSessionStore } from '@/stores/sessionStore';
+import { useUserRole } from '@/composables/useUserRole';
 
-const auth = useAuthStore();
+const authStore = useAuthStore();
+const sessionStore = useSessionStore();
 
-const user = auth.user;
-const initials = user?.name?.split(' ')
-    .filter(Boolean)
-    .map(n => n[0].toUpperCase())
-    .join('') || "?";
+const { user } = storeToRefs(authStore) // così user è un ref reattivo
 
+const { initials } = useInitials(user)
+
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 </script>

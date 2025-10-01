@@ -17,7 +17,7 @@ export const useSessionStore = defineStore('session', {
             return this.sessions != null ? this.sessions : this.getAllSessions()
         },
         async getCurrentSession(): Promise<SessionDetails> {
-            return this.currentSession != null ? this.currentSession : this.getSessionDetails('')
+            return this.currentSession != null ? this.currentSession : this.joinSession('')
         },
         async getAllSessions() {
             const res = await getAllSessions()
@@ -44,6 +44,7 @@ export const useSessionStore = defineStore('session', {
             if (!res.ok) throw new Error('Errore caricamento sessione');
             const data = await res.json();
             localStorage.setItem("currentSession", JSON.stringify(data));
+            return data;
         }
     },
 })

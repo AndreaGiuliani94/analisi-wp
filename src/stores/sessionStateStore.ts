@@ -5,35 +5,35 @@ import { getSession, updateSession } from '@/services/sessionService'
 import type { SessionState } from '@/components/Interfaces/Session/SessionState'
 import type { Match } from '@/components/Interfaces/Match'
 import type { Event } from "@/components/Interfaces/Event";
+import { useSessionStore } from './sessionStore'
 
 export const useSessionStateStore = defineStore('sessionState', {
     state: (): SessionState => {
+        const savedEvents = localStorage.getItem("events");
+        const savedMatch = localStorage.getItem("match");
+        const savedSessionId = localStorage.getItem("session_id")
         return {
-            sessionId: '',
-            match: null,
-            events: [],
+            sessionId: savedSessionId ? savedSessionId : '',
+            events: savedEvents ? JSON.parse(savedEvents) as Event[] : [],
+            match: savedMatch ? JSON.parse(savedMatch) as Match : {} as Match,
             channel: null,
             title: ''
         }
     },
 
     actions: {
-        async loadSession(sessionId: string) {
+        async joinSession(sessionId: string) {
             this.sessionId = sessionId
             localStorage.setItem("session_id", sessionId);
-
-            const res = await getSession(this.sessionId);
-
-            const data = await res.json()
-
-            this.match = data.match
-            this.events = data.events
-            localStorage.setItem("match", JSON.stringify(this.match));
-            localStorage.setItem("events", JSON.stringify(this.events));
             
+            await this.getSession();
+
             const gameStore = useGameStore()
             gameStore.match = this.match as Match;
             gameStore.events = this.events as Event[];
+
+            const sessionStore = useSessionStore()
+            await sessionStore.joinSession(sessionId);
 
             this.subscribe()
         },
@@ -53,9 +53,14 @@ export const useSessionStateStore = defineStore('sessionState', {
                     },
                     (payload) => {
                         const newData = payload.new as any
+                        this.match = newData.match
+                        this.events = newData.events
 
                         const gameStore = useGameStore()
-                        gameStore.saveData()
+                        gameStore.match = this.match as Match;
+                        gameStore.events = this.events as Event[];
+                        localStorage.setItem("match", JSON.stringify(this.match));
+                        localStorage.setItem("events", JSON.stringify(this.events));
                     }
                 )
                 .subscribe()
@@ -74,11 +79,17 @@ export const useSessionStateStore = defineStore('sessionState', {
                     return;
                 }
             }
+            await updateSession(this.sessionId, match, events);
+        },
 
-            const res = await updateSession(this.sessionId, match, events);
+        async getSession() {
+            const res = await getSession(this.sessionId);
+            const data = await res.json()
 
-            const data = await res.json();
-            console.log("Righe aggiornate:", data.updated_rows);
+            this.match = data.match
+            this.events = data.events
+            localStorage.setItem("match", JSON.stringify(this.match));
+            localStorage.setItem("events", JSON.stringify(this.events));
         }
     }
 })
