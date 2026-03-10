@@ -25,12 +25,22 @@
         <div class="w-[1.7em]">
           {{ player.number }}.
         </div>
-        <input v-if="userRole !== 'viewer'" v-model="player.name" @blur="store.updatePlayerName(player.number, player.name, 0)"
-          :placeholder="'Giocatore ' + player.number"
-          class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
-        <div v-else>
-          {{ player.name }}
+        <div class="w-full">
+          <input v-if="userRole !== 'viewer'" v-model="player.name" @blur="store.updatePlayerName(player.number, player.name, 0)"
+            :placeholder="'Giocatore ' + player.number"
+            class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+          <div v-else>
+            {{ player.name }}
+          </div>
         </div>
+        <label v-if="player.number === 13 || player.number === 1" class="flex items-center cursor-pointer group ml-1.5">
+          <input type="checkbox" v-model="player.isGK" class="sr-only peer">
+          <div class="px-2 py-1 text-[10px] font-bold border rounded-full transition-all
+                      peer-checked:bg-red-700 peer-checked:text-white peer-checked:border-red-700
+                      text-gray-400 border-gray-300 group-hover:border-red-700">
+            GK
+          </div>
+        </label>
       </div>
     </div>
     <div
@@ -50,12 +60,22 @@
         <div class="w-[1.7em]">
           {{ player.number }}.
         </div>
-        <input v-if="userRole !== 'viewer'" v-model="player.name" @blur="store.updatePlayerName(player.number, player.name, 1)"
-          :placeholder="'Giocatore ' + player.number"
-          class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
-        <div v-else>
-          {{ player.name }}
+        <div class="w-full">
+          <input v-if="userRole !== 'viewer'" v-model="player.name" @blur="store.updatePlayerName(player.number, player.name, 1)"
+            :placeholder="'Giocatore ' + player.number"
+            class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+          <div v-else>
+            {{ player.name }}
+          </div>
         </div>
+        <label v-if="player.number === 13 || player.number === 1" class="flex items-center cursor-pointer group ml-1.5">
+          <input type="checkbox" v-model="player.isGK" class="sr-only peer">
+          <div class="px-2 py-1 text-[10px] font-bold border rounded-full transition-all
+                      peer-checked:bg-red-700 peer-checked:text-white peer-checked:border-red-700
+                      text-gray-400 border-gray-300 group-hover:border-red-700">
+            GK
+          </div>
+        </label>
       </div>
     </div>
   </div>

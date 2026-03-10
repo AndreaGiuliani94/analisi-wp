@@ -14,14 +14,15 @@ export const useGameStore = defineStore("gameStore", {
     const savedEvents = localStorage.getItem("events");
     const savedMatch = localStorage.getItem("match");
     return {
-      opponentsTeamName: '',
+      opponentsTeamName: "",
       globalInterval: null as number | null,
       activeCount: 0,
       activeOppCount: 0,
       countdown: 0,
       countdownInterval: null as number | null,
-      events: savedEvents ? JSON.parse(savedEvents) as Event[] : [],
-      match: savedMatch ? JSON.parse(savedMatch) as Match : {} as Match,
+      isCorrectionMode: false,
+      events: savedEvents ? (JSON.parse(savedEvents) as Event[]) : [],
+      match: savedMatch ? (JSON.parse(savedMatch) as Match) : ({} as Match),
     };
   },
   getters: {
@@ -34,14 +35,14 @@ export const useGameStore = defineStore("gameStore", {
     loadStore() {
       const settingsStore = useSettingsStore();
       this.countdown = settingsStore.periodDuration * 60;
-      
-      if(!this.match.homeTeam) {
+
+      if (!this.match.homeTeam) {
         initializeHomeTeam.call(this, settingsStore);
       }
-      if(!this.match.awayTeam) {
+      if (!this.match.awayTeam) {
         initializeAwayTeam.call(this, settingsStore);
       }
-      if(!this.match.quarter || this.match.quarter == 0) {
+      if (!this.match.quarter || this.match.quarter == 0) {
         this.match.quarter = 1;
       }
       this.saveData();
@@ -58,7 +59,9 @@ export const useGameStore = defineStore("gameStore", {
         el = this.match.homeTeam.players.find((el) => el.number === number);
         if (el) {
           el.active = !el.active;
-          this.activeCount = this.match.homeTeam.players.filter((e) => e.active).length;
+          this.activeCount = this.match.homeTeam.players.filter(
+            (e) => e.active,
+          ).length;
         }
         if (this.activeCount > 7) {
           if (el) el.active = false;
@@ -74,24 +77,27 @@ export const useGameStore = defineStore("gameStore", {
         el = this.match.awayTeam.players.find((el) => el.number === number);
         if (el) {
           el.active = !el.active;
-          this.activeOppCount = this.match.awayTeam.players.filter((e) => e.active).length;
+          this.activeOppCount = this.match.awayTeam.players.filter(
+            (e) => e.active,
+          ).length;
         }
-        if (this.activeOppCount > 7) {
-          if (el) el.active = false;
-          this.activeOppCount--;
-        } else if (el?.exclutions.length == 3) {
-          if (el) el.active = false;
-          if (el) el.actualTime = 0;
-          this.activeOppCount--;
-        } else {
-          if (el) el.actualTime = 0;
-        }
+        // if (this.opponentsTimerActivated && this.activeOppCount > 7) {
+        //   if (el) el.active = false;
+        //   this.activeOppCount--;
+        // } else if (el?.exclutions.length == 3) {
+        //   if (el) el.active = false;
+        //   if (el) el.actualTime = 0;
+        //   this.activeOppCount--;
+        // } else {
+        //   if (el) el.actualTime = 0;
+        // }
       }
       this.saveData();
     },
     updatePlayerName(number: number, name: string, team: number) {
       var el;
-      if (team === 0) el = this.match.homeTeam.players.find((el) => el.number === number);
+      if (team === 0)
+        el = this.match.homeTeam.players.find((el) => el.number === number);
       else el = this.match.awayTeam.players.find((el) => el.number === number);
       if (el) {
         el.name = name;
@@ -99,7 +105,11 @@ export const useGameStore = defineStore("gameStore", {
       }
     },
     startGlobalTimer() {
-      if (this.activeCount === 7 && /* (this.opponentsTimerActivated && this.activeOppCount === 7) && */ !this.globalInterval) {
+      if (
+        this.activeCount === 7 &&
+        /* (this.opponentsTimerActivated && this.activeOppCount === 7) && */ !this
+          .globalInterval
+      ) {
         this.globalInterval = window.setInterval(() => {
           this.match.homeTeam.players.forEach((el) => {
             if (el.active) {
@@ -156,7 +166,7 @@ export const useGameStore = defineStore("gameStore", {
       this.loadStore();
     },
     resetTimer() {
-      const settingsStore = useSettingsStore(); 
+      const settingsStore = useSettingsStore();
       this.match.quarter = 1;
       this.match.homeTeam.score = 0;
       this.match.homeTeam.timeOut1 = false;
@@ -169,7 +179,10 @@ export const useGameStore = defineStore("gameStore", {
         player.shotsEven = [];
         player.shotsSup = [];
         player.shotsPenalty = [];
+        player.shotsFaced = [];
         player.active = false;
+        player.isGK =
+          player.number === 1 || player.number === 13 ? true : false;
       });
       this.match.awayTeam.score = 0;
       this.match.awayTeam.timeOut1 = false;
@@ -182,123 +195,274 @@ export const useGameStore = defineStore("gameStore", {
         player.shotsEven = [];
         player.shotsSup = [];
         player.shotsPenalty = [];
+        player.shotsFaced = [];
         player.active = !settingsStore.enableOppTime;
+        player.isGK =
+          player.number === 1 || player.number === 13 ? true : false;
       });
       this.countdown = settingsStore.periodDuration * 60;
       this.events = [];
     },
-    addShoot(number: number, team: number, type: ShotCategory, position: string, outcome: ShotOutcome) {
+    addShoot(
+      number: number,
+      team: number,
+      type: ShotCategory,
+      position: string,
+      outcome: ShotOutcome,
+    ) {
       var el;
-      if (team === 0) el = this.match.homeTeam.players.find((el) => el.number === number);
+      if (team === 0)
+        el = this.match.homeTeam.players.find((el) => el.number === number);
       else el = this.match.awayTeam.players.find((el) => el.number === number);
       if (el) {
         switch (type) {
           case ShotCategory.EVEN:
-            el.shotsEven.push({position: position, outcome: outcome});
+            el.shotsEven.push({ position: position, outcome: outcome });
             break;
           case ShotCategory.SUP:
-            el.shotsSup.push({position: position, outcome: outcome});
+            el.shotsSup.push({ position: position, outcome: outcome });
             break;
           case ShotCategory.PENALTY:
-            el.shotsPenalty.push({position: position, outcome: outcome});
+            el.shotsPenalty.push({ position: position, outcome: outcome });
             break;
           default:
             break;
         }
+        this.addShotFaced(number, team, type, position, outcome);
         switch (outcome) {
           case ShotOutcome.GOAL:
             this.addGoal(number, team, type, position, outcome);
             break;
           default:
-            var description = outcome + " - " + type + ", " + position + " "; 
-            this.saveEvents("Tiro - " + description, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
+            var description = outcome + " - " + type + ", " + position + " ";
+            this.saveEvents(
+              "Tiro - " + description,
+              el,
+              team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+            );
             break;
         }
       }
     },
-    addGoal(number: number, team: number, type: string, position: string, outcome: string) {
+    removeShoot(number: number, team: number, type: ShotCategory) {
+      var el;
+      if (team === 0)
+        el = this.match.homeTeam.players.find((el) => el.number === number);
+      else el = this.match.awayTeam.players.find((el) => el.number === number);
+      if (el) {
+        switch (type) {
+          case ShotCategory.EVEN:
+            if (
+              el.shotsEven[el.shotsEven.length - 1].outcome == ShotOutcome.GOAL
+            )
+              this.removeGoal(team);
+            el.shotsEven.pop();
+            break;
+          case ShotCategory.SUP:
+            if (el.shotsSup[el.shotsSup.length - 1].outcome == ShotOutcome.GOAL)
+              this.removeGoal(team);
+            el.shotsSup.pop();
+            break;
+          case ShotCategory.PENALTY:
+            if (
+              el.shotsPenalty[el.shotsPenalty.length - 1].outcome ==
+              ShotOutcome.GOAL
+            )
+              this.removeGoal(team);
+            el.shotsPenalty.pop();
+            break;
+          default:
+            break;
+        }
+
+        this.removeShootEvent(
+          team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+          el,
+        );
+        this.removeShotFaced(number, team, type)
+        this.setCorrectionMode(false);
+      }
+    },
+    removeShotFaced(number: number, team: number, type: ShotCategory) {
+      var el;
+      if (team === 0) {
+        el = this.match.awayTeam.players.find((el) => el.isGK && el.active);
+      } else {
+        el = this.match.homeTeam.players.find((el) => el.isGK && el.active);
+      }
+      const index = el?.shotsFaced.findLastIndex(shot => shot.shooter === number && shot.type === type)
+      if (index && index != -1) {
+        el?.shotsFaced.splice(index, 1)
+      }
+    },
+    addGoal(
+      number: number,
+      team: number,
+      type: string,
+      position: string,
+      outcome: string,
+    ) {
       var el;
       if (team === 0) {
         el = this.match.homeTeam.players.find((el) => el.number === number);
         this.match.homeTeam.score++;
-      }
-      else {
+      } else {
         el = this.match.awayTeam.players.find((el) => el.number === number);
         this.match.awayTeam.score++;
       }
       if (el) {
-        var description = outcome + " - " + type + ", " + position + " "; 
-        this.saveEvents(description, el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
+        var description = outcome + " - " + type + ", " + position + " ";
+        this.saveEvents(
+          description,
+          el,
+          team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+        );
       }
     },
-    addExclution(number: number, team: number, type: string, position: string, ball: boolean, exclNumber: number) {
+    removeGoal(team: number) {
+      if (team === 0) {
+        this.match.homeTeam.score--;
+      } else {
+        this.match.awayTeam.score--;
+      }
+    },
+    addExclution(
+      number: number,
+      team: number,
+      type: string,
+      position: string,
+      ball: boolean,
+      exclNumber: number,
+    ) {
       var el;
-      el = (team === 0) ? this.match.homeTeam.players.find((el) => el.number === number) : this.match.awayTeam.players.find((el) => el.number === number) ;
-      
+      el =
+        team === 0
+          ? this.match.homeTeam.players.find((el) => el.number === number)
+          : this.match.awayTeam.players.find((el) => el.number === number);
+
       if (el) {
-        if(el.exclutions.length <= exclNumber) {
+        if (el.exclutions.length <= exclNumber) {
           el.exclutions.push({
             position: position,
             type: type,
             ball: ball,
             quarter: this.match.quarter,
-            time: this.formatTime(this.countdown)
-          })
+            time: this.formatTime(this.countdown),
+          });
         } else {
           el.exclutions[exclNumber] = {
-            position: position, 
+            position: position,
             type: type,
             ball: ball,
             quarter: this.match.quarter,
-            time: this.formatTime(this.countdown)
-          }
+            time: this.formatTime(this.countdown),
+          };
         }
-        
-        this.saveEvents(type + ' ' + position + ' ' + (ball ? 'Con palla' : 'Senza palla'), el, (team===0 ? this.match.homeTeam.name : this.match.awayTeam.name));
-        
+
+        this.saveEvents(
+          type + " " + position + " " + (ball ? "Con palla" : "Senza palla"),
+          el,
+          team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+        );
+
         if (this.isOut(el)) {
-        this.toggleElement(el.number, team);
-        if (this.activeCount != 7) 
-          this.stopGlobalTimer;
-      }
+          this.toggleElement(el.number, team);
+          if (this.activeCount != 7) this.stopGlobalTimer;
+        }
       }
     },
     isOut(player: Player): boolean {
-      return player.exclutions.length === 3 || player.exclutions.some(excl => excl.type==="EDCS")
+      return (
+        player.exclutions.length === 3 ||
+        player.exclutions.some((excl) => excl.type === "EDCS")
+      );
     },
     removeExclution(number: number, team: number, exclNumber: number) {
       var el;
-      el = (team === 0) ? this.match.homeTeam.players.find((el) => el.number === number) : this.match.awayTeam.players.find((el) => el.number === number) ;
-      
+      el =
+        team === 0
+          ? this.match.homeTeam.players.find((el) => el.number === number)
+          : this.match.awayTeam.players.find((el) => el.number === number);
+
       if (el) {
-        if(el.exclutions[exclNumber]) {
-          this.removeEvent((team===0 ? this.match.homeTeam.name : this.match.awayTeam.name), el, el.exclutions[exclNumber])
-          el.exclutions.splice(exclNumber, 1)
+        if (el.exclutions[exclNumber]) {
+          this.removeExclEvent(
+            team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+            el,
+            el.exclutions[exclNumber],
+          );
+          el.exclutions.splice(exclNumber, 1);
         }
       }
 
       this.saveData();
     },
+    addShotFaced(number: number, team: number, type: string, position: string, outcome: string) {
+      var el;
+      if (team === 0) {
+        el = this.match.awayTeam.players.find((el) => el.isGK && el.active);
+      } else {
+        el = this.match.homeTeam.players.find((el) => el.isGK && el.active);
+      }
+      el?.shotsFaced.push({ type: type, position: position, outcome: outcome, shooter: number });
+    },
     addTimeOut(number: number, team: string) {
-      number === 1 ? (team === 'HOME' ? this.match.homeTeam.timeOut1 = true : this.match.awayTeam.timeOut1 = true ) :  (team === 'HOME' ? this.match.homeTeam.timeOut2 = true : this.match.awayTeam.timeOut2 = true );
+      number === 1
+        ? team === "HOME"
+          ? (this.match.homeTeam.timeOut1 = true)
+          : (this.match.awayTeam.timeOut1 = true)
+        : team === "HOME"
+          ? (this.match.homeTeam.timeOut2 = true)
+          : (this.match.awayTeam.timeOut2 = true);
       this.saveData();
     },
     toggleTimeOut(number: number, team: string) {
-      if(team === 'HOME') {
-        number === 1 ? ( this.match.homeTeam.timeOut1 = !this.match.homeTeam.timeOut1 ) : ( this.match.homeTeam.timeOut2 = !this.match.homeTeam.timeOut2 )
+      if (team === "HOME") {
+        number === 1
+          ? (this.match.homeTeam.timeOut1 = !this.match.homeTeam.timeOut1)
+          : (this.match.homeTeam.timeOut2 = !this.match.homeTeam.timeOut2);
       } else {
-        number === 1 ? ( this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1 ) : ( this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2 )
+        number === 1
+          ? (this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1)
+          : (this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2);
       }
       this.saveData();
     },
     getAllShoots(player: Player) {
       var totalShots = [];
-      totalShots.push(...player.shotsEven, ...player.shotsSup, ...player.shotsPenalty)
-      var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === 'GOAL' )
+      totalShots.push(
+        ...player.shotsEven,
+        ...player.shotsSup,
+        ...player.shotsPenalty,
+      );
+      var totalGoals = totalShots.filter(
+        (shot) => shot.outcome.toUpperCase() === "GOAL",
+      );
       return {
         goals: totalGoals.length,
-        shots: totalShots.length
+        shots: totalShots.length,
+      };
+    },
+    getAllTeamShoots(team: number) {
+      var totalShots = [];
+      var actualTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
+      actualTeam.players.forEach((player) => {
+        totalShots.push(
+          ...player.shotsEven,
+          ...player.shotsSup,
+          ...player.shotsPenalty,
+        );
+      });
+      return totalShots.length;
+    },
+    getAllSaves(player: Player) {
+      var totalShots = player.shotsFaced.filter(shot => shot.outcome === ShotOutcome.SAVED || shot.outcome === ShotOutcome.GOAL).length;
+      var totalSaves = player.shotsFaced.filter(shot => shot.outcome === ShotOutcome.SAVED).length;
+      return {
+        saves: totalSaves,
+        shots: totalShots
       }
+      
     },
     async saveData() {
       localStorage.setItem("match", JSON.stringify(this.match));
@@ -310,7 +474,7 @@ export const useGameStore = defineStore("gameStore", {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
       return `${String(minutes).padStart(2, "0")}:${String(
-        remainingSeconds
+        remainingSeconds,
       ).padStart(2, "0")}`;
     },
     exportToExcel(dataToExport: any) {
@@ -330,9 +494,28 @@ export const useGameStore = defineStore("gameStore", {
       this.events.push(event);
       this.saveData();
     },
-    removeEvent(team: string, player: Player, excl: Exclution) {
-      const index = this.events.findIndex(e => e.team == team && e.player.number == player.number && e.time == excl.time && e.quarter == excl.quarter);
-      if(index != -1) {
+    removeExclEvent(team: string, player: Player, excl: Exclution) {
+      const index = this.events.findIndex(
+        (e) =>
+          e.team == team &&
+          e.player.number == player.number &&
+          e.time == excl.time &&
+          e.quarter == excl.quarter,
+      );
+      if (index != -1) {
+        this.events.splice(index, 1);
+      }
+      this.saveData();
+    },
+    removeShootEvent(team: string, player: Player) {
+      const index = this.events.findLastIndex(
+        (e) =>
+          e.team == team &&
+          e.player.number == player.number &&
+          (e.description.startsWith("Tiro") ||
+            e.description.startsWith("Goal")),
+      );
+      if (index != -1) {
         this.events.splice(index, 1);
       }
       this.saveData();
@@ -363,6 +546,12 @@ export const useGameStore = defineStore("gameStore", {
       });
       this.saveData();
     },
+    toggleCorrectionMode() {
+      this.isCorrectionMode = !this.isCorrectionMode;
+    },
+    setCorrectionMode(value: boolean) {
+      this.isCorrectionMode = value;
+    },
   },
 });
 
@@ -383,15 +572,17 @@ function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
       shotsSup: [],
       shotsPenalty: [],
       exclutions: [],
+      shotsFaced: [],
       active: false,
-    }))
+      isGK: this.number === 0 || this.number === 13 ? true : false,
+    })),
   };
 }
 
 function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
   this.match.awayTeam = {
     activatedTimer: settingsStore.enableOppTime,
-    name: '',
+    name: "",
     score: 0,
     timeOut1: false,
     timeOut2: false,
@@ -405,8 +596,9 @@ function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
       shotsSup: [],
       shotsPenalty: [],
       exclutions: [],
+      shotsFaced: [],
       active: !settingsStore.enableOppTime,
-    }))
+      isGK: this.number === 0 || this.number === 13 ? true : false,
+    })),
   };
 }
-

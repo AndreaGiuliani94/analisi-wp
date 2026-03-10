@@ -4,7 +4,7 @@
             Totali: {{ totals.goals }}/{{ totals.shots }}
         </div>
         <div class="grid grid-cols-4 gap-4">
-            <div v-for="(category, index) in categories" :key="index">
+            <div v-for="(category, index) in shotCategories" :key="index">
                 <div class="font-semibold">
                     {{ category.label }}: {{ totals[category.key] }}
                 </div>
@@ -22,7 +22,7 @@ import { computed, type PropType } from 'vue';
 import type { Team } from '../Interfaces/Team';
 import type { Shot } from '../Interfaces/Shot';
 import { MenUpShot, ShotOutcome } from '@/enum/ShotDescription';
-import { categories } from '@/const/consts';
+import { shotCategories } from '@/const/consts';
 import type { CategoryKey } from '../Interfaces/Shot/Category';
 import { supZones } from '../Interfaces/Shot/Zone';
 

@@ -19,7 +19,10 @@
                 <template v-for="player in team.players" :key="player.number">
                     <!-- Riga principale -->
                     <tr class="border border-gray-300">
-                        <td class="text-center p-1.5">{{ player.number }}</td>
+                        <td class="text-center p-1.5 flex items-center justify-between gap-2">
+                            <span>{{ player.number }}</span> 
+                            <span>{{ player.isGK ? 'GK' : '' }}</span>
+                        </td>
                         <td @click="toggle(player.number)" class="p-1.5" :class="[expandedRows.includes(player.number) ? 'underline' : '']">
                             <span class="inline-flex items-center">
                                 <svg
@@ -43,7 +46,7 @@
                         <td class="p-1.5">{{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</td>
                         <td class="p-1.5">{{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</td>
                         <td class="p-1.5">{{ getAllShoots(player) }}</td>
-                        <td class="whitespace-normal break-words p-1.5">
+                        <td class="whitespace-normal wrap-break-word p-1.5">
                             <div v-for="(ex, i) in player.exclutions.slice(0, 3)" :key="i">
                                 {{ getExclution(ex) }}
                             </div>
@@ -53,7 +56,7 @@
                     <!-- Riga espansa -->
                     <Transition name="fade">
                     <tr v-if="expandedRows.includes(player.number)" class="bg-blue-50">
-                        <PlayerDetail :player="player" :get-exclution="getExclution"></PlayerDetail>
+                        <PlayerDetail :player="player" :get-exclution="getExclution" />
                     </tr>
                     </Transition>
 

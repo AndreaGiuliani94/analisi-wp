@@ -7,7 +7,8 @@ export enum FoulType {
 export enum FoulPosition {
     EXT = 'Perimetro',
     CB = 'Centroboa', 
-    Rip = 'Ripartenza'
+    RIP = 'Ripartenza',
+    OTHER = 'Altro'
 }
 
 export enum EDCSType {

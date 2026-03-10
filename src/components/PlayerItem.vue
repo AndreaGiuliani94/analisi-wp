@@ -2,24 +2,37 @@
   <div :class="[
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
-    class="p-2 w-1/5 transition-colors flex justify-start items-center border border-gray-300 rounded-lg font-medium"
+    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg font-medium"
     @click="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
     @mousedown="startHold" 
     @mouseup="stopHold" 
     @mouseleave="stopHold">
     <template v-if="isEditing">
-      <input v-model="editableName" class="bg-transparent border-none outline-none w-full"
+      <input v-model="editableName" class="bg-transparent border-none outline-none w-full flex-1 min-w-0"
         @blur="saveEdit(team.name == settings.homeTeamName ? 0 : 1)" 
         @keyup.enter="saveEdit(team.name == settings.homeTeamName ? 0 : 1)"
         ref="inputField" />
     </template>
     <template v-else>
-      <span class="truncate">
+      <span class="truncate flex-1 min-w-0">
         {{ player.number }}. {{ player.name }}
       </span>
     </template>
-    <ExclamationTriangleIcon v-if="store.isOut(player)"
-      class="inline-flex ml-auto size-4 text-red-500" />
+
+    <div class="flex items-center gap-1.5 ml-auto shrink-0">
+      <div 
+        v-if="player.isGK" 
+        class="px-1.5 py-0.5 border rounded-2xl text-xs  transition-all duration-300"
+        :class="[player.active ? 'bg-white border-white text-red-700' : '']"
+      >
+        GK
+      </div>
+
+      <ExclamationTriangleIcon 
+        v-if="store.isOut(player)"
+        class="size-4 text-red-500 animate-pulse" 
+      />
+    </div>
   </div>
 
   <div v-if="team.activatedTimer"
@@ -53,7 +66,8 @@
       <ShotButton 
         :disabled="!player.active || userRole === 'viewer'" 
         :type="ShotCategory.EVEN" 
-        @handleShot="addShot"/>
+        @handleShot="addShot"
+        @remove-shot="removeShot"/>
       <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
     </div>
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
@@ -62,7 +76,8 @@
         :disabled="!player.active || userRole === 'viewer'" 
         :type="ShotCategory.SUP" 
         :is-goal="false" 
-        @handleShot="addShot"/>
+        @handleShot="addShot"
+        @remove-shot="removeShot"/>
       <div class="h-6 w-8 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
     </div>
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
@@ -71,11 +86,19 @@
         :disabled="!player.active || userRole === 'viewer'"
         :type="ShotCategory.PENALTY" 
         :is-goal="false" 
-        @handleShot="addShot"/>
+        @handleShot="addShot"
+        @remove-shot="removeShot"/>
       <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
     </div>
     <div class="inline-flex ml-3 mr-2 text-blue-950" role="group">
-      <div class="h-6 w-8 flex items-center"> {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}</div>
+      <div class="h-6 w-8 flex items-center"> 
+        <span v-if="player.isGK">
+          {{ store.getAllSaves(player).saves + '/' + store.getAllSaves(player).shots }}
+        </span>
+        <span v-else>
+          {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}
+        </span>
+      </div>
     </div>
 
   </template>
@@ -84,7 +107,7 @@
 
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
-import { ref, nextTick, type PropType, onMounted } from "vue";
+import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
@@ -93,7 +116,6 @@ import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
-import { useAuthStore } from "@/stores/authStore";
 import { useUserRole } from "@/composables/useUserRole";
 
 const props = defineProps({
@@ -110,7 +132,6 @@ const props = defineProps({
 const store = useGameStore();
 const settings = useSettingsStore();
 const sessionStore = useSessionStore();
-const authStore = useAuthStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
 const isEditing = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);
@@ -156,6 +177,10 @@ const addExclution = (payload : { type: string, position: string, ball: boolean}
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
   store.addShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.outcome)
+};
+
+const removeShot = (payload : { type: ShotCategory }) => {
+  store.removeShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type)
 };
 
 const removeExclution = (exclNumber: number) => {

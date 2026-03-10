@@ -163,7 +163,7 @@ const handleFirstSelect = (item: string) => {
 }
 
 const handleSecondSelect = (item: string, close: () => void) => {
-  if(firstSelection.value === 'EDCS') {
+  if(firstSelection.value === FoulType.EDCS) {
     selectedCode.value = `${item.toUpperCase().substring(0,1)}`
     state.value = 'selected'
     if(firstSelection.value) {
@@ -179,6 +179,15 @@ const handleSecondSelect = (item: string, close: () => void) => {
   else {
     selectedCode.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
     secondSelection.value = item;
+    if(secondSelection.value == FoulPosition.OTHER && firstSelection.value) {
+      emit('handleExclution', {
+        type: firstSelection.value,
+        position: secondSelection.value,
+        ball: false
+      })
+      resetSelection();
+      close();
+    }
     activeStep.value = 'third';
   }
 }

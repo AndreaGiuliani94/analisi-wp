@@ -2,7 +2,7 @@
   <div class="flex justify-center">
     <div class="bg-white p-8 rounded-2xl border-2 border-gray-300 shadow-lg w-2/3 text-center">
       <div class="flex flex-col items-center gap-4">
-        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-3xl font-bold shadow-inner">
+        <div class="w-24 h-24 rounded-full bg-linear-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-3xl font-bold shadow-inner">
           {{ initials }}
         </div>
         <h2 class="text-xl font-semibold text-gray-800">

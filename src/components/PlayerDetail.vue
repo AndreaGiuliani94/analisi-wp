@@ -1,12 +1,12 @@
 <template>
     <td colspan="9" class="px-4 py-2 border-x border-b border-blue-200">
-        <div class="text-sm space-y-2">
+        <div class="text-sm mb-2">
             <p><strong>Dettaglio Tiri:</strong></p>
             <div class="grid grid-cols-2 gap-y-2">
                 <div>
-                    <strong>Pari: {{ totals.evens.goals.length }}/{{ totals.evens.shots.length }}</strong> 
+                    <strong>Pari: {{ totalShots.evens.goals.length }}/{{ totalShots.evens.shots.length }}</strong> 
                     <div class="grid grid-cols-4 gap-4">
-                        <div v-for="(category, index) in categories" :key="index">
+                        <div v-for="(category, index) in shotCategories" :key="index">
                             <div class="font-semibold">
                                 {{ category.label }}: {{ getShotsLengthByType('evens', category.key) }}
                             </div>
@@ -18,9 +18,9 @@
                     </div>
                 </div>
                 <div>
-                    <strong>Superiorità: {{ totals.sup.goals.length }}/{{ totals.sup.shots.length }}</strong> 
+                    <strong>Superiorità: {{ totalShots.sup.goals.length }}/{{ totalShots.sup.shots.length }}</strong> 
                     <div class="grid grid-cols-4 gap-4">
-                        <div v-for="(category, index) in categories" :key="index">
+                        <div v-for="(category, index) in shotCategories" :key="index">
                             <div class="font-semibold">
                                 {{ category.label }}: {{ getShotsLengthByType('sup', category.key) }}
                             </div>
@@ -33,39 +33,87 @@
                 </div>
 
             </div>
-
-            <div v-if="props.player.exclutions.length > 0">
-                <strong>Falli:</strong> 
-                <div v-for="(ex, i) in props.player.exclutions.slice(0, 3)" :key="i">
-                    {{ getExclution(ex) }}
-                </div>
-            </div>
             
         </div>
+        <div v-if="player.isGK" class="text-sm mb-2">
+            <p><strong>Dettaglio Tiri Subiti:</strong></p>
+            <div class="grid grid-cols-2 gap-y-2">
+                <div>
+                    <strong>Pari: {{ totalShotsFaced.evens.goals.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div v-for="(category, index) in shotFacedCategories" :key="index">
+                            <div class="font-semibold">
+                                {{ category.label }}: {{ getShotsFacedLengthByType('evens', category.key) }}
+                            </div>
+                            <div v-for="(zone, zIndex) in evenZones" :key="zIndex">
+                                {{ zone.label }}:
+                                {{ getFacedZoneValue('evens', category.key, zone.values) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <strong>Superiorità: {{ totalShotsFaced.sup.goals.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div v-for="(category, index) in shotFacedCategories" :key="index">
+                            <div class="font-semibold">
+                                {{ category.label }}: {{ getShotsFacedLengthByType('sup', category.key) }}
+                            </div>
+                            <div v-for="(zone, zIndex) in supZones" :key="zIndex">
+                                {{ zone.label }}:
+                                {{ getFacedZoneValue('sup', category.key, zone.values) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div v-if="props.player.exclutions.length > 0">
+            <strong>Falli:</strong> 
+            <div v-for="(ex, i) in props.player.exclutions.slice(0, 3)" :key="i">
+                {{ getExclution(ex) }}
+            </div>
+        </div>
     </td>
+
 </template>
 
 <script setup lang="ts">
-import { useGameStore } from '@/stores/gameStore';
 import type { Player } from './Interfaces/Player';
 import type { Exclution } from './Interfaces/Exclution';
-import { categories } from '@/const/consts';
+import { shotCategories,shotFacedCategories } from '@/const/consts';
 import { evenZones, supZones } from './Interfaces/Shot/Zone';
-import { EvenShot, MenUpShot, ShotOutcome } from '@/enum/ShotDescription';
+import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { computed } from 'vue';
 import type { CategoryKey } from './Interfaces/Shot/Category';
 import type { Shot } from './Interfaces/Shot';
-
-const store = useGameStore();
 
 const props = defineProps<{
     player: Player;
     getExclution: (excl: Exclution) => string;
 }>();
 
-const totals = computed(() => ({
+const totalShots = computed(() => ({
   evens: getShotsByType(props.player.shotsEven),
   sup: getShotsByType(props.player.shotsSup)
+}))
+
+const totalShotsFaced = computed(() => ({
+  evens: { 
+    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
+    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && shot.outcome === ShotOutcome.GOAL),
+    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && shot.outcome === ShotOutcome.SAVED),
+    fuori: [],
+    stoppati: [],
+  },
+  sup: {
+    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
+    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.GOAL),
+    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.SAVED),
+    fuori: [],
+    stoppati: [],
+  }
 }))
 
 
@@ -92,13 +140,12 @@ type ShotKey = 'evens' | 'sup' | 'penalties';
 function getShotsByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
     switch (type) {
         case 'evens':
-            return totals.value.evens[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShots.value.evens[category].filter(shot => positions.includes(shot.position)).length;
         case 'sup':
-            return totals.value.sup[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShots.value.sup[category].filter(shot => positions.includes(shot.position)).length;
         default:
             return 0;
     }
-  
 }
 
 function getZoneValue(type: ShotKey, category: CategoryKey, values: (EvenShot | MenUpShot | string)[]): number {
@@ -109,9 +156,36 @@ function getZoneValue(type: ShotKey, category: CategoryKey, values: (EvenShot | 
 function getShotsLengthByType(type: ShotKey, category: CategoryKey): number {
     switch (type) {
         case 'evens':
-            return totals.value.evens[category].length;
+            return totalShots.value.evens[category].length;
         case 'sup':
-            return totals.value.sup[category].length;
+            return totalShots.value.sup[category].length;
+        default:
+            return 0;
+    }
+}
+
+function getShotsFacedLengthByType(type: ShotKey, category: CategoryKey): number {
+    switch (type) {
+        case 'evens':
+            return totalShotsFaced.value.evens[category].length;
+        case 'sup':
+            return totalShotsFaced.value.sup[category].length;
+        default:
+            return 0;
+    }
+}
+
+function getFacedZoneValue(type: ShotKey, category: CategoryKey, values: (EvenShot | MenUpShot | string)[]): number {
+  const stringPositions = values.map(v => v.toString())
+  return getShotsFacedByPosition(type, category, stringPositions)
+}
+
+function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
+    switch (type) {
+        case 'evens':
+            return totalShotsFaced.value.evens[category].filter(shot => positions.includes(shot.position)).length;
+        case 'sup':
+            return totalShotsFaced.value.sup[category].filter(shot => positions.includes(shot.position)).length;
         default:
             return 0;
     }

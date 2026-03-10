@@ -23,35 +23,42 @@
     </div>
   
   </div>
+
+  <div class="flex flex-col h-min-screen">
+    <div v-if="userRole && userRole !== 'viewer'" class="sticky top-0 bg-white/90 backdrop-blur-md pb-2 transition-all duration-300">
+      <div class="grid grid-cols-3">
+        <div class="inline-flex items-end m-2">
+          <ModeToggleItem :hide-labels="isShrinked" class="transition-all duration-300" />
+        </div>
+        <div class="font-bold flex justify-center text-end m-2 text-blue-950 text-4xl">
+          {{ store.formatTime(store.countdown) }}
+        </div>
+      </div>
+      <ClockManager :shrink="isShrinked" />
+      
+    </div>
   
-  <div v-if="userRole && userRole !== 'viewer'">
-
-    <div class="text-4xl font-bold text-center m-2 text-blue-950">{{ store.formatTime(store.countdown) }}</div>
+    <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
   
-    <ClockManager />
-
+      <TeamItem :teamKey="'HOME'" :team="store.match.homeTeam" :players="store.actualPlayers"
+        @openModal="openModal"
+        @toggleTimeOut="toggleTimeOut"></TeamItem>
+  
+      <TeamItem :teamKey="'AWAY'" :team="store.match.awayTeam" :players="store.actualOpponents"
+        @openModal="openModal"
+        @toggleTimeOut="toggleTimeOut"></TeamItem>
+  
+    </div>
+  
+    <div class="flex justify-center items-center gap-10" role="group">
+      <ActionButton :icon="TableCellsIcon" label="Report" to="/game/report" color="green" position="center"/>
+      <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="store.events.length == 0"/>
+    </div>
+    <!-- Modale con statistiche -->
+    <QuickReportModal :isOpen="showConfirmModal" :team="team"
+          @confirm="confirmCleanup" @close="showConfirmModal = false" />
   </div>
 
-  <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
-
-    <TeamItem :teamKey="'HOME'" :team="store.match.homeTeam" :players="store.actualPlayers"
-      @openModal="openModal"
-      @toggleTimeOut="toggleTimeOut"></TeamItem>
-
-    <TeamItem :teamKey="'AWAY'" :team="store.match.awayTeam" :players="store.actualOpponents"
-      @openModal="openModal"
-      @toggleTimeOut="toggleTimeOut"></TeamItem>
-
-  </div>
-
-  <div class="flex justify-center items-center gap-10" role="group">
-    <ActionButton :icon="TableCellsIcon" label="Report" to="/game/report" color="green" position="center"/>
-    <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="store.events.length == 0"/>
-  </div>
-
-  <!-- Modale con statistiche -->
-  <QuickReportModal :isOpen="showConfirmModal" :team="team"
-        @confirm="confirmCleanup" @close="showConfirmModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -67,11 +74,13 @@ import ActionButton from '@/components/buttons/ActionButton.vue';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserRole } from '@/composables/useUserRole';
+import ModeToggleItem from '@/components/ModeToggleItem.vue';
 
 const store = useGameStore();
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
 
+const isShrinked = ref(false)
 const headerRef = ref<HTMLElement | null>(null)
 const headerHeight = ref(0)
 
@@ -83,6 +92,12 @@ const updateHeaderHeight = () => {
   }
 }
 
+const updateScroll = () => {
+  // Verifichiamo la posizione verticale della finestra
+  const scrollThreshold = 60 
+  isShrinked.value = window.scrollY > scrollThreshold
+}
+
 onMounted(async () => {
   const sessionIdLS = localStorage.getItem("session_id");
   if (sessionIdLS !== null && authStore.user != null) {
@@ -90,10 +105,12 @@ onMounted(async () => {
   }
   updateHeaderHeight()
   window.addEventListener('resize', updateHeaderHeight)
+  window.addEventListener('scroll', updateScroll)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateHeaderHeight)
+  window.removeEventListener('scroll', updateScroll)
 })
 
 const toggleTimeOut = (payload : { number: number, teamName: string}) => {

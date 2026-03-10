@@ -35,10 +35,16 @@
 
       </div>
     </div>
-    <ActionButton @click="openModal" :disabled="loading" color="blue" label="Crea una nuova partita">
-    </ActionButton>
+    <div class="flex items-center justify-center gap-3">
+      <ActionButton @click="openCreateModal" :disabled="loading" color="green" label="Crea una nuova partita">
+      </ActionButton>
+  
+      <ActionButton @click="openJoinModal" :disabled="loading" color="blue" label="Unisciti a un partita">
+      </ActionButton>
+    </div>
 
-    <NewSessionModal :isOpen="showCreateSessionModal" @close="closeModal"/>
+    <NewSessionModal :isOpen="showCreateSessionModal" @close="closeCreateModal"/>
+    <JoinSessionModal :isOpen="showJoinSessionModal" @close="closeJoinModal"/>
     <ConfirmModal :isOpen="showRemoveConfirmModal" title="Conferma Rimozione"
         :message=confirmRemoveMessage
         @confirm="removeSession(sessionToRemove)" @close="showRemoveConfirmModal = false" />
@@ -56,8 +62,10 @@ import NavButton from './buttons/NavButton.vue'
 import { ArrowRightIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import ConfirmModal from './modals/ConfirmModal.vue'
 import { deleteSession } from '@/services/sessionService'
+import JoinSessionModal from './modals/JoinSessionModal.vue'
 
 const showCreateSessionModal = ref(false);
+const showJoinSessionModal = ref(false);
 const showRemoveConfirmModal = ref(false);
 const confirmRemoveMessage = ref('');
 const sessionToRemove = ref<Session | null>(null);
@@ -66,13 +74,24 @@ const sessionIdLS = localStorage.getItem("session_id");
 const loading = ref(false)
 const sessionStore = useSessionStore()
 
-const openModal = async () => {
+const openCreateModal = async () => {
   loading.value = true
   showCreateSessionModal.value = true
 }
 
-const closeModal = async () => {
+const closeCreateModal = async () => {
   showCreateSessionModal.value = false
+  loading.value = false
+  sessionStore.getAllSessions()
+}
+
+const openJoinModal = async () => {
+  loading.value = true
+  showJoinSessionModal.value = true
+}
+
+const closeJoinModal = async () => {
+  showJoinSessionModal.value = false
   loading.value = false
   sessionStore.getAllSessions()
 }

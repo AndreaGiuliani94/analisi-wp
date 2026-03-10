@@ -1,4 +1,5 @@
 import type { Exclution } from "./Exclution";
+import type { ShotFaced } from "./ShotFaced";
 import type { Shot } from "./Shot";
 
 export interface Player {
@@ -8,8 +9,10 @@ export interface Player {
   benchTime: number;
   actualTime: number;
   active: boolean;
+  isGK: boolean;
   exclutions: Exclution[];
   shotsEven: Shot[];
   shotsSup: Shot[];
   shotsPenalty: Shot[];
+  shotsFaced: ShotFaced[];
 }
