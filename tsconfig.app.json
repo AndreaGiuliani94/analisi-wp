@@ -9,7 +9,11 @@
       "@/*": ["./src/*"]
     },
     
-    "types": ["node"]
+    "types": ["node"],
+
+    "target": "ESNext",
+    "lib": ["ES2023"],
+    "moduleResolution": "bundler"
 
   }
 }

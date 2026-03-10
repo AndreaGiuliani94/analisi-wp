@@ -28,7 +28,7 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: '/img/icons/icons/android-chrome-512x512.png',
+            src: '/img/icons/android-chrome-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           }
