@@ -14,10 +14,10 @@ const props = defineProps<{
 
 <template>
   <div class="flex items-center py-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner h-min"
-    :class="[hideLabels? 'gap-1' : 'px-3 gap-3']">
+    :class="[hideLabels? 'gap-1' : 'px-3 gap-2']">
     <span :class="['text-xs font-bold rounded-full transition-all duration-300', 
                   !isCorrectionMode ? 'bg-blue-950 text-white shadow-sm' : 'text-gray-500',
-                  hideLabels ? 'max-w-0 opacity-0' : 'max-w-25 opacity-100 p-1 mr-1']">
+                  hideLabels ? 'max-w-0 opacity-0' : 'max-w-25 opacity-100 p-1']">
       INSERIMENTO
     </span>
 
@@ -43,7 +43,7 @@ const props = defineProps<{
 
     <span :class="['text-xs font-bold rounded-full transition-all duration-300', 
                   isCorrectionMode ? 'bg-red-800 text-white shadow-sm' : 'text-gray-500',
-                  hideLabels ? 'max-w-0 opacity-0' : 'max-w-25 opacity-100 p-1 ml-1']">
+                  hideLabels ? 'max-w-0 opacity-0' : 'max-w-25 opacity-100 p-1']">
       CORREZIONE
     </span>
   </div>

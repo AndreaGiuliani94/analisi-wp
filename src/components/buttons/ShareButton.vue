@@ -1,20 +1,28 @@
 <template>
   <div class="flex gap-2 items-center">
     <!-- Bottone share nativo (solo se supportato) -->
-    <ActionButton
+    <!-- <ActionButton
       v-if="canShare"
       @click="shareNative"
       color="blue"
       label="Invita"
       :icon="ShareIcon"
-    />
+    /> -->
 
     <!-- Bottone copia link -->
-    <ActionButton
-        v-else
+    <!-- <ActionButton
+      v-else
         @click="copyLink"
         color="blue"
         :label="copied ? 'Copiato!' : 'Copia link'"
+        :icon="ClipboardIcon"
+    >
+    </ActionButton> -->
+
+    <ActionButton
+        @click="copyCode"
+        color="blue"
+        :label="copied ? 'Copiato!' : 'Copia codice'"
         :icon="ClipboardIcon"
     >
     </ActionButton>
@@ -36,6 +44,16 @@ const copied = ref(false)
 const canShare = !!navigator.share // controlla se la Web Share API è disponibile
 const frontendBaseUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173'
 const shareUrl = frontendBaseUrl + '/session/join/' + props.sessionId;
+
+const copyCode = async () => {
+  try {
+    await navigator.clipboard.writeText(props.sessionId)
+    copied.value = true
+    setTimeout(() => (copied.value = false), 2000)
+  } catch (e) {
+    console.error('Errore durante la copia', e)
+  }
+}
 
 const copyLink = async () => {
   try {

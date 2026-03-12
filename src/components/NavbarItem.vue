@@ -7,7 +7,7 @@
                 <span class="hidden sm:inline">Match Live WP</span>
             </router-link>
             <div class="space-x-4 flex">
-                <router-link :to="userRole !== 'viewer' ? '/game' : '/game/live'" class="flex items-center space-x-1"
+                <router-link :to="(userRole === 'viewer' || gameStore.match.homeTeam.players.length > 0 )? '/game/live' : '/game' " class="flex items-center space-x-1"
                     :class="{ 'font-bold': $route.path.includes('/game') }">
                     <Icon name="water_polo" size="w-5 h-5" />
                     <span class="hidden sm:inline">Partita</span>
@@ -45,9 +45,11 @@ import { storeToRefs } from 'pinia';
 import { useInitials } from '@/composables/useInitials';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useUserRole } from '@/composables/useUserRole';
+import { useGameStore } from '@/stores/gameStore';
 
 const authStore = useAuthStore();
 const sessionStore = useSessionStore();
+const gameStore = useGameStore()
 
 const { user } = storeToRefs(authStore) // così user è un ref reattivo
 

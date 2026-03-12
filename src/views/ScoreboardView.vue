@@ -8,16 +8,26 @@
           to="/game">
         </NavButton>
       </div>
-      <div class="text-xl font-bold text-center text-blue-950">
-        <div >{{ store.match.homeTeam.score }} - {{ store.match.awayTeam.score}}</div>
-        <div v-if="userRole && userRole !== 'viewer'">{{ store.match.quarter }} T</div>
+      <div class="text-2xl font-bold text-center text-blue-950">
+        <div v-if="!isShrinked">
+          <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
+          <div  class="flex justify-center items-center text-xl">
+            <button v-if="isCorrectionMode" @click="gameStore.removeQuarter()" 
+              class="flex items-center justify-center w-6 h-6 rounded-full
+                      transition text-white bg-red-800 border border-red-800
+                      disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
+              <MinusIcon class="size-4 stroke-4 text-white" /> 
+            </button>
+            <div v-if="userRole && userRole !== 'viewer'" :class="isCorrectionMode ? 'ml-2' : ''">{{ gameStore.match.quarter }} T</div>
+          </div>
+        </div>
       </div>
       <div class="justify-self-end">
         <NavButton
           v-if="userRole && userRole !== 'viewer'"
           :label="'Restart'"
           :icon="ArrowPathIcon"
-          :onClick="store.resetTimer">
+          :onClick="gameStore.resetTimer">
         </NavButton>
       </div>
     </div>
@@ -25,13 +35,28 @@
   </div>
 
   <div class="flex flex-col h-min-screen">
-    <div v-if="userRole && userRole !== 'viewer'" class="sticky top-0 bg-white/90 backdrop-blur-md pb-2 transition-all duration-300">
+    <div v-if="userRole && userRole !== 'viewer'" class="sticky  bg-white/90 backdrop-blur-md pb-2 rounded-lg border transition-all duration-300"
+    :class="[isShrinked ? 'shadow-lg border-gray-300 top-1' : 'border-white top-0']">
       <div class="grid grid-cols-3">
-        <div class="inline-flex items-end m-2">
+        <div class="inline-flex items-end transition-all duration-300" :class="isShrinked ? 'm-2' : ''">
           <ModeToggleItem :hide-labels="isShrinked" class="transition-all duration-300" />
         </div>
         <div class="font-bold flex justify-center text-end m-2 text-blue-950 text-4xl">
-          {{ store.formatTime(store.countdown) }}
+          {{ gameStore.formatTime(gameStore.countdown) }}
+        </div>
+        <div v-if="isShrinked" class="flex justify-end items-center mr-2 text-xl font-bold text-center text-blue-950 transition-all duration-300">
+          <div class="grid grid-rows-2 transition-all duration-300">
+            <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
+            <div class="flex justify-center items-center text-base transition-all duration-300">
+              <button v-if="isCorrectionMode" @click="gameStore.removeQuarter()" 
+                class="flex items-center justify-center w-5 h-5 rounded-full
+                        transition text-white bg-red-800 border border-red-800
+                        disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
+                <MinusIcon class="size-3 stroke-4 text-white" /> 
+              </button>
+              <div :class="isCorrectionMode ? 'ml-2' : ''">{{ gameStore.match.quarter }} T</div>
+            </div>
+          </div>
         </div>
       </div>
       <ClockManager :shrink="isShrinked" />
@@ -40,11 +65,11 @@
   
     <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
   
-      <TeamItem :teamKey="'HOME'" :team="store.match.homeTeam" :players="store.actualPlayers"
+      <TeamItem :teamKey="'HOME'" :team="gameStore.match.homeTeam" :players="gameStore.actualPlayers"
         @openModal="openModal"
         @toggleTimeOut="toggleTimeOut"></TeamItem>
   
-      <TeamItem :teamKey="'AWAY'" :team="store.match.awayTeam" :players="store.actualOpponents"
+      <TeamItem :teamKey="'AWAY'" :team="gameStore.match.awayTeam" :players="gameStore.actualOpponents"
         @openModal="openModal"
         @toggleTimeOut="toggleTimeOut"></TeamItem>
   
@@ -52,7 +77,7 @@
   
     <div class="flex justify-center items-center gap-10" role="group">
       <ActionButton :icon="TableCellsIcon" label="Report" to="/game/report" color="green" position="center"/>
-      <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="store.events.length == 0"/>
+      <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="gameStore.events.length == 0"/>
     </div>
     <!-- Modale con statistiche -->
     <QuickReportModal :isOpen="showConfirmModal" :team="team"
@@ -75,10 +100,13 @@ import { useSessionStore } from '@/stores/sessionStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserRole } from '@/composables/useUserRole';
 import ModeToggleItem from '@/components/ModeToggleItem.vue';
+import { storeToRefs } from 'pinia';
+import { MinusIcon } from '@heroicons/vue/24/outline';
 
-const store = useGameStore();
+const gameStore = useGameStore();
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
+const { isCorrectionMode } = storeToRefs(gameStore)
 
 const isShrinked = ref(false)
 const headerRef = ref<HTMLElement | null>(null)
@@ -114,7 +142,7 @@ onBeforeUnmount(() => {
 })
 
 const toggleTimeOut = (payload : { number: number, teamName: string}) => {
-  store.toggleTimeOut(payload.number, payload.teamName);
+  gameStore.toggleTimeOut(payload.number, payload.teamName);
 }
 
 const showConfirmModal = ref(false);

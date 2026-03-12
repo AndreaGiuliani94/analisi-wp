@@ -8,6 +8,8 @@ import type { Exclution } from "@/components/Interfaces/Exclution";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
 import { useSessionStateStore } from "./sessionStateStore";
+import { FoulType } from "@/enum/ExclutionDescription";
+import { useToast } from "vue-toastification";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -15,9 +17,6 @@ export const useGameStore = defineStore("gameStore", {
     const savedMatch = localStorage.getItem("match");
     return {
       opponentsTeamName: "",
-      globalInterval: null as number | null,
-      activeCount: 0,
-      activeOppCount: 0,
       countdown: 0,
       countdownInterval: null as number | null,
       isCorrectionMode: false,
@@ -30,9 +29,13 @@ export const useGameStore = defineStore("gameStore", {
       state.match.homeTeam?.players.filter((player) => player.name.length > 0),
     actualOpponents: (state) =>
       state.match.awayTeam?.players.filter((player) => player.name.length > 0),
+    activeOppCount: (state) =>
+      state.match.awayTeam?.players.filter((player) => player.active).length,
+    activeCount: (state) =>
+      state.match.homeTeam?.players.filter((player) => player.active).length,
   },
   actions: {
-    loadStore() {
+    async loadStore() {
       const settingsStore = useSettingsStore();
       this.countdown = settingsStore.periodDuration * 60;
 
@@ -45,125 +48,137 @@ export const useGameStore = defineStore("gameStore", {
       if (!this.match.quarter || this.match.quarter == 0) {
         this.match.quarter = 1;
       }
-      this.saveData();
+      await this.saveData();
     },
-    updateMatch(opponentsTeam: string) {
+    async updateMatch(opponentsTeam: string) {
       if (opponentsTeam) {
         this.match.awayTeam.name = opponentsTeam.toUpperCase();
-        this.saveData();
+        await this.saveData();
       }
     },
-    toggleElement(number: number, team: number) {
-      var el;
+    async toggleElement(number: number, team: number) {
+      const settingsStore = useSettingsStore();
+      const toast = useToast();
+      let el;
+      let enablePlayersTime
       if (team === 0) {
         el = this.match.homeTeam.players.find((el) => el.number === number);
-        if (el) {
-          el.active = !el.active;
-          this.activeCount = this.match.homeTeam.players.filter(
-            (e) => e.active,
-          ).length;
-        }
-        if (this.activeCount > 7) {
-          if (el) el.active = false;
-          this.activeCount--;
-        } else if (el?.exclutions.length == 3) {
-          if (el) el.active = false;
-          if (el) el.actualTime = 0;
-          this.activeCount--;
-        } else {
-          if (el) el.actualTime = 0;
-        }
+        enablePlayersTime = settingsStore.enableHomePlayersTime;
       } else {
         el = this.match.awayTeam.players.find((el) => el.number === number);
-        if (el) {
-          el.active = !el.active;
-          this.activeOppCount = this.match.awayTeam.players.filter(
-            (e) => e.active,
-          ).length;
-        }
-        // if (this.opponentsTimerActivated && this.activeOppCount > 7) {
-        //   if (el) el.active = false;
-        //   this.activeOppCount--;
-        // } else if (el?.exclutions.length == 3) {
-        //   if (el) el.active = false;
-        //   if (el) el.actualTime = 0;
-        //   this.activeOppCount--;
-        // } else {
-        //   if (el) el.actualTime = 0;
-        // }
+        enablePlayersTime = settingsStore.enableOppPlayersTime;
       }
-      this.saveData();
+
+      if (!el) return;
+      
+      const isAttemptingToActivate = !el.active;
+
+      if (isAttemptingToActivate) {
+        // 2. Controlli pre-attivazione
+        const currentActiveCount = this.match.homeTeam.players.filter(p => p.active).length;
+        
+        // Controllo espulsioni definitive
+        if (el.exclutions.length >= 3 || el.exclutions.findIndex(excl => excl.type === FoulType.EDCS) != -1) {
+          toast.warning("Giocatore espulso definitivamente");
+          return;
+        }
+        // Limite di 7 giocatori (se il tempo è abilitato)
+        if (enablePlayersTime && currentActiveCount >= 7) {
+          toast.warning('Attenzione! Limite massimo di giocatori in acqua raggiunto')
+          return; // Esci senza attivare
+        }
+
+        // 3. Attivazione effettiva
+        el.active = true;
+        el.actualTime = 0; // Reset del tempo per il nuovo ingresso
+      } else {
+        // 4. Disattivazione semplice
+        if(!enablePlayersTime)
+          return
+        el.active = false;
+        el.actualTime = 0; // Reset del tempo all'uscita
+      }
+      
+      await this.saveData();
     },
-    updatePlayerName(number: number, name: string, team: number) {
+    async updatePlayerName(number: number, name: string, team: number) {
       var el;
       if (team === 0)
         el = this.match.homeTeam.players.find((el) => el.number === number);
       else el = this.match.awayTeam.players.find((el) => el.number === number);
       if (el) {
         el.name = name;
-        this.saveData();
+        await this.saveData();
       }
     },
     startGlobalTimer() {
-      if (
-        this.activeCount === 7 &&
-        /* (this.opponentsTimerActivated && this.activeOppCount === 7) && */ !this
-          .globalInterval
-      ) {
-        this.globalInterval = window.setInterval(() => {
-          this.match.homeTeam.players.forEach((el) => {
-            if (el.active) {
-              el.activeTime++;
+      const settingsStore = useSettingsStore();
+      // 1. PULIZIA PREVENTIVA: evita che il tempo scorra al doppio della velocità
+      this.stopGlobalTimer(); 
+      // 2. UNICO INTERVALLO
+      this.countdownInterval = window.setInterval(() => {
+        // --- LOGICA CRONOMETRO GARA ---
+        if (this.countdown > 0) {
+          this.countdown--;
+          // --- LOGICA STATISTICHE GIOCATORI ---
+          // Facciamo avanzare i tempi dei giocatori SOLO se il cronometro sta scorrendo
+          this.match.homeTeam.players.forEach((player) => {
+            if (player.active) {
+              player.activeTime++;
             } else {
-              el.benchTime++;
+              player.benchTime++;
             }
-            el.actualTime++;
+            player.actualTime++;
           });
-        }, 1000);
-      }
-      if (!this.countdownInterval) {
-        this.countdownInterval = window.setInterval(() => {
-          if (this.countdown > 1) {
-            this.countdown--;
-          } else {
-            this.countdown = 480;
-            this.match.quarter++;
-            this.stopGlobalTimer();
-          }
-        }, 1000);
-      }
+          // Se hai anche la squadra ospite, aggiungila qui
+          this.match.awayTeam.players.forEach((player) => {
+            if (player.active) {
+              player.activeTime++;
+            } else {
+              player.benchTime++;
+            }
+            player.actualTime++;
+          });
+
+        } else {
+          // --- FINE PERIODO ---
+          this.handleEndOfQuarter(settingsStore);
+        }
+        // Salvataggio automatico ogni secondo (opzionale, per persistenza PWA)
+        // this.saveData();
+      }, 1000);
+
+    },
+    handleEndOfQuarter(settingsStore: any) {
+      this.stopGlobalTimer();
+      this.match.quarter++;
+      this.countdown = settingsStore.periodDuration * 60;
     },
     stopGlobalTimer() {
-      if (this.globalInterval !== null) {
-        clearInterval(this.globalInterval);
-        this.globalInterval = null;
-      }
-      if (this.countdownInterval !== null) {
+      if (this.countdownInterval) {
         clearInterval(this.countdownInterval);
         this.countdownInterval = null;
       }
     },
     toggleGlobalTimer() {
-      if (this.globalInterval) {
+      if (this.countdownInterval) {
         this.stopGlobalTimer();
       } else {
         this.startGlobalTimer();
       }
     },
-    resetAll() {
+    async resetAll() {
       this.match = {} as Match;
       this.events = [];
-      this.activeCount = 0;
-      this.activeOppCount = 0;
       this.stopGlobalTimer();
-      this.saveData();
-      this.loadStore();
+      await this.saveData();
+      await this.loadStore();
       router.push("/game");
     },
-    clearDistinta() {
+    async clearDistinta() {
       this.match = {} as Match;
-      this.saveData();
-      this.loadStore();
+      await this.saveData();
+      await this.loadStore();
     },
     resetTimer() {
       const settingsStore = useSettingsStore();
@@ -180,7 +195,7 @@ export const useGameStore = defineStore("gameStore", {
         player.shotsSup = [];
         player.shotsPenalty = [];
         player.shotsFaced = [];
-        player.active = false;
+        player.active = !settingsStore.enableHomePlayersTime;
         player.isGK =
           player.number === 1 || player.number === 13 ? true : false;
       });
@@ -196,7 +211,7 @@ export const useGameStore = defineStore("gameStore", {
         player.shotsSup = [];
         player.shotsPenalty = [];
         player.shotsFaced = [];
-        player.active = !settingsStore.enableOppTime;
+        player.active = !settingsStore.enableOppPlayersTime;
         player.isGK =
           player.number === 1 || player.number === 13 ? true : false;
       });
@@ -326,7 +341,7 @@ export const useGameStore = defineStore("gameStore", {
         this.match.awayTeam.score--;
       }
     },
-    addExclution(
+    async addExclution(
       number: number,
       team: number,
       type: string,
@@ -359,15 +374,16 @@ export const useGameStore = defineStore("gameStore", {
           };
         }
 
-        this.saveEvents(
+        await this.saveEvents(
           type + " " + position + " " + (ball ? "Con palla" : "Senza palla"),
           el,
           team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
         );
 
         if (this.isOut(el)) {
-          this.toggleElement(el.number, team);
-          if (this.activeCount != 7) this.stopGlobalTimer;
+          el.active = false;
+          el.actualTime = 0;
+          await this.saveData();
         }
       }
     },
@@ -377,7 +393,7 @@ export const useGameStore = defineStore("gameStore", {
         player.exclutions.some((excl) => excl.type === "EDCS")
       );
     },
-    removeExclution(number: number, team: number, exclNumber: number) {
+    async removeExclution(number: number, team: number, exclNumber: number) {
       var el;
       el =
         team === 0
@@ -395,7 +411,7 @@ export const useGameStore = defineStore("gameStore", {
         }
       }
 
-      this.saveData();
+      await this.saveData();
     },
     addShotFaced(number: number, team: number, type: string, position: string, outcome: string) {
       var el;
@@ -406,7 +422,7 @@ export const useGameStore = defineStore("gameStore", {
       }
       el?.shotsFaced.push({ type: type, position: position, outcome: outcome, shooter: number });
     },
-    addTimeOut(number: number, team: string) {
+    async addTimeOut(number: number, team: string) {
       number === 1
         ? team === "HOME"
           ? (this.match.homeTeam.timeOut1 = true)
@@ -414,9 +430,9 @@ export const useGameStore = defineStore("gameStore", {
         : team === "HOME"
           ? (this.match.homeTeam.timeOut2 = true)
           : (this.match.awayTeam.timeOut2 = true);
-      this.saveData();
+      await this.saveData();
     },
-    toggleTimeOut(number: number, team: string) {
+    async toggleTimeOut(number: number, team: string) {
       if (team === "HOME") {
         number === 1
           ? (this.match.homeTeam.timeOut1 = !this.match.homeTeam.timeOut1)
@@ -426,7 +442,7 @@ export const useGameStore = defineStore("gameStore", {
           ? (this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1)
           : (this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2);
       }
-      this.saveData();
+      await this.saveData();
     },
     getAllShoots(player: Player) {
       var totalShots = [];
@@ -483,7 +499,7 @@ export const useGameStore = defineStore("gameStore", {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
       XLSX.writeFile(workbook, "players.xlsx");
     },
-    saveEvents(description: string, player: Player, team: string) {
+    async saveEvents(description: string, player: Player, team: string) {
       const event: Event = {
         team: team,
         player: player,
@@ -492,9 +508,9 @@ export const useGameStore = defineStore("gameStore", {
         quarter: this.match.quarter,
       };
       this.events.push(event);
-      this.saveData();
+      await this.saveData();
     },
-    removeExclEvent(team: string, player: Player, excl: Exclution) {
+    async removeExclEvent(team: string, player: Player, excl: Exclution) {
       const index = this.events.findIndex(
         (e) =>
           e.team == team &&
@@ -505,9 +521,9 @@ export const useGameStore = defineStore("gameStore", {
       if (index != -1) {
         this.events.splice(index, 1);
       }
-      this.saveData();
+      await this.saveData();
     },
-    removeShootEvent(team: string, player: Player) {
+    async removeShootEvent(team: string, player: Player) {
       const index = this.events.findLastIndex(
         (e) =>
           e.team == team &&
@@ -518,33 +534,33 @@ export const useGameStore = defineStore("gameStore", {
       if (index != -1) {
         this.events.splice(index, 1);
       }
-      this.saveData();
+      await this.saveData();
     },
-    back(seconds: number) {
-      this.countdown += seconds;
+    async back(seconds: number) {
+      const settingsStore = useSettingsStore();
+      this.countdown = Math.min(settingsStore.periodDuration * 60, this.countdown + seconds);
       this.match.homeTeam.players.forEach((player) => {
         if (player.active) {
-          player.activeTime -= seconds;
-          player.actualTime -= seconds;
+          player.activeTime = Math.max(0, player.activeTime - seconds);
         } else {
-          player.benchTime -= seconds;
-          player.actualTime -= seconds;
+          player.benchTime = Math.max(0, player.benchTime - seconds);
         }
+        player.actualTime = Math.max(0, player.actualTime - seconds);
       });
-      this.saveData();
+      await this.saveData();
     },
-    forward(seconds: number) {
-      this.countdown -= seconds;
+    async forward(seconds: number) {
+      const settingsStore = useSettingsStore();
+      this.countdown = Math.max(0, this.countdown - seconds);
       this.match.homeTeam.players.forEach((player) => {
         if (player.active) {
-          player.activeTime += seconds;
-          player.actualTime += seconds;
+          player.activeTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.activeTime + seconds);
         } else {
-          player.benchTime += seconds;
-          player.actualTime += seconds;
+          player.benchTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.benchTime + seconds);
         }
+        player.actualTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.actualTime + seconds);
       });
-      this.saveData();
+      await this.saveData();
     },
     toggleCorrectionMode() {
       this.isCorrectionMode = !this.isCorrectionMode;
@@ -552,53 +568,63 @@ export const useGameStore = defineStore("gameStore", {
     setCorrectionMode(value: boolean) {
       this.isCorrectionMode = value;
     },
+    removeQuarter() {
+      this.match.quarter = Math.min(1, this.match.quarter - 1)
+      this.toggleCorrectionMode()
+    }
   },
 });
 
 function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
   this.match.homeTeam = {
-    activatedTimer: true,
+    activatedTimer: settingsStore.enableHomePlayersTime,
     name: settingsStore.homeTeamName,
     score: 0,
     timeOut1: false,
     timeOut2: false,
-    players: Array.from({ length: settingsStore.maxPlayers }, (_, i) => ({
-      number: i + 1,
-      name: "",
-      activeTime: 0,
-      benchTime: 0,
-      actualTime: 0,
-      shotsEven: [],
-      shotsSup: [],
-      shotsPenalty: [],
-      exclutions: [],
-      shotsFaced: [],
-      active: false,
-      isGK: this.number === 0 || this.number === 13 ? true : false,
-    })),
+    players: Array.from({ length: settingsStore.maxPlayers }, (_, i) => {
+      const playerNumber = i + 1;
+      return {
+        number: playerNumber,
+        name: "",
+        activeTime: 0,
+        benchTime: 0,
+        actualTime: 0,
+        shotsEven: [],
+        shotsSup: [],
+        shotsPenalty: [],
+        exclutions: [],
+        shotsFaced: [],
+        active: !settingsStore.enableHomePlayersTime,
+        isGK: (playerNumber === 1 || playerNumber === 13),
+      }
+    }),
   };
 }
 
 function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
   this.match.awayTeam = {
-    activatedTimer: settingsStore.enableOppTime,
+    activatedTimer: settingsStore.enableOppPlayersTime,
     name: "",
     score: 0,
     timeOut1: false,
     timeOut2: false,
-    players: Array.from({ length: settingsStore.maxPlayers }, (_, i) => ({
-      number: i + 1,
-      name: "",
-      activeTime: 0,
-      benchTime: 0,
-      actualTime: 0,
-      shotsEven: [],
-      shotsSup: [],
-      shotsPenalty: [],
-      exclutions: [],
-      shotsFaced: [],
-      active: !settingsStore.enableOppTime,
-      isGK: this.number === 0 || this.number === 13 ? true : false,
-    })),
+    players: Array.from({ length: settingsStore.maxPlayers }, (_, i) => {
+      const playerNumber = i + 1;
+      return {
+        number: playerNumber,
+        name: "",
+        activeTime: 0,
+        benchTime: 0,
+        actualTime: 0,
+        shotsEven: [],
+        shotsSup: [],
+        shotsPenalty: [],
+        exclutions: [],
+        shotsFaced: [],
+        active: !settingsStore.enableOppPlayersTime,
+        isGK: (playerNumber === 1 || playerNumber === 13),
+      }
+    }),
   };
 }

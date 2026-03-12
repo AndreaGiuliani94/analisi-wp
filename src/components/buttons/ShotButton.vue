@@ -107,7 +107,6 @@ import { useGameStore } from '@/stores/gameStore';
 import ActionButton from './ActionButton.vue';
 
 const gameStore = useGameStore()
-// Usiamo storeToRefs per mantenere la reattività
 const { isCorrectionMode } = storeToRefs(gameStore)
 
 const props = defineProps<{

@@ -2,11 +2,15 @@
   <div :class="[
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
-    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg font-medium"
-    @click="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
+    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg font-medium select-none"
+    @click.stop="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
     @mousedown="startHold" 
     @mouseup="stopHold" 
-    @mouseleave="stopHold">
+    @touchstart.passive="startHold" 
+    @touchend="stopHold"
+    @touchcancel="stopHold"
+    @touchmove="stopHold"
+    >
     <template v-if="isEditing">
       <input v-model="editableName" class="bg-transparent border-none outline-none w-full flex-1 min-w-0"
         @blur="saveEdit(team.name == settings.homeTeamName ? 0 : 1)" 
@@ -147,26 +151,37 @@ const startHold = () => {
     nextTick(() => {
       inputField.value?.focus();
     });
-  }, 1500); // 1.5s di pressione
+  }, 1000); // 1.0s di pressione
 };
 
 const stopHold = () => {
   if (holdTimeout.value) {
     clearTimeout(holdTimeout.value);
+    holdTimeout.value = null;
   }
+  // Usiamo un piccolo delay per resettare isHolding, 
+  // così handleClick ha il tempo di vedere che era TRUE e bloccarsi
+  setTimeout(() => {
+    isHolding.value = false;
+  }, 200);
 };
 
 const handleClick = (team: number) => {
-  if(userRole && userRole.value !== 'viewer') {
-    if (!isHolding.value && !isEditing.value) {
-      store.toggleElement(props.player.number, team);
-    }
+  console.log("Click triggerato! isEditing:", isEditing.value, "isHolding:", isHolding.value);
+  if (userRole?.value === 'viewer') return;
+  
+  // Se stiamo editando o abbiamo appena finito una pressione lunga, NON triggheriamo il toggle
+  if (isHolding.value || isEditing.value) {
+    return;
   }
+
+  store.toggleElement(props.player.number, team);
 };
 
 const saveEdit = (team: number) => {
   if(userRole && userRole.value !== 'viewer'){
     isEditing.value = false;
+    isHolding.value = false;
     store.updatePlayerName(props.player.number, editableName.value, team);
   }
 };

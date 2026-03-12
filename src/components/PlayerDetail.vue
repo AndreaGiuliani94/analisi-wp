@@ -37,9 +37,9 @@
         </div>
         <div v-if="player.isGK" class="text-sm mb-2">
             <p><strong>Dettaglio Tiri Subiti:</strong></p>
-            <div class="grid grid-cols-2 gap-y-2">
+            <div class="grid grid-cols-3 gap-y-2">
                 <div>
-                    <strong>Pari: {{ totalShotsFaced.evens.goals.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
+                    <strong>Pari: {{ totalShotsFaced.evens.parati.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
                     <div class="grid grid-cols-2 gap-4">
                         <div v-for="(category, index) in shotFacedCategories" :key="index">
                             <div class="font-semibold">
@@ -53,7 +53,7 @@
                     </div>
                 </div>
                 <div>
-                    <strong>Superiorità: {{ totalShotsFaced.sup.goals.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
+                    <strong>Superiorità: {{ totalShotsFaced.sup.parati.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
                     <div class="grid grid-cols-2 gap-4">
                         <div v-for="(category, index) in shotFacedCategories" :key="index">
                             <div class="font-semibold">
@@ -62,6 +62,16 @@
                             <div v-for="(zone, zIndex) in supZones" :key="zIndex">
                                 {{ zone.label }}:
                                 {{ getFacedZoneValue('sup', category.key, zone.values) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <strong>Rigori: {{ totalShotsFaced.penalties.parati.length }}/{{ totalShotsFaced.penalties.shots.length }}</strong> 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div v-for="(category, index) in shotFacedCategories" :key="index">
+                            <div class="font-semibold">
+                                {{ category.label }}: {{ getShotsFacedLengthByType('penalties', category.key) }}
                             </div>
                         </div>
                     </div>
@@ -111,6 +121,13 @@ const totalShotsFaced = computed(() => ({
     shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
     goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.GOAL),
     parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.SAVED),
+    fuori: [],
+    stoppati: [],
+  },
+  penalties: {
+    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
+    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && shot.outcome === ShotOutcome.GOAL),
+    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && shot.outcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
   }
@@ -170,6 +187,8 @@ function getShotsFacedLengthByType(type: ShotKey, category: CategoryKey): number
             return totalShotsFaced.value.evens[category].length;
         case 'sup':
             return totalShotsFaced.value.sup[category].length;
+        case 'penalties':
+            return totalShotsFaced.value.penalties[category].length;
         default:
             return 0;
     }

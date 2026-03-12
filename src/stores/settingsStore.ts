@@ -9,7 +9,8 @@ export const useSettingsStore = defineStore('settings', {
     maxPlayers: 15,
     enableExclution: true,
     enableShoot: true,
-    enableOppTime: false,
+    enableOppPlayersTime: false,
+    enableHomePlayersTime: true,
   }),
   actions: {
     updateSettings(newSettings: Partial<SettingsState>) {
@@ -25,7 +26,8 @@ export interface SettingsState {
   maxPlayers: number
   enableExclution: boolean
   enableShoot: boolean
-  enableOppTime: boolean
+  enableOppPlayersTime: boolean
+  enableHomePlayersTime: boolean
 }
 
 export type SettingsStore = ReturnType<typeof useSettingsStore>
