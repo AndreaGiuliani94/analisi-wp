@@ -20,12 +20,13 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
 import type { Team } from '../Interfaces/Team';
-import type { Shot } from '../Interfaces/Shot';
-import { MenUpShot, ShotOutcome } from '@/enum/ShotDescription';
+import { MenUpShot, ShotCategory } from '@/enum/ShotDescription';
 import { shotCategories } from '@/const/consts';
 import type { CategoryKey } from '../Interfaces/Shot/Category';
 import { supZones } from '../Interfaces/Shot/Zone';
+import { useGameStore } from '@/stores/gameStore';
 
+const gameStore = useGameStore()
 const props = defineProps({
     team: {
         type: Object as PropType<Team>,
@@ -41,26 +42,10 @@ const totals = computed(() => ({
   stoppati: menUps.value.stoppati.length
 }))
 
-const menUps = computed(() => getAllMenUps())
-
-const getAllMenUps = () => {
-    var totalShots: Shot[] = [];
-    props.team.players.forEach(pl => totalShots.push(...pl.shotsSup));
-    var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.GOAL.toUpperCase() );
-    var totalParati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.SAVED.toUpperCase() );
-    var totalFuori = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.MISSED.toUpperCase() );
-    var totalStoppati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.BLOCKED.toUpperCase() );
-    return {
-        goals: totalGoals,
-        shots: totalShots,
-        parati: totalParati,
-        fuori: totalFuori,
-        stoppati: totalStoppati
-      }
-}
+const menUps = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP))
 
 function getShotsByCategory(category: CategoryKey, positions: string[]): number {
-  return getAllMenUps()[category].filter(shot => positions.includes(shot.position)).length
+  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP)[category].filter(shot => positions.includes(shot.position)).length
 }
 
 function getZoneValue(category: CategoryKey, values: (MenUpShot | string)[]): number {

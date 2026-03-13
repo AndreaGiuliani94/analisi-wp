@@ -12,6 +12,8 @@
                     <BaseInput
                         id="code"
                         v-model="code"
+                        placeholder="602086fa-4c2.."
+                        label="Codice"
                         required/>
 
                     <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>

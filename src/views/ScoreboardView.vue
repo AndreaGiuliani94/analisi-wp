@@ -8,20 +8,36 @@
           to="/game">
         </NavButton>
       </div>
-      <div class="text-2xl font-bold text-center text-blue-950">
-        <div v-if="!isShrinked">
-          <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
-          <div  class="flex justify-center items-center text-xl">
-            <button v-if="isCorrectionMode" @click="gameStore.removeQuarter()" 
-              class="flex items-center justify-center w-6 h-6 rounded-full
-                      transition text-white bg-red-800 border border-red-800
-                      disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
-              <MinusIcon class="size-4 stroke-4 text-white" /> 
-            </button>
-            <div v-if="userRole && userRole !== 'viewer'" :class="isCorrectionMode ? 'ml-2' : ''">{{ gameStore.match.quarter }} T</div>
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl font-bold text-center text-blue-950">
+            <div v-if="!isShrinked">
+              <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
+              <div class="flex gap-1 text-sm font-medium self-end mb-1">
+                <template v-for="(p, i) in gameStore.partials" :key="i">
+                  <span class="flex items-center" >
+                    <span class="text-xs mr-0.5 text-gray-400" v-if="i > 0">|</span>
+                    <span :class="[
+                      i + 1 > gameStore.match.quarter ? 'text-gray-400' : 'text-blue-950', 
+                      i + 1 == gameStore.match.quarter ? 'animate-pulse bg-blue-950 text-white px-0.5 rounded-2xl' : '']" 
+                      >{{ p.home }}-{{ p.away }}</span>
+                  </span>
+                </template>
+              </div>
+              <!-- <div class="flex justify-center items-center text-xl">
+                <button v-if="isCorrectionMode" @click="gameStore.removeQuarter()" 
+                  class="flex items-center justify-center w-6 h-6 rounded-full
+                          transition text-white bg-red-800 border border-red-800
+                          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
+                  <MinusIcon class="size-4 stroke-4 text-white" /> 
+                </button>
+                <div v-if="userRole && userRole !== 'viewer'" :class="isCorrectionMode ? 'ml-2' : ''">{{ gameStore.match.quarter }} T</div>
+              </div> -->
+            </div>
           </div>
         </div>
       </div>
+
       <div class="justify-self-end">
         <NavButton
           v-if="userRole && userRole !== 'viewer'"
@@ -63,7 +79,7 @@
       
     </div>
   
-    <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3">
+    <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col justify-between gap-3">
   
       <TeamItem :teamKey="'HOME'" :team="gameStore.match.homeTeam" :players="gameStore.actualPlayers"
         @openModal="openModal"

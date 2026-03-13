@@ -4,3 +4,17 @@ button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+
+/* Animazione personalizzata per il lampeggio sportivo */
+@keyframes sport-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1; /* Quasi invisibile al centro del ciclo */
+  }
+}
+
+.animate-sport-blink {
+  animation: sport-blink 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

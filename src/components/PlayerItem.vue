@@ -2,7 +2,7 @@
   <div :class="[
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
-    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg font-medium select-none"
+    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg font- select-none"
     @click.stop="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
     @mousedown="startHold" 
     @mouseup="stopHold" 
@@ -94,18 +94,25 @@
         @remove-shot="removeShot"/>
       <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
     </div>
-    <div class="inline-flex ml-3 mr-2 text-blue-950" role="group">
-      <div class="h-6 w-8 flex items-center"> 
+    <div class="inline-flex ml-2 text-blue-950" role="group">
+      <div class="h-6 w-8 flex items-center font-bold text-base"> 
         <span v-if="player.isGK">
           {{ store.getAllSaves(player).saves + '/' + store.getAllSaves(player).shots }}
         </span>
         <span v-else>
-          {{ store.getAllShoots(player).goals + '/' + store.getAllShoots(player).shots }}
+          {{ store.getAllPlayerShots(player).goals + '/' + store.getAllPlayerShots(player).shots }}
         </span>
       </div>
     </div>
 
+    <div class="h-6 w-6 flex justify-center items-center mr-2">
+      <InformationCircleIcon class="size-6 text-blue-950" @click="openPlayerDetailModal"/>
+    </div>
+
   </template>
+
+  <PlayerDetailModal :isOpen="isPlayerDetailOpen" :player="player"
+          @close="isPlayerDetailOpen = false" />
 
 </template>
 
@@ -115,12 +122,14 @@ import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
-import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline";
+import { ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useUserRole } from "@/composables/useUserRole";
+import QuickReportModal from "./modals/QuickReportModal.vue";
+import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
 
 const props = defineProps({
   player: {
@@ -138,6 +147,7 @@ const settings = useSettingsStore();
 const sessionStore = useSessionStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
 const isEditing = ref<boolean>(false);
+const isPlayerDetailOpen = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
@@ -195,7 +205,7 @@ const addShot = (payload : { type: ShotCategory, position: string, outcome: Shot
 };
 
 const removeShot = (payload : { type: ShotCategory }) => {
-  store.removeShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type)
+  store.removeShot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type)
 };
 
 const removeExclution = (exclNumber: number) => {
@@ -214,5 +224,8 @@ const getExclutionState = (index: number) => {
   return '';
 }
 
+const openPlayerDetailModal = () => {
+  isPlayerDetailOpen.value = true;
+}
 
 </script>

@@ -1,3 +1,4 @@
+import type { MatchEventType } from "@/enum/MatchEventDescription";
 import type { Player } from "./Player";
 
 export interface Event {
@@ -6,4 +7,5 @@ export interface Event {
   time: string;
   description: string;
   quarter: number;
+  type: MatchEventType;
 }

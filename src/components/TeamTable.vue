@@ -56,7 +56,9 @@
                     <!-- Riga espansa -->
                     <Transition name="fade">
                     <tr v-if="expandedRows.includes(player.number)" class="bg-blue-50">
-                        <PlayerDetail :player="player" :get-exclution="getExclution" />
+                        <td colspan="9" class="px-4 py-2 border-x border-b border-blue-200">
+                            <PlayerDetail :player="player" :get-exclution="getExclution" :align="'row'" :show-g-k-shots="true" />
+                        </td>
                     </tr>
                     </Transition>
 

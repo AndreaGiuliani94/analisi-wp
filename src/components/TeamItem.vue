@@ -6,9 +6,20 @@ import TimeOutButton from './buttons/TimeOutButton.vue';
 import type { Player } from './Interfaces/Player';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useUserRole } from '@/composables/useUserRole';
+import { useGameStore } from '@/stores/gameStore';
+import { ShotCategory } from '@/enum/ShotDescription';
+import { computed } from 'vue';
 
 const sessionStore = useSessionStore()
 const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const gameStore = useGameStore()
+
+const stats = computed(() => ({
+  even: gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN),
+  sup: gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP),
+  pen: gameStore.getAllTeamShotsByType(props.team, ShotCategory.PENALTY),
+  tot: gameStore.getAllTeamShotsByType(props.team, ShotCategory.OUTCOME)
+}));
 
 const props = defineProps<{
   team: Team
@@ -34,7 +45,7 @@ const handleOpenModal = () => {
 
 <template>
   <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
-    <div class="ms-2.5 mb-1.5 flex justify-start items-center">
+    <div class="ms-2.5 mb-1.5 grid grid-cols-[max-content_auto_max-content] items-center">
       <a
         class="text-red-800 flex justify-start items-center cursor-pointer"
         @click="handleOpenModal"
@@ -42,8 +53,26 @@ const handleOpenModal = () => {
         <span class="font-semibold">{{ team.name }}</span>
         <ArrowRightIcon class="size-5 ms-1.5" />
       </a>
+      <div class="flex justify-center gap-5 text-base text-blue-950">
+        <div class="inline-flex items-center gap-1" role="group">
+          <div class="h-6 w-8 flex items-center justify-end">PARI</div>
+          <span>{{ stats.even.goals.length }}/{{ stats.even.shots.length }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1" role="group">
+          <div class="h-6 w-8 flex items-center justify-end">SUP</div>
+          <span>{{ stats.sup.goals.length }}/{{ stats.sup.shots.length }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1" role="group">
+          <div class="h-6 w-8 flex items-center justify-end">RIG</div>
+          <span>{{ stats.pen.goals.length }}/{{ stats.pen.shots.length }}</span>
+        </div>
+        <div class="inline-flex items-center gap-1" role="group">
+          <div class="h-6 w-8 flex items-center justify-end">TOT</div>
+          <span>{{ stats.tot.goals.length }}/{{ stats.tot.shots.length }}</span>
+        </div>
+      </div>
 
-      <div class="ml-auto flex items-center justify-end gap-1">
+      <div class="ml-4 flex items-center justify-end gap-1">
         <span class="text-blue-950">TO</span>
         <TimeOutButton
           :number="1"

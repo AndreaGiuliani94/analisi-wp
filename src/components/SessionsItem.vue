@@ -35,66 +35,29 @@
 
       </div>
     </div>
-    <div class="flex items-center justify-center gap-3">
-      <ActionButton @click="openCreateModal" :disabled="loading" color="green" label="Crea una nuova partita">
-      </ActionButton>
-  
-      <ActionButton @click="openJoinModal" :disabled="loading" color="blue" label="Unisciti a un partita">
-      </ActionButton>
-    </div>
-
-    <NewSessionModal :isOpen="showCreateSessionModal" @close="closeCreateModal"/>
-    <JoinSessionModal :isOpen="showJoinSessionModal" @close="closeJoinModal"/>
-    <ConfirmModal :isOpen="showRemoveConfirmModal" title="Conferma Rimozione"
+  </div>
+  <ConfirmModal :isOpen="showRemoveConfirmModal" title="Conferma Rimozione"
         :message=confirmRemoveMessage
         @confirm="removeSession(sessionToRemove)" @close="showRemoveConfirmModal = false" />
-  </div>
 </template>
 
 <script setup lang="ts">
-import ActionButton from '@/components/buttons/ActionButton.vue'
 import type { Session } from '@/components/Interfaces/Session/Session'
 import { useSessionStore } from '@/stores/sessionStore'
 import { onMounted, ref } from 'vue'
 import RoleBadge from './RoleBadge.vue'
-import NewSessionModal from './modals/NewSessionModal.vue'
 import NavButton from './buttons/NavButton.vue'
 import { ArrowRightIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/solid'
-import ConfirmModal from './modals/ConfirmModal.vue'
 import { deleteSession } from '@/services/sessionService'
-import JoinSessionModal from './modals/JoinSessionModal.vue'
+import ConfirmModal from './modals/ConfirmModal.vue'
 
-const showCreateSessionModal = ref(false);
-const showJoinSessionModal = ref(false);
 const showRemoveConfirmModal = ref(false);
 const confirmRemoveMessage = ref('');
 const sessionToRemove = ref<Session | null>(null);
 const sessionIdLS = localStorage.getItem("session_id");
-
 const loading = ref(false)
+
 const sessionStore = useSessionStore()
-
-const openCreateModal = async () => {
-  loading.value = true
-  showCreateSessionModal.value = true
-}
-
-const closeCreateModal = async () => {
-  showCreateSessionModal.value = false
-  loading.value = false
-  sessionStore.getAllSessions()
-}
-
-const openJoinModal = async () => {
-  loading.value = true
-  showJoinSessionModal.value = true
-}
-
-const closeJoinModal = async () => {
-  showJoinSessionModal.value = false
-  loading.value = false
-  sessionStore.getAllSessions()
-}
 
 const openConfirmDelete = async (session: Session) => {
   confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + session.sessions.title + '. Sicuro di voler procedere?'

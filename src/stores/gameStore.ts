@@ -10,6 +10,9 @@ import { useSettingsStore, type SettingsStore } from "./settingsStore";
 import { useSessionStateStore } from "./sessionStateStore";
 import { FoulType } from "@/enum/ExclutionDescription";
 import { useToast } from "vue-toastification";
+import type { Shot } from "@/components/Interfaces/Shot";
+import type { Team } from "@/components/Interfaces/Team";
+import { MatchEventType } from "@/enum/MatchEventDescription";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -33,6 +36,23 @@ export const useGameStore = defineStore("gameStore", {
       state.match.awayTeam?.players.filter((player) => player.active).length,
     activeCount: (state) =>
       state.match.homeTeam?.players.filter((player) => player.active).length,
+    partials: (state) => {
+        const partials = Array.from({ length: 4 }, (_, i) => ({
+        home: 0,
+        away: 0
+      }));
+      state.events.forEach(event => {
+        if (event.type == MatchEventType.GOAL && event.quarter <= 4) {
+          const qIndex = event.quarter - 1;
+          if (event.team === state.match.homeTeam.name) {
+            partials[qIndex].home++;
+          } else {
+            partials[qIndex].away++;
+          }
+        }
+      });
+      return partials;
+    }
   },
   actions: {
     async loadStore() {
@@ -151,6 +171,8 @@ export const useGameStore = defineStore("gameStore", {
     },
     handleEndOfQuarter(settingsStore: any) {
       this.stopGlobalTimer();
+      if(this.match.quarter + 1 == 5)
+        return
       this.match.quarter++;
       this.countdown = settingsStore.periodDuration * 60;
     },
@@ -254,12 +276,13 @@ export const useGameStore = defineStore("gameStore", {
               "Tiro - " + description,
               el,
               team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+              MatchEventType.SHOT
             );
             break;
         }
       }
     },
-    removeShoot(number: number, team: number, type: ShotCategory) {
+    removeShot(number: number, team: number, type: ShotCategory) {
       var el;
       if (team === 0)
         el = this.match.homeTeam.players.find((el) => el.number === number);
@@ -267,9 +290,7 @@ export const useGameStore = defineStore("gameStore", {
       if (el) {
         switch (type) {
           case ShotCategory.EVEN:
-            if (
-              el.shotsEven[el.shotsEven.length - 1].outcome == ShotOutcome.GOAL
-            )
+            if (el.shotsEven[el.shotsEven.length - 1].outcome == ShotOutcome.GOAL)
               this.removeGoal(team);
             el.shotsEven.pop();
             break;
@@ -279,22 +300,18 @@ export const useGameStore = defineStore("gameStore", {
             el.shotsSup.pop();
             break;
           case ShotCategory.PENALTY:
-            if (
-              el.shotsPenalty[el.shotsPenalty.length - 1].outcome ==
-              ShotOutcome.GOAL
-            )
+            if (el.shotsPenalty[el.shotsPenalty.length - 1].outcome == ShotOutcome.GOAL)
               this.removeGoal(team);
             el.shotsPenalty.pop();
             break;
           default:
             break;
         }
-
+        this.removeShotFaced(number, team, type)
         this.removeShootEvent(
           team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
           el,
         );
-        this.removeShotFaced(number, team, type)
         this.setCorrectionMode(false);
       }
     },
@@ -331,6 +348,7 @@ export const useGameStore = defineStore("gameStore", {
           description,
           el,
           team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+          MatchEventType.GOAL
         );
       }
     },
@@ -378,6 +396,7 @@ export const useGameStore = defineStore("gameStore", {
           type + " " + position + " " + (ball ? "Con palla" : "Senza palla"),
           el,
           team === 0 ? this.match.homeTeam.name : this.match.awayTeam.name,
+          MatchEventType.FOUL,
         );
 
         if (this.isOut(el)) {
@@ -444,7 +463,7 @@ export const useGameStore = defineStore("gameStore", {
       }
       await this.saveData();
     },
-    getAllShoots(player: Player) {
+    getAllPlayerShots(player: Player) {
       var totalShots = [];
       totalShots.push(
         ...player.shotsEven,
@@ -459,7 +478,7 @@ export const useGameStore = defineStore("gameStore", {
         shots: totalShots.length,
       };
     },
-    getAllTeamShoots(team: number) {
+    getAllTeamShots(team: number) {
       var totalShots = [];
       var actualTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
       actualTeam.players.forEach((player) => {
@@ -499,13 +518,14 @@ export const useGameStore = defineStore("gameStore", {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
       XLSX.writeFile(workbook, "players.xlsx");
     },
-    async saveEvents(description: string, player: Player, team: string) {
+    async saveEvents(description: string, player: Player, team: string, type: MatchEventType) {
       const event: Event = {
         team: team,
         player: player,
         time: this.formatTime(this.countdown),
         description: description,
         quarter: this.match.quarter,
+        type: type,
       };
       this.events.push(event);
       await this.saveData();
@@ -571,7 +591,42 @@ export const useGameStore = defineStore("gameStore", {
     removeQuarter() {
       this.match.quarter = Math.min(1, this.match.quarter - 1)
       this.toggleCorrectionMode()
+    },
+    getAllTeamShotsByType(team: Team, type: ShotCategory) {
+      const settingsStore = useSettingsStore();
+      var totalShots: Shot[] = [];
+      var players = (team.name === settingsStore.homeTeamName) ? this.match.homeTeam.players : this.match.awayTeam.players;
+      switch(type) {
+        case ShotCategory.EVEN:
+          players.forEach(pl => totalShots.push(...pl.shotsEven));
+          break;
+        case ShotCategory.SUP:
+          players.forEach(pl => totalShots.push(...pl.shotsSup));
+          break;
+        case ShotCategory.PENALTY:
+          players.forEach(pl => totalShots.push(...pl.shotsPenalty));
+          break;
+        case ShotCategory.OUTCOME:
+        default:
+          players.forEach(pl => totalShots.push(
+            ...pl.shotsEven,
+            ...pl.shotsSup,
+            ...pl.shotsPenalty,));
+          break
+
     }
+    var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.GOAL.toUpperCase() );
+    var totalParati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.SAVED.toUpperCase() );
+    var totalFuori = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.MISSED.toUpperCase() );
+    var totalStoppati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.BLOCKED.toUpperCase() );
+    return {
+        goals: totalGoals,
+        shots: totalShots,
+        parati: totalParati,
+        fuori: totalFuori,
+        stoppati: totalStoppati
+      }
+}
   },
 });
 

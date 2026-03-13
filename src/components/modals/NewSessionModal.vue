@@ -12,6 +12,8 @@
                     <BaseInput
                         id="name"
                         v-model="title"
+                        :placeholder="settingsStore.homeTeamName + ' - ...'"
+                        label="Nome partita"
                         required/>
 
                     <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
@@ -39,12 +41,14 @@ import { ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { createNewSession } from '@/services/sessionService';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 const props = defineProps({
   isOpen: Boolean
 });
 
 const emit = defineEmits([ "close" ])
+const settingsStore = useSettingsStore()
 
 // Form state
 const title = ref('')

@@ -1,91 +1,89 @@
 <template>
-    <td colspan="9" class="px-4 py-2 border-x border-b border-blue-200">
-        <div class="text-sm mb-2">
-            <p><strong>Dettaglio Tiri:</strong></p>
-            <div class="grid grid-cols-2 gap-y-2">
-                <div>
-                    <strong>Pari: {{ totalShots.evens.goals.length }}/{{ totalShots.evens.shots.length }}</strong> 
-                    <div class="grid grid-cols-4 gap-4">
-                        <div v-for="(category, index) in shotCategories" :key="index">
-                            <div class="font-semibold">
-                                {{ category.label }}: {{ getShotsLengthByType('evens', category.key) }}
-                            </div>
-                            <div v-for="(zone, zIndex) in evenZones" :key="zIndex">
-                                {{ zone.label }}:
-                                {{ getZoneValue('evens', category.key, zone.values) }}
-                            </div>
+    <div v-if="!player.isGK || props.showGKShots" class="text-sm mb-2">
+        <p><strong>Dettaglio Tiri:</strong></p>
+        <div class="grid gap-y-2" :class="[props.align == 'col' ? 'grid-cols-1' : 'grid-cols-2']">
+            <div>
+                <strong>Pari: {{ totalShots.evens.goals.length }}/{{ totalShots.evens.shots.length }}</strong> 
+                <div class="grid grid-cols-4 gap-4">
+                    <div v-for="(category, index) in shotCategories" :key="index">
+                        <div class="font-semibold">
+                            {{ category.label }}: {{ getShotsLengthByType('evens', category.key) }}
+                        </div>
+                        <div v-for="(zone, zIndex) in evenZones" :key="zIndex">
+                            {{ zone.label }}:
+                            {{ getZoneValue('evens', category.key, zone.values) }}
                         </div>
                     </div>
                 </div>
-                <div>
-                    <strong>Superiorità: {{ totalShots.sup.goals.length }}/{{ totalShots.sup.shots.length }}</strong> 
-                    <div class="grid grid-cols-4 gap-4">
-                        <div v-for="(category, index) in shotCategories" :key="index">
-                            <div class="font-semibold">
-                                {{ category.label }}: {{ getShotsLengthByType('sup', category.key) }}
-                            </div>
-                            <div v-for="(zone, zIndex) in supZones" :key="zIndex">
-                                {{ zone.label }}:
-                                {{ getZoneValue('sup', category.key, zone.values) }}
-                            </div>
+            </div>
+            <div>
+                <strong>Superiorità: {{ totalShots.sup.goals.length }}/{{ totalShots.sup.shots.length }}</strong> 
+                <div class="grid grid-cols-4 gap-4">
+                    <div v-for="(category, index) in shotCategories" :key="index">
+                        <div class="font-semibold">
+                            {{ category.label }}: {{ getShotsLengthByType('sup', category.key) }}
+                        </div>
+                        <div v-for="(zone, zIndex) in supZones" :key="zIndex">
+                            {{ zone.label }}:
+                            {{ getZoneValue('sup', category.key, zone.values) }}
                         </div>
                     </div>
                 </div>
+            </div>
 
-            </div>
-            
         </div>
-        <div v-if="player.isGK" class="text-sm mb-2">
-            <p><strong>Dettaglio Tiri Subiti:</strong></p>
-            <div class="grid grid-cols-3 gap-y-2">
-                <div>
-                    <strong>Pari: {{ totalShotsFaced.evens.parati.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div v-for="(category, index) in shotFacedCategories" :key="index">
-                            <div class="font-semibold">
-                                {{ category.label }}: {{ getShotsFacedLengthByType('evens', category.key) }}
-                            </div>
-                            <div v-for="(zone, zIndex) in evenZones" :key="zIndex">
-                                {{ zone.label }}:
-                                {{ getFacedZoneValue('evens', category.key, zone.values) }}
-                            </div>
+        
+    </div>
+    <div v-if="player.isGK" class="text-sm mb-2">
+        <p><strong>Dettaglio Tiri Subiti:</strong></p>
+        <div class="grid gap-y-2" :class="[props.align == 'col' ? 'grid-cols-1' : 'grid-cols-2']">
+            <div>
+                <strong>Pari: {{ totalShotsFaced.evens.parati.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
+                <div class="grid grid-cols-2 gap-4">
+                    <div v-for="(category, index) in shotFacedCategories" :key="index">
+                        <div class="font-semibold">
+                            {{ category.label }}: {{ getShotsFacedLengthByType('evens', category.key) }}
+                        </div>
+                        <div v-for="(zone, zIndex) in evenZones" :key="zIndex">
+                            {{ zone.label }}:
+                            {{ getFacedZoneValue('evens', category.key, zone.values) }}
                         </div>
                     </div>
                 </div>
-                <div>
-                    <strong>Superiorità: {{ totalShotsFaced.sup.parati.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div v-for="(category, index) in shotFacedCategories" :key="index">
-                            <div class="font-semibold">
-                                {{ category.label }}: {{ getShotsFacedLengthByType('sup', category.key) }}
-                            </div>
-                            <div v-for="(zone, zIndex) in supZones" :key="zIndex">
-                                {{ zone.label }}:
-                                {{ getFacedZoneValue('sup', category.key, zone.values) }}
-                            </div>
+            </div>
+            <div>
+                <strong>Superiorità: {{ totalShotsFaced.sup.parati.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
+                <div class="grid grid-cols-2 gap-4">
+                    <div v-for="(category, index) in shotFacedCategories" :key="index">
+                        <div class="font-semibold">
+                            {{ category.label }}: {{ getShotsFacedLengthByType('sup', category.key) }}
+                        </div>
+                        <div v-for="(zone, zIndex) in supZones" :key="zIndex">
+                            {{ zone.label }}:
+                            {{ getFacedZoneValue('sup', category.key, zone.values) }}
                         </div>
                     </div>
                 </div>
-                <div>
-                    <strong>Rigori: {{ totalShotsFaced.penalties.parati.length }}/{{ totalShotsFaced.penalties.shots.length }}</strong> 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div v-for="(category, index) in shotFacedCategories" :key="index">
-                            <div class="font-semibold">
-                                {{ category.label }}: {{ getShotsFacedLengthByType('penalties', category.key) }}
-                            </div>
+            </div>
+            <div>
+                <strong>Rigori: {{ totalShotsFaced.penalties.parati.length }}/{{ totalShotsFaced.penalties.shots.length }}</strong> 
+                <div class="grid grid-cols-2 gap-4">
+                    <div v-for="(category, index) in shotFacedCategories" :key="index">
+                        <div class="font-semibold">
+                            {{ category.label }}: {{ getShotsFacedLengthByType('penalties', category.key) }}
                         </div>
                     </div>
                 </div>
+            </div>
 
-            </div>
         </div>
-        <div v-if="props.player.exclutions.length > 0">
-            <strong>Falli:</strong> 
-            <div v-for="(ex, i) in props.player.exclutions.slice(0, 3)" :key="i">
-                {{ getExclution(ex) }}
-            </div>
+    </div>
+    <div v-if="props.player.exclutions.length > 0">
+        <strong>Falli:</strong> 
+        <div v-for="(ex, i) in props.player.exclutions.slice(0, 3)" :key="i">
+            {{ getExclution(ex) }}
         </div>
-    </td>
+    </div>
 
 </template>
 
@@ -101,6 +99,8 @@ import type { Shot } from './Interfaces/Shot';
 
 const props = defineProps<{
     player: Player;
+    align: 'row' | 'col';
+    showGKShots: boolean;
     getExclution: (excl: Exclution) => string;
 }>();
 

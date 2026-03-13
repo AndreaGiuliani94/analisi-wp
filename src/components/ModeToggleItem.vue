@@ -15,16 +15,10 @@ const props = defineProps<{
 <template>
   <div class="flex items-center py-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner h-min"
     :class="[hideLabels? 'gap-1' : 'px-3 gap-2']">
-    <span :class="['text-xs font-bold rounded-full transition-all duration-300', 
-                  !isCorrectionMode ? 'bg-blue-950 text-white shadow-sm' : 'text-gray-500',
-                  hideLabels ? 'max-w-0 opacity-0' : 'max-w-25 opacity-100 p-1']">
-      INSERIMENTO
-    </span>
-
     <button 
       @click="gameStore.toggleCorrectionMode()"
       class="relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none bg-gray-300"
-      :class="[hideLabels ? 'h-5 w-10' : 'h-7 w-14', isCorrectionMode ? 'bg-red-800' : 'bg-blue-900']"
+      :class="[hideLabels ? 'h-5 w-10 ml-1' : 'h-7 w-14', isCorrectionMode ? 'bg-red-800' : 'bg-blue-900']"
     >
       <span
         class="pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
