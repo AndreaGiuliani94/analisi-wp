@@ -365,6 +365,7 @@ export const useGameStore = defineStore("gameStore", {
       type: string,
       position: string,
       ball: boolean,
+      earnedBy: number,
       exclNumber: number,
     ) {
       var el;
@@ -380,6 +381,7 @@ export const useGameStore = defineStore("gameStore", {
             type: type,
             ball: ball,
             quarter: this.match.quarter,
+            earnedBy: earnedBy,
             time: this.formatTime(this.countdown),
           });
         } else {
@@ -388,6 +390,7 @@ export const useGameStore = defineStore("gameStore", {
             type: type,
             ball: ball,
             quarter: this.match.quarter,
+            earnedBy: earnedBy,
             time: this.formatTime(this.countdown),
           };
         }
@@ -626,7 +629,29 @@ export const useGameStore = defineStore("gameStore", {
         fuori: totalFuori,
         stoppati: totalStoppati
       }
-}
+    },
+    getAllExclutionsEarned(team: Team, player: Player) {
+      const settings = useSettingsStore()
+      const opponentTeam = team.name === settings.homeTeamName 
+        ? this.match.awayTeam 
+        : this.match.homeTeam;
+
+      const allOpponentExclutions = opponentTeam.players.flatMap(oppPlayer => 
+        oppPlayer.exclutions.map(excl => ({
+          ...excl, 
+          earnedOn: oppPlayer.name 
+        }))
+      );
+
+      return allOpponentExclutions.filter(excl => excl.earnedBy === player.number);
+    },
+    getOpponentsPlayerName(team: Team, number: number) {
+      const settings = useSettingsStore()
+      if(team.name == settings.homeTeamName)
+        return this.match.awayTeam.players.find(player => player.number === number)?.name
+      else
+        this.match.homeTeam.players.find(player => player.number === number)?.name
+    },
   },
 });
 

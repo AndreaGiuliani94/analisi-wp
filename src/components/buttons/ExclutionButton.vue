@@ -27,9 +27,16 @@
         <MenuItems
           v-if="!props.disabled"
           class="mt-1 absolute bg-white border border-red-800 
-          rounded-md shadow-lg z-50"
+          rounded-md shadow-lg z-50 flex flex-col"
         >
-          <div class="p-1">
+          <div class="grid p-1 gap-x-1"
+              :style="{ 
+                // Definiamo quante colonne avere. Ogni colonna si adatta al contenuto (max-content)
+                gridTemplateColumns: `repeat(${currentColumns}, max-content)`,
+                // Opzionale: se vuoi che le righe siano distribuite uniformemente
+                gridAutoRows: 'minmax(0, 1fr)'
+              }"
+            >
 
             <template v-if="activeStep === 'first'">
               <MenuItem
@@ -39,7 +46,7 @@
               >
                 <button
                   @click.stop.prevent="handleFirstSelect(item)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
                   {{ getFoulValue(item) }}
@@ -49,7 +56,7 @@
                 <MenuItem v-slot="{ active, close }">
                   <button
                     @click="removeExclusion(close)"
-                    class="group flex w-full items-center justify-center rounded-md p-1 text-sm"
+                    class="group flex w-full items-center justify-center rounded-md p-1 text-sm whitespace-nowrap"
                     :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
                   >
                     <XCircleIcon 
@@ -67,25 +74,14 @@
               >
                 <button
                   @click.stop.prevent="handleSecondSelect(sub, close)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
                   {{ sub }}
                 </button>
               </MenuItem>
-
-              <!-- Pulsante per tornare indietro -->
-              <MenuItem v-slot="{ active }">
-                <button
-                  @click.stop.prevent="resetSelection"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
-                >
-                  ← Indietro
-                </button>
-              </MenuItem>
-
             </template>
+
             <template v-else-if="activeStep === 'third'">
               <MenuItem
                 v-for="sub in thirdLevelOptions"
@@ -93,26 +89,41 @@
                 v-slot="{ active, close }"
               >
                 <button
-                  @click="handleThirdSelect(sub, close)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  @click.stop.prevent="handleThirdSelect(sub, close)"
+                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
                   {{ sub }}
                 </button>
               </MenuItem>
+            </template>
 
-              <!-- Pulsante per tornare indietro -->
-              <MenuItem v-slot="{ active }">
+            <template v-else-if="activeStep === 'fourth'">
+              <MenuItem
+                v-for="sub in fourthLevelOptions"
+                :key="sub"
+                v-slot="{ active, close }"
+              >
                 <button
-                  @click.stop.prevent="back"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
-                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
+                  @click="handleFourthSelect(sub, close)"
+                  class="group flex w-full items-center justify-center rounded-md px-2 py-1 min-w-8 text-sm whitespace-nowrap"
+                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
-                  ← Indietro
+                  {{ sub }}
                 </button>
               </MenuItem>
-
             </template>
+          </div>
+          <div v-if="activeStep !== 'first'" class="p-1 border-t border-gray-100">
+            <MenuItem v-slot="{ active }">
+              <button
+                @click.stop.prevent="handleBack"
+                class="group flex w-full items-center justify-center rounded-md p-1 text-sm whitespace-nowrap font-semibold"
+                :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-500'"
+              >
+                ← Indietro
+              </button>
+            </MenuItem>
           </div>
         </MenuItems>
       </transition>
@@ -125,22 +136,26 @@ import { computed, ref } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { XCircleIcon } from "@heroicons/vue/24/outline";
 import { EDCSType, FoulDescription, FoulPosition, FoulType } from '@/enum/ExclutionDescription';
+import { useGameStore } from '@/stores/gameStore';
 
+const gameStore = useGameStore();
 const props = defineProps<{
   disabled?: boolean,
-  exclutionState: string
+  exclutionState: string,
+  team: number,
 }>()
 
 const emit = defineEmits<{
-  (e: 'handleExclution', payload: { type: string, position: string, ball: boolean }): void
+  (e: 'handleExclution', payload: { type: string, position: string, ball: boolean, earnedBy: number, }): void
   (e: 'remove'): void
 }>()
 
 // Stati possibili: 'idle', 'selected'
 const state = ref<'idle' | 'selected'>('idle');
-const activeStep = ref<'first' | 'second' | 'third'>('first');
+const activeStep = ref<'first' | 'second' | 'third' | 'fourth'>('first');
 const firstSelection = ref<string | null>(null);
 const secondSelection = ref<string | null>(null);
+const thirdSelection = ref<string | null>(null);
 const selectedCode = ref<string | null>(null);
 
 const foulKeys = computed(() => Object.keys(secondLevelOptions) as (keyof typeof FoulType)[])
@@ -157,6 +172,28 @@ function getFoulValue(key: keyof typeof FoulType): FoulType {
 
 const thirdLevelOptions: string[] = Object.values(FoulDescription);
 
+const fourthLevelOptions: number[] = props.team === 0 ? gameStore.actualOpponents.map(player => player.number) : gameStore.actualPlayers.map(player => player.number)
+
+const currentOptionsLength = computed(() => {
+  switch (activeStep.value) {
+    case 'first': 
+      return foulKeys.value.length + (props.exclutionState ? 1 : 0);
+    case 'second': 
+      return availableSecondOptions.value.length;
+    case 'third': 
+      return thirdLevelOptions.length;
+    case 'fourth': 
+      return fourthLevelOptions.length;
+    default: 
+      return 0;
+  }
+});
+
+const currentColumns = computed(() => {
+  // Calcoliamo quante colonne servono per non superare le 4 righe
+  return Math.ceil(currentOptionsLength.value / 4);
+});
+
 const handleFirstSelect = (item: string) => {
   firstSelection.value = item;
   activeStep.value = 'second';
@@ -170,7 +207,8 @@ const handleSecondSelect = (item: string, close: () => void) => {
       emit('handleExclution', {
         type: firstSelection.value,
         position: item,
-        ball: false
+        ball: false,
+        earnedBy: 0
       })
     }
     resetSelection();
@@ -183,7 +221,8 @@ const handleSecondSelect = (item: string, close: () => void) => {
       emit('handleExclution', {
         type: firstSelection.value,
         position: secondSelection.value,
-        ball: false
+        ball: false,
+        earnedBy: 0
       })
       resetSelection();
       close();
@@ -193,12 +232,18 @@ const handleSecondSelect = (item: string, close: () => void) => {
 }
 
 const handleThirdSelect = (item: string, close: () => void) => {
+  thirdSelection.value = item;
+  activeStep.value = 'fourth';
+}
+
+const handleFourthSelect = (item: number, close: () => void) => {
   state.value = 'selected'
-  if(firstSelection.value && secondSelection.value) {
+  if(firstSelection.value && secondSelection.value && thirdSelection.value) {
     emit('handleExclution', {
       type: FoulType[firstSelection.value as (keyof typeof FoulType)],
       position: secondSelection.value,
-      ball: item == FoulDescription.WITH
+      ball: thirdSelection.value == FoulDescription.WITH,
+      earnedBy: item
     })
   }
   resetSelection();
@@ -209,6 +254,15 @@ const availableSecondOptions = computed(() => {
   return firstSelection.value ? secondLevelOptions[firstSelection.value as keyof typeof secondLevelOptions] || [] : []
 })
 
+const handleBack = () => {
+  if (activeStep.value === 'second') {
+    resetSelection();
+    return;
+  }
+  
+  back();
+};
+
 const resetSelection = () => {
   activeStep.value = 'first'
   firstSelection.value = null
@@ -216,8 +270,13 @@ const resetSelection = () => {
 }
 
 const back = () => {
-  activeStep.value = 'second';
-  secondSelection.value = null;
+  if(activeStep.value === 'third') { 
+    activeStep.value = 'second';
+    secondSelection.value = null;
+  } else {
+    activeStep.value = 'third';
+    thirdSelection.value = null;
+  }
 }
 
 const removeExclusion = (close: () => void) => {

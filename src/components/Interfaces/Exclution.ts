@@ -4,4 +4,5 @@ export interface Exclution {
     ball: boolean;
     quarter: number;
     time: string;
+    earnedBy: number;
 }

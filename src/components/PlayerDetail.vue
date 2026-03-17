@@ -1,9 +1,9 @@
 <template>
     <div v-if="!player.isGK || props.showGKShots" class="text-sm mb-2">
-        <p><strong>Dettaglio Tiri:</strong></p>
+        <p><strong>Dettaglio Tiri</strong></p>
         <div class="grid gap-y-2" :class="[props.align == 'col' ? 'grid-cols-1' : 'grid-cols-2']">
             <div>
-                <strong>Pari: {{ totalShots.evens.goals.length }}/{{ totalShots.evens.shots.length }}</strong> 
+                <strong>Pari {{ totalShots.evens.goals.length }}/{{ totalShots.evens.shots.length }}</strong> 
                 <div class="grid grid-cols-4 gap-4">
                     <div v-for="(category, index) in shotCategories" :key="index">
                         <div class="font-semibold">
@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div>
-                <strong>Superiorità: {{ totalShots.sup.goals.length }}/{{ totalShots.sup.shots.length }}</strong> 
+                <strong>Superiorità {{ totalShots.sup.goals.length }}/{{ totalShots.sup.shots.length }}</strong> 
                 <div class="grid grid-cols-4 gap-4">
                     <div v-for="(category, index) in shotCategories" :key="index">
                         <div class="font-semibold">
@@ -35,10 +35,10 @@
         
     </div>
     <div v-if="player.isGK" class="text-sm mb-2">
-        <p><strong>Dettaglio Tiri Subiti:</strong></p>
+        <p><strong>Dettaglio Tiri Subiti</strong></p>
         <div class="grid gap-y-2" :class="[props.align == 'col' ? 'grid-cols-1' : 'grid-cols-2']">
             <div>
-                <strong>Pari: {{ totalShotsFaced.evens.parati.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
+                <strong>Pari {{ totalShotsFaced.evens.parati.length }}/{{ totalShotsFaced.evens.shots.length }}</strong> 
                 <div class="grid grid-cols-2 gap-4">
                     <div v-for="(category, index) in shotFacedCategories" :key="index">
                         <div class="font-semibold">
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div>
-                <strong>Superiorità: {{ totalShotsFaced.sup.parati.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
+                <strong>Superiorità {{ totalShotsFaced.sup.parati.length }}/{{ totalShotsFaced.sup.shots.length }}</strong> 
                 <div class="grid grid-cols-2 gap-4">
                     <div v-for="(category, index) in shotFacedCategories" :key="index">
                         <div class="font-semibold">
@@ -66,7 +66,7 @@
                 </div>
             </div>
             <div>
-                <strong>Rigori: {{ totalShotsFaced.penalties.parati.length }}/{{ totalShotsFaced.penalties.shots.length }}</strong> 
+                <strong>Rigori {{ totalShotsFaced.penalties.parati.length }}/{{ totalShotsFaced.penalties.shots.length }}</strong> 
                 <div class="grid grid-cols-2 gap-4">
                     <div v-for="(category, index) in shotFacedCategories" :key="index">
                         <div class="font-semibold">
@@ -78,10 +78,16 @@
 
         </div>
     </div>
-    <div v-if="props.player.exclutions.length > 0">
-        <strong>Falli:</strong> 
+    <div v-if="props.player.exclutions.length > 0" class="text-sm mb-2">
+        <strong>Falli commessi</strong> 
         <div v-for="(ex, i) in props.player.exclutions.slice(0, 3)" :key="i">
-            {{ getExclution(ex) }}
+            {{ getExclution(ex) + ex.earnedBy ? ' commesso su ' + gameStore.getOpponentsPlayerName(team, ex.earnedBy) : '' }}
+        </div>
+    </div>
+    <div v-if="exclEarned.length > 0" class="text-sm mb-2">
+        <strong>Falli guadagnati ({{ exclEarned.length }})</strong> 
+        <div v-for="(ex, i) in exclEarned" :key="i">
+            {{ getExclution(ex) + ex.earnedBy ? ' guadagnata su ' + ex.earnedOn : '' }}  
         </div>
     </div>
 
@@ -96,8 +102,13 @@ import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescr
 import { computed } from 'vue';
 import type { CategoryKey } from './Interfaces/Shot/Category';
 import type { Shot } from './Interfaces/Shot';
+import { useGameStore } from '@/stores/gameStore';
+import type { Team } from './Interfaces/Team';
+
+const gameStore = useGameStore()
 
 const props = defineProps<{
+    team: Team;
     player: Player;
     align: 'row' | 'col';
     showGKShots: boolean;
@@ -108,6 +119,8 @@ const totalShots = computed(() => ({
   evens: getShotsByType(props.player.shotsEven),
   sup: getShotsByType(props.player.shotsSup)
 }))
+
+const exclEarned = computed( () => gameStore.getAllExclutionsEarned(props.team, props.player));
 
 const totalShotsFaced = computed(() => ({
   evens: { 
@@ -209,6 +222,5 @@ function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions
             return 0;
     }
 }
-
 
 </script>

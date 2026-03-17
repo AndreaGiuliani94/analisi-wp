@@ -49,16 +49,19 @@
   <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
+      :team="team.name == settings.homeTeamName ? 0 : 1"
       :exclution-state="getExclutionState(0)"
       @handleExclution="addExclution($event, 0)"
       @remove="removeExclution(0)" />
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
+      :team="team.name == settings.homeTeamName ? 0 : 1"
       :exclution-state="getExclutionState(1)"
       @handleExclution="addExclution($event, 1)"
       @remove="removeExclution(1)" />
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
+      :team="team.name == settings.homeTeamName ? 0 : 1"
       :exclution-state="getExclutionState(2)"
       @handleExclution="addExclution($event, 2)" 
       @remove="removeExclution(2)" />
@@ -111,7 +114,7 @@
 
   </template>
 
-  <PlayerDetailModal :isOpen="isPlayerDetailOpen" :player="player"
+  <PlayerDetailModal :isOpen="isPlayerDetailOpen" :player="player" :team="team"
           @close="isPlayerDetailOpen = false" />
 
 </template>
@@ -128,7 +131,6 @@ import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useUserRole } from "@/composables/useUserRole";
-import QuickReportModal from "./modals/QuickReportModal.vue";
 import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
 
 const props = defineProps({
@@ -196,8 +198,8 @@ const saveEdit = (team: number) => {
   }
 };
 
-const addExclution = (payload : { type: string, position: string, ball: boolean}, exclNumber: number) => {
-  store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.ball, exclNumber);
+const addExclution = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
+  store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.ball, payload.earnedBy, exclNumber);
 };
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {

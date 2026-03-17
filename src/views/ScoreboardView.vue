@@ -19,20 +19,11 @@
                     <span class="text-xs mr-0.5 text-gray-400" v-if="i > 0">|</span>
                     <span :class="[
                       i + 1 > gameStore.match.quarter ? 'text-gray-400' : 'text-blue-950', 
-                      i + 1 == gameStore.match.quarter ? 'animate-pulse bg-blue-950 text-white px-0.5 rounded-2xl' : '']" 
+                      i + 1 == gameStore.match.quarter ? 'animate-pulse bg-blue-950 text-white px-1 rounded-2xl' : '']" 
                       >{{ p.home }}-{{ p.away }}</span>
                   </span>
                 </template>
               </div>
-              <!-- <div class="flex justify-center items-center text-xl">
-                <button v-if="isCorrectionMode" @click="gameStore.removeQuarter()" 
-                  class="flex items-center justify-center w-6 h-6 rounded-full
-                          transition text-white bg-red-800 border border-red-800
-                          disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
-                  <MinusIcon class="size-4 stroke-4 text-white" /> 
-                </button>
-                <div v-if="userRole && userRole !== 'viewer'" :class="isCorrectionMode ? 'ml-2' : ''">{{ gameStore.match.quarter }} T</div>
-              </div> -->
             </div>
           </div>
         </div>

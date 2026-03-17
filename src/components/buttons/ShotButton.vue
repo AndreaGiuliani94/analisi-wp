@@ -22,11 +22,18 @@
           leave-from="transform opacity-100 scale-100" leave-to="transform opacity-0 scale-95">
           <MenuItems v-if="!props.disabled" class="absolute mt-1 bg-white border border-blue-950 
             rounded-md shadow-lg z-50">
-            <div class="p-1">
+            <div class="grid p-1 gap-x-1"
+              :style="{ 
+                // Definiamo quante colonne avere. Ogni colonna si adatta al contenuto (max-content)
+                gridTemplateColumns: `repeat(${currentColumns}, max-content)`,
+                // Opzionale: se vuoi che le righe siano distribuite uniformemente
+                gridAutoRows: 'minmax(0, 1fr)'
+              }"
+            >
               <template v-if="activeStep === 'first'">
                 <MenuItem v-for="item in shotOptions[props.type]" :key="item" v-slot="{ active, close }">
                 <button @click.stop.prevent="handleStatClick(item, close)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 min-w-8 text-sm whitespace-nowrap"
                   :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'">
                   {{ item }}
                 </button>
@@ -36,23 +43,23 @@
               <template v-else>
                 <MenuItem v-for="sub in shotOptions[ShotCategory.OUTCOME]" :key="sub" v-slot="{ active, close }">
                 <button @click="handleSecondSelect(sub, close)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm"
+                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'">
                   {{ sub }}
                 </button>
                 </MenuItem>
+              </template>
 
-                <!-- Pulsante per tornare indietro -->
-                <MenuItem v-slot="{ active }">
+            </div>
+            <div v-if="activeStep !== 'first'" class="p-1 border-t border-gray-100">
+              <!-- Pulsante per tornare indietro -->
+              <MenuItem v-slot="{ active }">
                 <button @click.stop.prevent="resetSelection" class="group flex w-full items-center rounded-md p-1 text-sm"
                   :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'">
                   ← Indietro
                 </button>
-                </MenuItem>
-
-              </template>
-
-            </div>
+              </MenuItem>
+          </div>
           </MenuItems>
         </transition>
       </Menu>
@@ -98,7 +105,7 @@
 
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PlusIcon, MinusIcon } from '@heroicons/vue/24/outline';
 import { EvenShot, MenUpShot, ShotOutcome, ShotCategory } from '@/enum/ShotDescription';
@@ -122,9 +129,27 @@ const emit = defineEmits<{
 const shotOptions: Record<string, string[]> = {
   [ShotCategory.EVEN]: Object.values(EvenShot),
   [ShotCategory.SUP]: Object.values(MenUpShot),
-  [ShotCategory.PENALTY]: [ShotOutcome.GOAL, ShotOutcome.SAVED, ShotOutcome.MISSED],
+  [ShotCategory.PENALTY]: [ShotOutcome.GOAL, ShotOutcome.SAVED, ShotOutcome.MISSED, "Annullato"],
   [ShotCategory.OUTCOME]: Object.values(ShotOutcome)
 };
+
+const currentOptionsLength = computed(() => {
+  if (activeStep.value === 'first') {
+    // Recupera l'array basato sulla prop 'type' (es. PARI, SUP, RIG)
+    const firstLevel = shotOptions[props.type];
+    return firstLevel ? firstLevel.length : 0;
+  } else {
+    // Recupera l'array OUTCOME (Gol, Parata, Palo, ecc.)
+    const secondLevel = shotOptions[ShotCategory.OUTCOME];
+    // +1 perché c'è il tasto "← Indietro" fisicamente dentro la griglia
+    return secondLevel ? secondLevel.length + 1 : 1;
+  }
+});
+
+const currentColumns = computed(() => {
+  // Calcoliamo quante colonne servono per non superare le 4 righe
+  return Math.ceil(currentOptionsLength.value / 4);
+});
 
 const handleStatClick = (item?: string, close?: () => void) => {
   if (!isCorrectionMode.value && close && item)

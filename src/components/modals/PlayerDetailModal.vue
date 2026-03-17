@@ -12,7 +12,7 @@
                     </DialogTitle>
                 </div>
                 <div class="px-2 py-2">
-                    <PlayerDetail :player="player" :get-exclution="getExclution" :align="'col'" :show-g-k-shots="false"></PlayerDetail>
+                    <PlayerDetail :player="player" :get-exclution="getExclution" :align="'col'" :show-g-k-shots="false" :team="team"></PlayerDetail>
                 </div>
             </div>
         </div>
@@ -27,13 +27,18 @@ import type { PropType } from "vue";
 import type { Player } from "../Interfaces/Player";
 import PlayerDetail from "../PlayerDetail.vue";
 import type { Exclution } from "../Interfaces/Exclution";
+import type { Team } from "../Interfaces/Team";
 
 const props = defineProps({
-isOpen: Boolean,
-player: {
-    type: Object as PropType<Player>,
-    required: true,
-}
+    isOpen: Boolean,
+    player: {
+        type: Object as PropType<Player>,
+        required: true,
+    },
+    team: {
+        type: Object as PropType<Team>,
+        required: true,
+    },
 });
 
 const emit = defineEmits(["confirm", "close"]);

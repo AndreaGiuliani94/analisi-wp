@@ -12,7 +12,7 @@ export enum EvenShot {
     P4 = '4',
     P5 = '5',
     CB = 'CB', 
-    Rip = 'Ripartenza'
+    Rip = 'CF'
 }
 
 export enum MenUpShot {
@@ -22,7 +22,7 @@ export enum MenUpShot {
     P4 = '4',
     P5 = 'P5',
     P6 = 'P6', 
-    Rip = 'Ripartenza'
+    Rip = 'CF'
 }
 
 export enum ShotOutcome {
