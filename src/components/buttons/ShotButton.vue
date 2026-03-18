@@ -33,7 +33,7 @@
               <template v-if="activeStep === 'first'">
                 <MenuItem v-for="item in shotOptions[props.type]" :key="item" v-slot="{ active, close }">
                 <button @click.stop.prevent="handleStatClick(item, close)"
-                  class="group flex w-full items-center rounded-md p-1 min-w-8 text-sm whitespace-nowrap"
+                  class="group flex w-full items-center justify-center rounded-md p-1 min-w-8 text-sm whitespace-nowrap"
                   :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'">
                   {{ item }}
                 </button>
@@ -141,8 +141,7 @@ const currentOptionsLength = computed(() => {
   } else {
     // Recupera l'array OUTCOME (Gol, Parata, Palo, ecc.)
     const secondLevel = shotOptions[ShotCategory.OUTCOME];
-    // +1 perché c'è il tasto "← Indietro" fisicamente dentro la griglia
-    return secondLevel ? secondLevel.length + 1 : 1;
+    return secondLevel ? secondLevel.length : 0;
   }
 });
 

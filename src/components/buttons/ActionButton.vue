@@ -3,13 +3,24 @@
     <button
         :type="type || 'button'"
         @click="handleClick"
-        :disabled="disabled"
-        class="inline-flex items-center font-medium rounded-md cursor-pointer shadow-md active:outline-none active:ring-2 transition-colors
-            disabled:border-gray-500 disabled:bg-gray-300 disabled:shadow-none"
-        :class="colorClass + ' ' + widthClass + ' ' + justifyClass + ' ' + sizeClass"
+        :disabled="disabled || loading"
+        class="inline-flex items-center font-medium rounded-md cursor-pointer shadow-md transition-colors
+            active:outline-none active:ring-2 
+            disabled:border-gray-500 disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed"
+        :class="[colorClass + ' ' + justifyClass + ' ' + sizeClass  + ' ', loading ? 'w-fit min-w-1/2' : widthClass ]"
     >
-        <component :is="icon" :class="(iconSize ? iconSize : 'size-5')" v-if="icon" />
-        {{ label }}
+      <svg 
+        v-if="loading" 
+        class="animate-spin h-5 min-w-5 text-current" 
+        xmlns="http://www.w3.org/2000/svg" 
+        fill="none" 
+        viewBox="0 0 24 24"
+      >
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <component :is="icon" :class="(iconSize ? iconSize : 'size-5')" v-if="icon" />
+      <span :class="loading ? 'truncate' : ''">{{ label }}</span>
     </button>
   </div>
 </template>
@@ -24,6 +35,7 @@ const props = defineProps<{
     to?: string
     type?: 'button' | 'submit'
     disabled?: boolean
+    loading?: boolean
     color?: 'green' | 'blue' | 'red' | 'gray'
     position?: 'center' | 'left' | 'right'
     width?: 'full' | 'fit' | 'half'
@@ -72,9 +84,9 @@ const justifyClass = {
 }[props.justify || 'start']
 
 const sizeClass = {
-  sm: 'p-1 gap-1 text-xs',
-  md: 'p-1.5 gap-2 text-regular',
-  lg: 'p-2.5 gap-2 text-lg',
+  sm: 'p-1 text-xs' + (props.label ? ' gap-1' : ''),
+  md: 'p-1.5 text-regular' + (props.label ? ' gap-2' : ''),
+  lg: 'p-2.5 text-lg' + (props.label ? ' gap-2' : ''),
 }[props.size || 'md']
 
 </script>

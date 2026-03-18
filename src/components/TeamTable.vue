@@ -72,10 +72,10 @@
 
 import { useGameStore } from '../stores/gameStore';
 import type { Team } from './Interfaces/Team';
-import type { Exclution } from './Interfaces/Exclution';
 import type { Player } from './Interfaces/Player';
 import { ref } from 'vue';
 import PlayerDetail from './PlayerDetail.vue';
+import { getExclution } from '@/utils/utils';
 
 const store = useGameStore();
 
@@ -92,16 +92,6 @@ function toggle(playerNumber: number) {
   } else {
     expandedRows.value.push(playerNumber)
   }
-}
-
-const getExclution = (exclution: Exclution) => {
-    var str: string = '';
-    str += exclution.quarter + 'T ' + exclution.time + ' ' + (exclution.type + ' ' + exclution.position);
-    if(exclution.type !== 'EDCS') {
-        str += ' ';
-        str += exclution.ball ? 'Con palla' : 'Senza palla';
-    }
-    return str;
 }
 
 </script>

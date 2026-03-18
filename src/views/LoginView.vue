@@ -9,6 +9,7 @@
           placeholder="Email"
           v-model="email"
           type="email"
+          :disabled="loading"
           required></BaseInput>
 
         <BaseInput 
@@ -16,6 +17,7 @@
           placeholder="Password"
           v-model="password"
           type="password"
+          :disabled="loading"
           required></BaseInput>
 
         <div v-if="error" class="text-red-600 text-sm">{{ error }}</div>
@@ -26,6 +28,7 @@
           color="blue"
           width="half"
           justify="center"
+          :loading="loading"
           :disabled="loading"
         ></ActionButton>
 
@@ -43,8 +46,9 @@
       <div class="my-4 text-center text-gray-500">oppure</div>
 
       <div class="flex justify-center">
-        <button @click="loginWithGoogle"
-          class="flex items-center justify-center gap-2 bg-blue-950 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+        <button @click="loginWithGoogle" 
+        :disabled="loading"
+          class="flex items-center justify-center gap-2 bg-blue-950 text-white font-semibold py-2 px-4 rounded-lg transition-all disabled:border-gray-500 disabled:bg-gray-300 disabled:shadow-none"
         >
         <Icon name="google" size="w-5 h-5" viewBox="0 0 48 48"></Icon>
           Accedi con Google

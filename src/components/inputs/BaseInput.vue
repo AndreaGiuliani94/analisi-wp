@@ -9,8 +9,9 @@
       :value="modelValue"
       :placeholder="computedPlaceholder"
       :required="required"
+      :disabled="disabled"
       @input="updateValue"
-      class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+      class="w-full px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
     />
   </div>
 </template>
@@ -24,6 +25,7 @@ const props = defineProps<{
   placeholder?: string
   type?: string
   required?: boolean
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{

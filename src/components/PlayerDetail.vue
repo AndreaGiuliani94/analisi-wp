@@ -81,13 +81,13 @@
     <div v-if="props.player.exclutions.length > 0" class="text-sm mb-2">
         <strong>Falli commessi</strong> 
         <div v-for="(ex, i) in props.player.exclutions.slice(0, 3)" :key="i">
-            {{ getExclution(ex) + ex.earnedBy ? ' commesso su ' + gameStore.getOpponentsPlayerName(team, ex.earnedBy) : '' }}
+            {{ getExclution(ex) + (ex.earnedBy ? ' commesso su ' + gameStore.getOpponentsPlayerName(team, ex.earnedBy) : '') }}
         </div>
     </div>
     <div v-if="exclEarned.length > 0" class="text-sm mb-2">
         <strong>Falli guadagnati ({{ exclEarned.length }})</strong> 
         <div v-for="(ex, i) in exclEarned" :key="i">
-            {{ getExclution(ex) + ex.earnedBy ? ' guadagnata su ' + ex.earnedOn : '' }}  
+            {{ getExclution(ex) + (ex.earnedBy ? ' guadagnata su ' + ex.earnedOn : '') }}  
         </div>
     </div>
 

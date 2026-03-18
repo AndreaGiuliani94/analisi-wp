@@ -26,8 +26,8 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionRoot } from "@headlessui/
 import type { PropType } from "vue";
 import type { Player } from "../Interfaces/Player";
 import PlayerDetail from "../PlayerDetail.vue";
-import type { Exclution } from "../Interfaces/Exclution";
 import type { Team } from "../Interfaces/Team";
+import { getExclution } from "@/utils/utils";
 
 const props = defineProps({
     isOpen: Boolean,
@@ -46,15 +46,5 @@ const emit = defineEmits(["confirm", "close"]);
 const closeModal = () => {
     emit("close");
 };
-
-const getExclution = (exclution: Exclution) => {
-    var str: string = '';
-    str += exclution.quarter + 'T ' + exclution.time + ' ' + (exclution.type + ' ' + exclution.position);
-    if(exclution.type !== 'EDCS') {
-        str += ' ';
-        str += exclution.ball ? 'Con palla' : 'Senza palla';
-    }
-    return str;
-}
 
 </script>

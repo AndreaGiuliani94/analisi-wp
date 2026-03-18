@@ -2,7 +2,7 @@
   <div :class="[
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
-    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg font- select-none"
+    class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg select-none"
     @click.stop="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
     @mousedown="startHold" 
     @mouseup="stopHold" 
