@@ -22,7 +22,7 @@
 
     <div class="my-2">
         <TabGroup>
-            <TabList class="flex gap-2 rounded-xl bg-gray-200 p-1 w-full">
+            <TabList class="flex gap-2 rounded-xl bg-slate-50 border border-slate-200 shadow p-1 w-full">
                 <Tab
                     v-for="tab in tabs"
                     v-slot="{ selected }"
@@ -31,7 +31,7 @@
                 >
                     <div 
                     class="rounded-lg leading-3 py-2.5 text-lg"
-                    :class="{ 'bg-red-800 text-white': selected, 'bg-white': !selected }">
+                    :class="{ 'bg-red-800 text-white': selected, 'bg-white border border-slate-200': !selected }">
                         {{ tab }}
                     </div>
                 </Tab>

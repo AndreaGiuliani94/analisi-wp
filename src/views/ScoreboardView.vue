@@ -70,7 +70,7 @@
       
     </div>
   
-    <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col justify-between gap-3">
+    <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col lg:flex-row justify-between gap-3">
   
       <TeamItem :teamKey="'HOME'" :team="gameStore.match.homeTeam" :players="gameStore.actualPlayers"
         @openModal="openModal"

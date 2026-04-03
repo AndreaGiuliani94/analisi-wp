@@ -12,34 +12,7 @@
                     </DialogTitle>
                 </div>
                 <div class="mt-1">
-                    <TabGroup>
-                        <TabList class="flex space-x-2 rounded-xl bg-gray-200 p-1">
-                            <Tab
-                                v-for="tab in tabs"
-                                v-slot="{ selected }"
-                                :key="tab"
-                                class="w-full font-medium text-blue-950 rounded-lg focus:outline-none"
-                            >
-                                <div 
-                                class="rounded-lg leading-3 py-2.5"
-                                :class="{ 'bg-blue-950 text-white': selected, 'bg-white': !selected }">
-                                    {{ tab }}
-                                </div>
-                            </Tab>
-                        </TabList>
-
-                        <TabPanels class="">
-                        <TabPanel>
-                            <MenUpTab :team="team"></MenUpTab>
-                        </TabPanel>
-                        <TabPanel>
-                            <EvenTab :team="team"></EvenTab>
-                        </TabPanel>
-                        <TabPanel>
-                            <ExclutionsTab :team="team"></ExclutionsTab>
-                        </TabPanel>
-                        </TabPanels>
-                    </TabGroup>
+                    <TeamStatistics :team="team" />
                 </div>
             </div>
         </div>
@@ -58,6 +31,7 @@ import type { PropType } from "vue";
 import MenUpTab from "../tabs/MenUpTab.vue";
 import EvenTab from "../tabs/EvenTab.vue";
 import ExclutionsTab from "../tabs/ExclutionsTab.vue";
+import TeamStatistics from "../TeamStatistics.vue";
 
 const props = defineProps({
 isOpen: Boolean,

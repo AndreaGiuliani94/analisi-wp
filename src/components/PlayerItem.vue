@@ -39,11 +39,16 @@
     </div>
   </div>
 
-  <div v-if="team.activatedTimer"
-    class="font-medium ml-1 w-1/12 text-blue-950">{{ player.active ? '🕒' :
-      '⏳'
-    }}{{
-      store.formatTime(player.actualTime) }}
+  <div v-if="team.activatedTimer" class="flex flex-col gap-1">
+    <div class="flex items-center gap-1.5 text-blue-950">
+      <component v-if="player.active">
+        <Clock :size="18" color="#9f0712" />
+      </component>
+      <component v-else>
+        <Hourglass :size="18" color="#99a1af" />
+      </component>
+      <span class="tabular-nums">{{ store.formatTime(player.actualTime) }}</span>
+    </div>
   </div>
 
   <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
@@ -126,6 +131,7 @@ import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
 import { ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
+import { Clock, Hourglass } from "@lucide/vue"
 import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";

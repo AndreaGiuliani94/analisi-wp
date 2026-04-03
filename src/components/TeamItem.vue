@@ -9,6 +9,7 @@ import { useUserRole } from '@/composables/useUserRole';
 import { useGameStore } from '@/stores/gameStore';
 import { ShotCategory } from '@/enum/ShotDescription';
 import { computed } from 'vue';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 
 const sessionStore = useSessionStore()
 const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
@@ -46,29 +47,30 @@ const handleOpenModal = () => {
 <template>
   <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
     <div class="ms-2.5 mb-1.5 grid grid-cols-[max-content_auto_max-content] items-center">
-      <a
+      <div
         class="text-red-800 flex justify-start items-center cursor-pointer"
-        @click="handleOpenModal"
       >
         <span class="font-semibold">{{ team.name }}</span>
-        <ArrowRightIcon class="size-5 ms-1.5" />
-      </a>
+        <div class="h-6 w-6 flex justify-center items-center ms-2">
+          <InformationCircleIcon class="size-6 text-red-800" @click="handleOpenModal"/>
+        </div>
+      </div>
       <div class="flex justify-center gap-5 text-base text-blue-950">
         <div class="inline-flex items-center gap-1" role="group">
-          <div class="h-6 w-8 flex items-center justify-end">PARI</div>
-          <span>{{ stats.even.goals.length }}/{{ stats.even.shots.length }}</span>
+          <div class="text-sm font-semibold">PARI</div>
+          <span class="tabular-nums font-bold">{{ stats.even.goals.length }}/{{ stats.even.shots.length }}</span>
         </div>
-        <div class="inline-flex items-center gap-1" role="group">
-          <div class="h-6 w-8 flex items-center justify-end">SUP</div>
-          <span>{{ stats.sup.goals.length }}/{{ stats.sup.shots.length }}</span>
+        <div class="inline-flex items-baseline gap-1.5" role="group">
+          <div class="text-sm font-semibold">SUP</div>
+          <span class="tabular-nums font-bold">{{ stats.sup.goals.length }}/{{ stats.sup.shots.length }}</span>
         </div>
-        <div class="inline-flex items-center gap-1" role="group">
-          <div class="h-6 w-8 flex items-center justify-end">RIG</div>
-          <span>{{ stats.pen.goals.length }}/{{ stats.pen.shots.length }}</span>
+        <div class="inline-flex items-baseline gap-1.5" role="group">
+          <div class="text-sm font-semibold">RIG</div>
+          <span class="tabular-nums font-bold">{{ stats.pen.goals.length }}/{{ stats.pen.shots.length }}</span>
         </div>
-        <div class="inline-flex items-center gap-1" role="group">
-          <div class="h-6 w-8 flex items-center justify-end">TOT</div>
-          <span>{{ stats.tot.goals.length }}/{{ stats.tot.shots.length }}</span>
+        <div class="inline-flex items-baseline gap-1.5" role="group">
+          <div class="text-sm font-semibold">TOT</div>
+          <span class="tabular-nums font-bold">{{ stats.tot.goals.length }}/{{ stats.tot.shots.length }}</span>
         </div>
       </div>
 

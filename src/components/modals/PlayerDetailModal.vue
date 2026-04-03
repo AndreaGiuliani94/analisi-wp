@@ -12,7 +12,8 @@
                     </DialogTitle>
                 </div>
                 <div class="px-2 py-2">
-                    <PlayerDetail :player="player" :get-exclution="getExclution" :align="'col'" :show-g-k-shots="false" :team="team"></PlayerDetail>
+                    <PlayerDetail :player="player" :get-exclution="getExclution" :align="'col'" :show-g-k-shots="false" :team="team"
+                    class="rounded-lg border border-gray-200"></PlayerDetail>
                 </div>
             </div>
         </div>

@@ -1,11 +1,11 @@
 <template>
     <TabGroup>
-        <TabList class="flex space-x-2 rounded-t-xl bg-gray-200 p-1">
+        <TabList class="flex space-x-2 rounded-t-xl bg-slate-50 border border-b-0 border-gray-200 p-1 pb-0">
             <Tab
                 v-for="tab in tabs"
                 v-slot="{ selected }"
                 :key="tab"
-                class="w-full font-medium text-blue-950 rounded-lg focus:outline-none"
+                class="w-full font-medium text-blue-950 rounded-lg border border-gray-200 focus:outline-none"
             >
                 <div 
                 class="rounded-lg leading-3 py-2.5"
@@ -16,15 +16,15 @@
         </TabList>
 
         <TabPanels class="">
-        <TabPanel>
-            <MenUpTab :team="team" class="text-sm border rounded-b-lg border-gray-200 shadow-md"></MenUpTab>
-        </TabPanel>
-        <TabPanel>
-            <EvenTab :team="team" class="text-sm border rounded-b-lg border-gray-200 shadow-md"></EvenTab>
-        </TabPanel>
-        <TabPanel>
-            <ExclutionsTab :team="team" class="text-sm border rounded-b-lg border-gray-200 shadow-md"></ExclutionsTab>
-        </TabPanel>
+            <TabPanel>
+                <MenUpTab :team="team" class="text-sm border border-t-0 rounded-b-lg border-gray-200 shadow-md"></MenUpTab>
+            </TabPanel>
+            <TabPanel>
+                <EvenTab :team="team" class="text-sm border border-t-0 rounded-b-lg border-gray-200 shadow-md"></EvenTab>
+            </TabPanel>
+            <TabPanel>
+                <ExclutionsTab :team="team" class="text-sm border border-t-0 rounded-b-lg border-gray-200 shadow-md"></ExclutionsTab>
+            </TabPanel>
         </TabPanels>
     </TabGroup>
 </template>
