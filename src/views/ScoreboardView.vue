@@ -97,7 +97,7 @@
 import { useGameStore } from '@/stores/gameStore';
 import ClockManager from '@/components/ClockManager.vue';
 import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/components/Interfaces/Team';
 import NavButton from '@/components/buttons/NavButton.vue';
@@ -107,13 +107,12 @@ import { useSessionStore } from '@/stores/sessionStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserRole } from '@/composables/useUserRole';
 import ModeToggleItem from '@/components/ModeToggleItem.vue';
-import { storeToRefs } from 'pinia';
 import { MinusIcon } from '@heroicons/vue/24/outline';
 
 const gameStore = useGameStore();
 const sessionStore = useSessionStore()
 const authStore = useAuthStore()
-const { isCorrectionMode } = storeToRefs(gameStore)
+const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
 
 const isShrinked = ref(false)
 const headerRef = ref<HTMLElement | null>(null)

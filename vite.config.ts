@@ -67,5 +67,19 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Creiamo un file separato solo per l'ecosistema Vue
+          'vendor-vue': ['vue', 'vue-router', 'pinia'],
+          
+          // Creiamo un file separato per le icone che pesano un po'
+          'vendor-icons': ['@heroicons/vue'],
+          
+          // Creiamo un file separato per la libreria Excel!
+          'vendor-excel': ['exceljs', 'file-saver']
+        }
+      }
+    }
   }
 })

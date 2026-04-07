@@ -41,17 +41,17 @@
 import { UserCircleIcon, WrenchScrewdriverIcon, UserIcon } from '@heroicons/vue/24/outline';
 import Icon from './icons/Icon.vue';
 import { useAuthStore } from '@/stores/authStore';
-import { storeToRefs } from 'pinia';
 import { useInitials } from '@/composables/useInitials';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useUserRole } from '@/composables/useUserRole';
 import { useGameStore } from '@/stores/gameStore';
+import { toRef } from 'vue';
 
 const authStore = useAuthStore();
 const sessionStore = useSessionStore();
 const gameStore = useGameStore()
 
-const { user } = storeToRefs(authStore) // così user è un ref reattivo
+const user = toRef(authStore, 'user');
 
 const { initials } = useInitials(user)
 

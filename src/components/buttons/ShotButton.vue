@@ -105,16 +105,15 @@
 
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PlusIcon, MinusIcon } from '@heroicons/vue/24/outline';
 import { EvenShot, MenUpShot, ShotOutcome, ShotCategory } from '@/enum/ShotDescription';
-import { storeToRefs } from 'pinia';
 import { useGameStore } from '@/stores/gameStore';
 import ActionButton from './ActionButton.vue';
 
 const gameStore = useGameStore()
-const { isCorrectionMode } = storeToRefs(gameStore)
+const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
 
 const props = defineProps<{
   disabled: boolean;
