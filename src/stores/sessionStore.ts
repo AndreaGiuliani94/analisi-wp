@@ -44,6 +44,7 @@ export const useSessionStore = defineStore('session', {
             if (!res.ok) throw new Error('Errore caricamento sessione');
             const data = await res.json();
             localStorage.setItem("currentSession", JSON.stringify(data));
+            this.currentSession = data;
             return data;
         }
     },

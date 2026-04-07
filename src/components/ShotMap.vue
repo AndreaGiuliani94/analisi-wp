@@ -66,7 +66,7 @@
                 </div>
     
                 <div class="absolute bottom-2 left-2 ">
-                    <ZoneBadge name="Controfuga" v-bind="getEvenZoneStats('Ripartenze')" />
+                    <ZoneBadge name="Controfuga" v-bind="getEvenZoneStats('Controfuga')" />
                 </div>
             </div>
             <div v-else-if="viewMode=='sup'" class="absolute inset-0 z-10">
@@ -91,7 +91,7 @@
                 </div>
     
                 <div class="absolute bottom-2 left-2">
-                    <ZoneBadge name="Controfuga" v-bind="getSupZoneStats('Ripartenze')" />
+                    <ZoneBadge name="Controfuga" v-bind="getSupZoneStats('Controfuga')" />
                 </div>
             </div>
 
@@ -138,7 +138,7 @@ const evenZoneMapping: Record<string, string[]> = {
     '3': [EvenShot.P3],
     '4': [EvenShot.P4],
     '5': [EvenShot.P5],
-    'Ripartenze': ['Ripartenze', 'RIPARTENZE', EvenShot.Rip]
+    'Controfuga': ['Ripartenze', 'RIPARTENZE', 'Ripartenza', EvenShot.Rip]
 };
 
 const supZoneMapping: Record<string, string[]> = {
@@ -151,7 +151,7 @@ const supZoneMapping: Record<string, string[]> = {
     '4': [MenUpShot.P4],
     '5': [MenUpShot.P5],
     '6': [MenUpShot.P6],
-    'Ripartenze': ['Ripartenze', 'RIPARTENZE', MenUpShot.Rip]
+    'Controfuga': ['Ripartenze', 'RIPARTENZE', 'Ripartenza', MenUpShot.Rip]
 };
 
 // 2. I METODI DI CALCOLO

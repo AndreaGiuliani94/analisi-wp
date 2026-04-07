@@ -528,6 +528,8 @@ export const useGameStore = defineStore("gameStore", {
         time: this.formatTime(this.countdown),
         description: description,
         quarter: this.match.quarter,
+        homeScore: this.match.homeTeam.score,
+        awayScore: this.match.awayTeam.score,
         type: type,
       };
       this.events.push(event);

@@ -61,6 +61,7 @@ import { Tab, TabGroup,
   TabPanels,
   TabPanel } from "@headlessui/vue";
 import TeamPanel from '@/components/TeamPanel.vue';
+import { getExclution } from '@/utils/utils';
 
 const store = useGameStore();
 
@@ -71,16 +72,11 @@ const getAllShoots = (element: Player) => {
 }
 
 const getExclutions = (element: Player) => {
-    var str: string = '';
-    for (let index = 0; index < element.exclutions.length; index++) {
-        const excl = element.exclutions[index];
-        str += (index > 0 ? '\n' : '') + excl.quarter + 'T ' + excl.time + ' ' + (excl.type + ' ' + excl.position);
-        if(excl.type !== 'EDCS') {
-            str += ' ';
-            str += excl.ball ? 'Con palla' : 'Senza palla';
-        }
-    }
-    return str;
+    // Se non ci sono falli, ritorniamo stringa vuota
+    if (!element.exclutions || element.exclutions.length === 0) return '';
+    
+    // Mappiamo ogni fallo e li uniamo con l'a capo (\n)
+    return element.exclutions.map(excl => getExclution(excl)).join('\n');
 }
 
 const downloadExcel = () => {

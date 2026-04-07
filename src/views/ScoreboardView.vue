@@ -87,7 +87,7 @@
       <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="gameStore.events.length == 0"/>
     </div>
     <!-- Modale con statistiche -->
-    <QuickReportModal :isOpen="showConfirmModal" :team="team"
+    <QuickReportModal v-if="team" :isOpen="showConfirmModal" :team="team"
           @confirm="confirmCleanup" @close="showConfirmModal = false" />
   </div>
 

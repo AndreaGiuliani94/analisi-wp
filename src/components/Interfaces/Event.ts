@@ -7,5 +7,7 @@ export interface Event {
   time: string;
   description: string;
   quarter: number;
+  awayScore: number;
+  homeScore: number;
   type: MatchEventType;
 }

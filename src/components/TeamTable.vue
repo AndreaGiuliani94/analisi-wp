@@ -17,7 +17,7 @@
             <tbody class="text-blue-950">
                 <template v-for="player in team.players" :key="player.number">
                     <!-- Riga principale -->
-                    <tr class="border-b border-gray-200 hover:bg-slate-50 transition-colors cursor-pointer" @click="toggle(player.number)">
+                    <tr v-if="player.name" class="border-b border-gray-200 hover:bg-slate-50 transition-colors cursor-pointer" @click="toggle(player.number)">
                         <td class="p-2">
                             <div class="w-8 h-8 rounded-full border-2 border-slate-200 font-bold flex items-center justify-center shadow-sm relative"
                                     :class="player.isGK ? 'bg-red-800 text-white' : '' ">
