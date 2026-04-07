@@ -1,7 +1,7 @@
 <template>
 
 <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog as="div" @close="closeModal" class="fixed inset-0 overflow-y-auto text-blue-950">
+    <Dialog as="div" @close="closeModal" class="fixed inset-0 overflow-y-auto text-blue-950 z-20">
         <div class="flex items-start mt-[35%] justify-center min-h-screen px-4">
             <DialogOverlay class="fixed inset-0 bg-black opacity-40 z-10" />
 
@@ -12,7 +12,7 @@
                     </DialogTitle>
                 </div>
                 <div class="mt-1">
-                    <TeamStatistics :team="team" />
+                    <TeamStatistics :team="team" :is-modal="true"/>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionRoot, Tab, TabGroup,
   TabPanel } from "@headlessui/vue";
 import type { Team } from "../Interfaces/Team";
 import type { PropType } from "vue";
-import MenUpTab from "../tabs/MenUpTab.vue";
+import MenUpTab from "../tabs/ManUpTab.vue";
 import EvenTab from "../tabs/EvenTab.vue";
 import ExclutionsTab from "../tabs/ExclutionsTab.vue";
 import TeamStatistics from "../TeamStatistics.vue";

@@ -74,9 +74,8 @@
 <script setup lang="ts">
 import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { BackwardIcon, ForwardIcon, PauseIcon, PlayIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
+import { BackwardIcon, ForwardIcon, PauseIcon, PlayIcon } from '@heroicons/vue/20/solid';
 import { ArrowUturnLeftIcon, ArrowUturnRightIcon } from '@heroicons/vue/24/outline';
-import { computed } from 'vue';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();

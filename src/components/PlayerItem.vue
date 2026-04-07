@@ -41,12 +41,10 @@
 
   <div v-if="team.activatedTimer" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5 text-blue-950">
-      <component v-if="player.active">
-        <Clock :size="18" color="#9f0712" />
-      </component>
-      <component v-else>
-        <Hourglass :size="18" color="#99a1af" />
-      </component>
+      
+      <BoltIcon v-if="player.active" class="w-5 h-5 text-red-800" />
+      <EllipsisHorizontalCircleIcon v-else class="w-5 h-5 text-gray-400" />
+      
       <span class="tabular-nums">{{ store.formatTime(player.actualTime) }}</span>
     </div>
   </div>
@@ -130,8 +128,7 @@ import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/components/Interfaces/Player";
 import type { Team } from "./Interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
-import { ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
-import { Clock, Hourglass } from "@lucide/vue"
+import { BoltIcon, EllipsisHorizontalCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";

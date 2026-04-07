@@ -1,0 +1,1 @@
+export type ShotKey = 'evens' | 'sup' | 'penalties';

@@ -1,6 +1,6 @@
 <template>
-    <div class="mt-2">
-        <TeamStatistics :team="team"></TeamStatistics>
+    <div class="mt-2 ">
+        <TeamStatistics :team="team" :isModal="false"></TeamStatistics>
         <TeamTable :team="team" :getAllShoots="getAllShoots"></TeamTable>
     </div>
 </template>

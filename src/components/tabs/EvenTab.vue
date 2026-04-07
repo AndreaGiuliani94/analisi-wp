@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-slate-50 shadow-inner rounded-b-xl p-2 w-full">
+    <div class="p-2 w-full">
         
         <div class="flex items-center justify-between mb-2 border-b border-slate-200 pb-2">
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
@@ -30,7 +30,7 @@
                         v-for="(zone, zIndex) in evenZones" 
                         :key="zIndex"
                         class="flex justify-between items-center"
-                        :class="getZoneValue(category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-900'"
+                        :class="getZoneValue(category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-950'"
                     >
                         <span>{{ zone.label }}</span>
                         <span class="font-mono text-[13px]">{{ getZoneValue(category.key, zone.values) }}</span>

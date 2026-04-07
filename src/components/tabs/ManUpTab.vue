@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-slate-50 shadow-inner rounded-b-xl p-2 w-full">
+    <div class="rounded-b-xl p-2 w-full">
         
         <div class="flex items-center justify-between mb-2 border-b border-slate-200 pb-2">
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>

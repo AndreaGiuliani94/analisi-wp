@@ -1,7 +1,7 @@
 
 
 <template>
-    <div class="bg-slate-50 shadow-inner rounded-b-xl p-2 pt-4 w-full">
+    <div class=" rounded-b-xl p-2 pt-4 w-full">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             
             <div 

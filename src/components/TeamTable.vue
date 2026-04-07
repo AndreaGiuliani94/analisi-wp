@@ -62,7 +62,7 @@
                     <Transition name="fade">
                         <tr v-if="expandedRows.includes(player.number)" class="bg-blue-50">
                             <td colspan="9" class="p-0 border-b-2 border-blue-200">
-                                <PlayerDetail :player="player" :get-exclution="getExclution" :align="'row'" :show-g-k-shots="true" :team="team" />
+                                <PlayerDetail :player="player" :get-exclution="getExclution" :align="'row'" :show-g-k-shots="true" :team="team" :is-modal="false" />
                             </td>
                         </tr>
                     </Transition>

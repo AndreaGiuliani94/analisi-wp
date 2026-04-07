@@ -1,30 +1,78 @@
 <template>
     <TabGroup>
-        <TabList class="flex space-x-2 rounded-t-xl bg-slate-50 border border-b-0 border-gray-200 p-1 pb-0">
+        <TabList class="flex space-x-1 rounded-lg bg-slate-100 p-1"
+            :class="isModal ? '' : 'rounded-b-none border border-b-0 border-slate-100 '">
+            
             <Tab
                 v-for="tab in tabs"
-                v-slot="{ selected }"
                 :key="tab"
-                class="w-full font-medium text-blue-950 rounded-lg border border-gray-200 focus:outline-none"
+                v-slot="{ selected }"
+                as="template"
             >
-                <div 
-                class="rounded-lg leading-3 py-2.5"
-                :class="{ 'bg-blue-950 text-white': selected, 'bg-white': !selected }">
+                <button
+                    :class="[
+                        'w-full rounded-md py-2 text-sm font-semibold transition-all duration-200 focus:outline-none',
+                        selected
+                            ? 'bg-white text-blue-950 shadow-sm ring-1 ring-slate-900/5'
+                            : 'text-slate-500 hover:bg-slate-200/50 hover:text-blue-900'
+                    ]"
+                >
                     {{ tab }}
-                </div>
+                </button>
             </Tab>
+            
         </TabList>
 
-        <TabPanels class="">
-            <TabPanel>
-                <MenUpTab :team="team" class="text-sm border border-t-0 rounded-b-lg border-gray-200 shadow-md"></MenUpTab>
+        <TabPanels class="relative">
+    
+            <TabPanel v-slot="{ selected }" static class="focus:outline-none">
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-out"
+                    enter-from-class="opacity-0 translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-200 ease-in absolute inset-x-0 top-0"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 -translate-y-2"
+                >
+                    <div v-show="selected">
+                        <ManUpTab :team="team" class="text-sm rounded-lg bg-white"
+                            :class="isModal ? '' : 'rounded-t-none rounded-xl border border-t-0 border-slate-100 shadow-inner'" />
+                    </div>
+                </Transition>
             </TabPanel>
-            <TabPanel>
-                <EvenTab :team="team" class="text-sm border border-t-0 rounded-b-lg border-gray-200 shadow-md"></EvenTab>
+
+            <TabPanel v-slot="{ selected }" static class="focus:outline-none">
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-out"
+                    enter-from-class="opacity-0 translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-200 ease-in absolute inset-x-0 top-0"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 -translate-y-2"
+                >
+                    <div v-show="selected">
+                        <EvenTab :team="team" class="text-sm rounded-lg bg-white"
+                            :class="isModal ? '' : 'rounded-t-none rounded-xl border border-t-0 border-slate-100 shadow-inner'" />
+                    </div>
+                </Transition>
             </TabPanel>
-            <TabPanel>
-                <ExclutionsTab :team="team" class="text-sm border border-t-0 rounded-b-lg border-gray-200 shadow-md"></ExclutionsTab>
+
+            <TabPanel v-slot="{ selected }" static class="focus:outline-none">
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-out"
+                    enter-from-class="opacity-0 translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition-all duration-200 ease-in absolute inset-x-0 top-0"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 -translate-y-2"
+                >
+                    <div v-show="selected">
+                        <ExclutionsTab :team="team" class="text-sm rounded-lg bg-white" 
+                            :class="isModal ? '' : 'rounded-t-none rounded-xl border border-t-0 border-slate-100 shadow-inner'" />
+                    </div>
+                </Transition>
             </TabPanel>
+
         </TabPanels>
     </TabGroup>
 </template>
@@ -38,10 +86,11 @@ import { Tab, TabGroup,
   TabPanel } from "@headlessui/vue";
 import EvenTab from './tabs/EvenTab.vue';
 import ExclutionsTab from './tabs/ExclutionsTab.vue';
-import MenUpTab from './tabs/MenUpTab.vue';
+import ManUpTab from './tabs/ManUpTab.vue';
 
 const props = defineProps<{
   team: Team;
+  isModal:boolean;
 }>();
 
 const tabs = ['Superiorità', 'Pari', 'Falli'];

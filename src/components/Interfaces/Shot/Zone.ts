@@ -1,6 +1,6 @@
 import { EvenShot, MenUpShot } from "@/enum/ShotDescription"
 
-interface Zone {
+export interface Zone {
   label: string
   values: (EvenShot | string)[]
 }

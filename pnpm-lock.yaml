@@ -17,9 +17,6 @@ importers:
       '@heroicons/vue':
         specifier: ^2.2.0
         version: 2.2.0(vue@3.5.16(typescript@5.7.3))
-      '@lucide/vue':
-        specifier: ^1.7.0
-        version: 1.7.0(vue@3.5.16(typescript@5.7.3))
       '@supabase/supabase-js':
         specifier: ^2.52.0
         version: 2.52.0
@@ -838,11 +835,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
-
-  '@lucide/vue@1.7.0':
-    resolution: {integrity: sha512-X3gTarOkNh2ThNK7IaDa4gdjFAtZyoKH/eoScklvmtNTWE5uxkycBQOuchGExY5swCqh1WptEIAWrmbuQcy2fA==}
-    peerDependencies:
-      vue: '>=3.0.1'
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -3596,10 +3588,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
-
-  '@lucide/vue@1.7.0(vue@3.5.16(typescript@5.7.3))':
-    dependencies:
-      vue: 3.5.16(typescript@5.7.3)
 
   '@polka/url@1.0.0-next.29': {}
 

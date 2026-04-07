@@ -1,9 +1,10 @@
 <template>
-    <div class="bg-slate-50 shadow-inner flex flex-col lg:flex-row gap-2 lg:gap-4 p-2 w-full">
+    <div class="flex flex-col lg:flex-row gap-4 w-full"
+        :class="isModal? '': 'bg-slate-50 shadow-inner p-2'">
         
         <div class="flex-1">
 
-            <div v-if="player.isGK" class="mb-4">
+            <div v-if="player.isGK" :class="isModal? '': 'mb-4'">
                 <div class="flex items-center justify-between mb-2 ">
                     <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Subiti (Portiere)</h4>
                     
@@ -15,143 +16,116 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-4">                    
-                    <div class="bg-white rounded-lg p-3 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
-                            <span class="font-bold text-blue-950 uppercase">Pari</span>
-                            <span class="bg-blue-100 text-blue-900 text-xs font-black px-2 py-1 rounded-full font-mono">
-                                {{ totalShotsFaced.evens.parati.length }}/{{ totalShotsFaced.evens.shots.length }}
-                            </span>
-                        </div>
-                        <div v-for="(category, index) in shotFacedCategories" :key="index" class="mb-3 last:mb-0">
-                            <div class="text-xs font-bold uppercase text-slate-500 mb-1 border-b border-slate-50">
-                                {{ category.label }} <span class="font-mono ml-1">({{ getShotsFacedLengthByType('evens', category.key) }})</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-                                <div v-for="(zone, zIndex) in evenZones" :key="zIndex" 
-                                    class="flex justify-between"
-                                    :class="getFacedZoneValue('evens', category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-900'">
-                                    <span>{{ zone.label }}</span>
-                                    <span class="font-mono">{{ getFacedZoneValue('evens', category.key, zone.values) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <ShotAnalysisCard 
+                        title="Pari"
+                        shotType="evens"
+                        :successCount="totalShotsFaced.evens.parati.length"
+                        :totalCount="totalShotsFaced.evens.shots.length"
+                        :zones="evenZones"
+                        :categories="shotFacedCategories"
+                        :getShotsLengthByType="getShotsFacedLengthByType"
+                        :getZoneValue="getFacedZoneValue"
+                        />
 
-                    <div class="bg-white rounded-lg p-3 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
-                            <span class="font-bold text-blue-950 uppercase">Superiorità</span>
-                            <span class="bg-blue-100 text-blue-900 text-xs font-black px-2 py-1 rounded-full font-mono">
-                                {{ totalShotsFaced.sup.parati.length }}/{{ totalShotsFaced.sup.shots.length }}
-                            </span>
-                        </div>
-                        <div v-for="(category, index) in shotFacedCategories" :key="index" class="mb-3 last:mb-0">
-                            <div class="text-xs font-bold uppercase text-slate-500 mb-1 border-b border-slate-50">
-                                {{ category.label }} <span class="font-mono ml-1">({{ getShotsFacedLengthByType('sup', category.key) }})</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-                                <div v-for="(zone, zIndex) in supZones" :key="zIndex" 
-                                    class="flex justify-between"
-                                    :class="getFacedZoneValue('sup', category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-900'">
-                                    <span>{{ zone.label }}</span>
-                                    <span class="font-mono">{{ getFacedZoneValue('sup', category.key, zone.values) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <ShotAnalysisCard 
+                        title="Superiorità"
+                        shotType="sup"
+                        :successCount="totalShotsFaced.sup.parati.length"
+                        :totalCount="totalShotsFaced.sup.shots.length"
+                        :zones="supZones"
+                        :categories="shotFacedCategories"
+                        :getShotsLengthByType="getShotsFacedLengthByType"
+                        :getZoneValue="getFacedZoneValue"
+                        />
                 </div>
             </div>
 
-            <div v-if="!player.isGK || props.showGKShots">
+            <div v-if="!player.isGK || props.showGKShots" :class="isModal? '': ''">
 
                 <div class="flex items-center justify-between mb-2 ">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Effettuati</h4>
-                    
                     <div class="flex items-center gap-2">
-                        <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
-                            {{ gameStore.getAllPlayerShots(player).goals }}/{{ gameStore.getAllPlayerShots(player).shots }}
-                        </span>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Effettuati</h4>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
+                                {{ gameStore.getAllPlayerShots(player).goals }}/{{ gameStore.getAllPlayerShots(player).shots }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex bg-slate-200 p-0.5 rounded-lg">
+                        <button 
+                            @click="viewMode = 'map'"
+                            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+                            :class="viewMode === 'map' ? 'bg-white text-blue-950 shadow-sm' : 'text-slate-500 hover:text-blue-900'"
+                        >
+                            Mappa
+                        </button>
+                        <button 
+                            @click="viewMode = 'stats'"
+                            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+                            :class="viewMode === 'stats' ? 'bg-white text-blue-950 shadow-sm' : 'text-slate-500 hover:text-blue-900'"
+                        >
+                            Stats
+                        </button>
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
-                    <div class="bg-white rounded-lg p-3 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
-                            <span class="font-bold text-blue-950 uppercase">Pari</span>
-                            <span class="bg-blue-100 text-blue-900 text-xs font-black px-2 py-1 rounded-full font-mono">
-                                {{ totalShots.evens.goals.length }}/{{ totalShots.evens.shots.length }}
-                            </span>
-                        </div>
-                        <div v-for="(category, index) in shotCategories" :key="index" class="mb-3 last:mb-0">
-                            <div class="text-xs font-bold uppercase text-slate-500 mb-1 border-b border-slate-50">
-                                {{ category.label }} <span class="font-mono ml-1">({{ getShotsLengthByType('evens', category.key) }})</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-                                <div v-for="(zone, zIndex) in evenZones" :key="zIndex" 
-                                    class="flex justify-between"
-                                    :class="getZoneValue('evens', category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-900'">
-                                    <span>{{ zone.label }}</span>
-                                    <span class="font-mono">{{ getZoneValue('evens', category.key, zone.values) }}</span>
-                                </div>
-                            </div>
-                        </div>
+                <Transition name="fade" mode="out-in">
+                    <div v-if="viewMode === 'stats'" class="grid grid-cols-2 md:grid-cols-2 gap-4">
+
+                        <ShotAnalysisCard 
+                            title="Pari"
+                            shotType="evens"
+                            :successCount="totalShots.evens.goals.length"
+                            :totalCount="totalShots.evens.shots.length"
+                            :zones="evenZones"
+                            :categories="shotCategories"
+                            :getShotsLengthByType="getShotsLengthByType"
+                            :getZoneValue="getZoneValue"
+                            />
+
+                        <ShotAnalysisCard 
+                            title="Superiorità"
+                            shotType="sup"
+                            :successCount="totalShots.sup.goals.length"
+                            :totalCount="totalShots.sup.shots.length"
+                            :zones="supZones"
+                            :categories="shotCategories"
+                            :getShotsLengthByType="getShotsLengthByType"
+                            :getZoneValue="getZoneValue"
+                            />
+                        
                     </div>
-    
-                    <div class="bg-white rounded-lg p-3 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
-                            <span class="font-bold text-blue-950 uppercase">Superiorità</span>
-                            <span class="bg-blue-100 text-blue-900 text-xs font-black px-2 py-1 rounded-full font-mono">
-                                {{ totalShots.sup.goals.length }}/{{ totalShots.sup.shots.length }}
-                            </span>
-                        </div>
-                        <div v-for="(category, index) in shotCategories" :key="index" class="mb-3 last:mb-0">
-                            <div class="text-xs font-bold uppercase text-slate-500 mb-1 border-b border-slate-50">
-                                {{ category.label }} <span class="font-mono ml-1">({{ getShotsLengthByType('sup', category.key) }})</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-                                <div v-for="(zone, zIndex) in supZones" :key="zIndex" 
-                                    class="flex justify-between"
-                                    :class="getZoneValue('sup', category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-900'">
-                                    <span>{{ zone.label }}</span>
-                                    <span class="font-mono">{{ getZoneValue('sup', category.key, zone.values) }}</span>
-                                </div>
-                            </div>
-                        </div>
+
+                    <div v-else>
+                        <ShotMap :player="player" :stats="totalShots" />
                     </div>
-                </div>
+                </Transition>
             </div>
 
         </div>
 
-        <div class="w-full lg:w-1/3 lg:border-l border-slate-200 lg:pl-6">
+        <div class="border-slate-200"
+                :class="[isModal? 'border rounded-lg p-2 shadow-sm lg:p-4 w-full ': 'lg:px-4 pt-2 lg:border-l border-t lg:border-t-0',
+                (viewMode === 'map' && !isModal) ? 'lg:w-1/2' : 'lg:w-1/3']" >
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Disciplina</h4>
             
-            <div class="flex flex-col gap-4">
-                <div v-if="props.player.exclutions.length > 0" class="bg-white rounded-lg p-3 border border-red-100 shadow-sm">
-                    <div class="text-xs font-bold text-red-800 flex items-center mb-2 border-b border-red-50 pb-1">
-                        Falli Commessi ({{ props.player.exclutions.length }})
-                    </div>
-                    <ul class="text-[12px] text-slate-600 space-y-1.5">
-                        <li v-for="(ex, i) in props.player.exclutions" :key="i" class="flex flex-col">
-                            <span class="font-semibold">{{ getExclution(ex) }}</span>
-                            <span v-if="ex.earnedBy" class="text-slate-400 text-[10px] uppercase">su {{ gameStore.getOpponentsPlayerName(team, ex.earnedBy) }}</span>
-                        </li>
-                    </ul>
-                </div>
-                <div v-else class="text-xs text-slate-400 italic bg-white p-2 rounded-md border border-dashed border-slate-200">
-                    Nessun fallo commesso
-                </div>
-
-                <div v-if="exclEarned.length > 0" class="bg-white rounded-lg p-3 border border-green-100 shadow-sm">
-                    <div class="text-xs font-bold text-green-600 flex items-center mb-2 border-b border-green-50 pb-1">
-                        Falli Guadagnati ({{ exclEarned.length }})
-                    </div>
-                    <ul class="text-[12px] text-slate-600 space-y-1.5">
-                        <li v-for="(ex, i) in exclEarned" :key="i" class="flex flex-col">
-                            <span class="font-semibold">{{ getExclution(ex) }}</span>
-                            <span v-if="ex.earnedOn" class="text-slate-400 text-[10px] uppercase">su {{ ex.earnedOn }}</span>
-                        </li>
-                    </ul>
-                </div>
+            <div v-if="mappedCommessi.length + mappedGuadagnati.length > 0" class="flex flex-col gap-4">
+                <FoulAccordionCard 
+                    title="Falli Commessi"
+                    :items="mappedCommessi"
+                    theme="red"
+                    emptyMessage="Nessun fallo commesso"
+                />
+                <FoulAccordionCard 
+                    title="Falli Guadagnati"
+                    :items="mappedGuadagnati"
+                    theme="green"
+                />
+            </div>
+            <div v-else class="text-xs text-slate-400 italic bg-white p-2 rounded-md border border-dashed border-slate-200">
+                Nessun fallo commesso o guadagnato
             </div>
         </div>
 
@@ -165,11 +139,17 @@ import type { Exclution } from './Interfaces/Exclution';
 import { shotCategories,shotFacedCategories } from '@/const/consts';
 import { evenZones, supZones } from './Interfaces/Shot/Zone';
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { CategoryKey } from './Interfaces/Shot/Category';
 import type { Shot } from './Interfaces/Shot';
 import { useGameStore } from '@/stores/gameStore';
 import type { Team } from './Interfaces/Team';
+import ShotMap from './ShotMap.vue';
+import ShotAnalysisCard from './cards/ShotAnalysisCard.vue';
+import type { ShotKey } from './Interfaces/Shot/ShotKey';
+import { ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { getExclution } from '@/utils/utils';
+import FoulAccordionCard from './cards/FoulAccordionCard.vue';
 
 const gameStore = useGameStore()
 
@@ -179,7 +159,10 @@ const props = defineProps<{
     align: 'row' | 'col';
     showGKShots: boolean;
     getExclution: (excl: Exclution) => string;
+    isModal: boolean;
 }>();
+
+const viewMode = ref('map');
 
 const totalShots = computed(() => ({
   evens: getShotsByType(props.player.shotsEven),
@@ -230,8 +213,6 @@ function getShotsByType(shots: Shot[]): {
     shots
   }
 }
-
-type ShotKey = 'evens' | 'sup' | 'penalties';
 
 function getShotsByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
     switch (type) {
@@ -288,5 +269,21 @@ function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions
             return 0;
     }
 }
+
+// Mappiamo i falli commessi
+const mappedCommessi = computed(() => {
+    return props.player.exclutions.map(ex => ({
+        primaryText: getExclution(ex),
+        secondaryText: ex.earnedBy ? `su ${gameStore.getOpponentsPlayerName(props.team, ex.earnedBy)}` : undefined
+    }));
+});
+
+// Mappiamo i falli guadagnati
+const mappedGuadagnati = computed(() => {
+    return exclEarned.value.map(ex => ({
+        primaryText: getExclution(ex),
+        secondaryText: ex.earnedOn ? `da ${ex.earnedOn}` : undefined
+    }));
+});
 
 </script>
