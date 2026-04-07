@@ -282,7 +282,7 @@ const mappedCommessi = computed(() => {
 const mappedGuadagnati = computed(() => {
     return exclEarned.value.map(ex => ({
         primaryText: getExclution(ex),
-        secondaryText: ex.earnedOn ? `da ${ex.earnedOn}` : undefined
+        secondaryText: ex.earnedOn ? `su ${ex.earnedOn}` : undefined
     }));
 });
 

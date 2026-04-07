@@ -45,7 +45,7 @@
 import type { Session } from '@/components/Interfaces/Session/Session'
 import { useSessionStore } from '@/stores/sessionStore'
 import { onMounted, ref } from 'vue'
-import RoleBadge from './RoleBadge.vue'
+import RoleBadge from './badges/RoleBadge.vue'
 import NavButton from './buttons/NavButton.vue'
 import { ArrowRightIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import { deleteSession } from '@/services/sessionService'

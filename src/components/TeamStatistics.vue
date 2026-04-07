@@ -13,8 +13,8 @@
                     :class="[
                         'w-full rounded-md py-2 text-sm font-semibold transition-all duration-200 focus:outline-none',
                         selected
-                            ? 'bg-white text-blue-950 shadow-sm ring-1 ring-slate-900/5'
-                            : 'text-slate-500 hover:bg-slate-200/50 hover:text-blue-900'
+                            ? 'bg-blue-950 text-white '
+                            : 'bg-white text-blue-950 shadow-sm '
                     ]"
                 >
                     {{ tab }}
