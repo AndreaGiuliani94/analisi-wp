@@ -8,7 +8,7 @@
             <!-- Contenitore della modale -->
             <div class="bg-white p-2 rounded-lg shadow-xl min-w-lg lg:min-w-2/3 transform transition-all z-20">
                 <div class="flex items-start">
-                    <DialogTitle class="text-lg font-semibold pl-2 text-red-800">{{ player.name + '. ' + player.name }}
+                    <DialogTitle class="text-lg font-semibold pl-2 text-red-800">{{ player.number + '. ' + player.name }}
                     </DialogTitle>
                 </div>
                 <div class="px-2 py-2">
