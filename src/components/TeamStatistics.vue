@@ -79,7 +79,7 @@
 
 
 <script setup lang="ts">
-import type { Team } from './Interfaces/Team';
+import type { Team } from '../interfaces/Team';
 import { Tab, TabGroup,
   TabList,
   TabPanels,

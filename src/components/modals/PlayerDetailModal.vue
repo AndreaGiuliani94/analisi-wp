@@ -24,9 +24,9 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionRoot } from "@headlessui/vue";
 import type { PropType } from "vue";
-import type { Player } from "../Interfaces/Player";
+import type { Player } from "../../interfaces/Player";
 import PlayerDetail from "../PlayerDetail.vue";
-import type { Team } from "../Interfaces/Team";
+import type { Team } from "../../interfaces/Team";
 import { getExclution } from "@/utils/utils";
 
 const props = defineProps({

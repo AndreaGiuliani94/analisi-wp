@@ -2,9 +2,9 @@ import { defineStore } from 'pinia'
 import { supabase } from '@/lib/supabase'
 import { useGameStore } from './gameStore'
 import { getSession, updateSession } from '@/services/sessionService'
-import type { SessionState } from '@/components/Interfaces/Session/SessionState'
-import type { Match } from '@/components/Interfaces/Match'
-import type { Event } from "@/components/Interfaces/Event";
+import type { SessionState } from '@/interfaces/session/SessionState'
+import type { Match } from '@/interfaces/Match'
+import type { Event } from "@/interfaces/event/Event";
 import { useSessionStore } from './sessionStore'
 
 export const useSessionStateStore = defineStore('sessionState', {

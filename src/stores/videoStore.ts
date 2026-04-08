@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
-import type { VideoInterval } from "@/components/Interfaces/VideoInterval";
-import type { TacticsData } from "@/components/Interfaces/TacticsData";
-import type { Interval } from "@/components/Interfaces/Interval";
+import type { VideoInterval } from "@/interfaces/VideoInterval";
+import type { TacticsData } from "@/interfaces/TacticsData";
+import type { Interval } from "@/interfaces/Interval";
 
 // Definiamo il tipo dello stato dello store
 interface VideoStoreState {

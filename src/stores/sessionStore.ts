@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getAllSessions, getSessionDetails } from '@/services/sessionService'
-import type { Session } from '@/components/Interfaces/Session/Session'
-import type { SessionDetails } from '@/components/Interfaces/Session/SessionDetails'
+import type { Session } from '@/interfaces/session/Session'
+import type { SessionDetails } from '@/interfaces/session/SessionDetails'
 
 export const useSessionStore = defineStore('session', {
     state: () => {

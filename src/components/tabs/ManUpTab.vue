@@ -45,11 +45,11 @@
 
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
-import type { Team } from '../Interfaces/Team';
+import type { Team } from '../../interfaces/Team';
 import { MenUpShot, ShotCategory } from '@/enum/ShotDescription';
 import { shotCategories } from '@/const/consts';
-import type { CategoryKey } from '../Interfaces/Shot/Category';
-import { supZones } from '../Interfaces/Shot/Zone';
+import type { CategoryKey } from '../../interfaces/shot/Category';
+import { supZones } from '../../interfaces/shot/Zone';
 import { useGameStore } from '@/stores/gameStore';
 
 const gameStore = useGameStore()

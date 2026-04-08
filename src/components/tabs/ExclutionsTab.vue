@@ -53,8 +53,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Team } from '../Interfaces/Team';
-import type { Exclution } from '../Interfaces/Exclution';
+import type { Team } from '../../interfaces/Team';
+import type { Exclution } from '../../interfaces/Exclution';
 import { computed, type PropType } from 'vue';
 import { ArrowTurnDownRightIcon } from '@heroicons/vue/24/outline';
 

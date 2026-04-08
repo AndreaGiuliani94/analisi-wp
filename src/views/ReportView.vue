@@ -54,7 +54,7 @@ import ExportButton from '@/components/buttons/ExportButton.vue';
 import { useGameStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
-import type { Player } from '@/components/Interfaces/Player';
+import type { Player } from '@/interfaces/Player';
 import { exportTeamsToExcel } from '@/utils/export';
 import { Tab, TabGroup,
   TabList,

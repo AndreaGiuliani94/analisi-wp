@@ -1,18 +1,18 @@
 import { defineStore, type Store } from "pinia";
-import * as XLSX from "xlsx";
 import router from "@/router";
-import type { Player } from "@/components/Interfaces/Player";
-import type { Event } from "@/components/Interfaces/Event";
-import type { Match } from "@/components/Interfaces/Match";
-import type { Exclution } from "@/components/Interfaces/Exclution";
+import type { Player } from "@/interfaces/Player";
+import type { Event } from "@/interfaces/event/Event";
+import type { Match } from "@/interfaces/Match";
+import type { Exclution } from "@/interfaces/Exclution";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
 import { useSessionStateStore } from "./sessionStateStore";
 import { FoulType } from "@/enum/ExclutionDescription";
 import { useToast } from "vue-toastification";
-import type { Shot } from "@/components/Interfaces/Shot";
-import type { Team } from "@/components/Interfaces/Team";
+import type { Shot } from "@/interfaces/Shot";
+import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
+import type { EventDetails } from "@/interfaces/event/EventDetails";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -515,12 +515,27 @@ export const useGameStore = defineStore("gameStore", {
         remainingSeconds,
       ).padStart(2, "0")}`;
     },
-    exportToExcel(dataToExport: any) {
-      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-      XLSX.writeFile(workbook, "players.xlsx");
-    },
+    async saveData2() {
+      // Salvataggio locale per persistenza in caso di refresh
+      localStorage.setItem("match", JSON.stringify(this.match));
+      localStorage.setItem("events", JSON.stringify(this.events));
+      
+      // COSTRUIAMO IL PAYLOAD LEGGERO PER IL REALTIME (Supabase Channel)
+      const sessionStore = useSessionStateStore();
+      
+      const liveSessionPayload = {
+        quarter: this.match.quarter,
+        clock: this.formatTime(this.countdown),
+        homeScore: this.match.homeTeam.score,
+        awayScore: this.match.awayTeam.score,
+        // Inviamo solo gli ID/Numeri dei giocatori in acqua
+        activeHomePlayers: this.match.homeTeam.players.filter(p => p.active).map(p => p.number),
+        activeAwayPlayers: this.match.awayTeam.players.filter(p => p.active).map(p => p.number)
+      };
+
+      // Invece di inviare i mega JSON, inviamo solo lo statino leggero!
+      // await sessionStore.updateLiveState(liveSessionPayload);
+},
     async saveEvents(description: string, player: Player, team: string, type: MatchEventType) {
       const event: Event = {
         team: team,
@@ -533,6 +548,54 @@ export const useGameStore = defineStore("gameStore", {
         type: type,
       };
       this.events.push(event);
+      await this.saveData();
+    },
+    async saveEvents2(
+      player: Player, 
+      team: string, 
+      type: MatchEventType, 
+      details?: EventDetails
+    ) {
+      // 1. Ricostruiamo la vecchia description testuale per compatibilità 
+      // (così non rompiamo il Play-by-play visivo attuale)
+      let description = type.toString();
+      if (type === MatchEventType.SHOT || type === MatchEventType.GOAL) {
+        description = `${details?.outcome} - ${details?.situation}, ${details?.position}`;
+      } else if (type === MatchEventType.FOUL) {
+        description = `${details?.situation} ${details?.position} ${details?.withBall ? "Con palla" : "Senza palla"}`;
+      }
+
+      // 2. Creiamo l'evento locale per la UI di Pinia (uguale a prima)
+      const localEvent: Event = {
+        team: team,
+        player: player,
+        time: this.formatTime(this.countdown),
+        description: description,
+        quarter: this.match.quarter,
+        homeScore: this.match.homeTeam.score,
+        awayScore: this.match.awayTeam.score,
+        type: type,
+      };
+      this.events.push(localEvent);
+
+      // 3. CREAZIONE DEL DTO LEGGERO PER IL BACKEND (Nuovo!)
+      const backendEventDTO = {
+        // Nota: Aggiungi matchId se lo hai salvato nello store
+        quarter: this.match.quarter,
+        time: localEvent.time,
+        teamName: team, // o teamId se lo possiedi
+        playerNumber: player.number,
+        type: type,
+        situation: details?.situation || null,
+        outcome: details?.outcome || null,
+        position: details?.position || null,
+        withBall: details?.withBall ?? null
+      };
+
+      // 4. CHIAMATA AL BACKEND (Delegata al servizio API)
+      // await apiService.postEvent(backendEventDTO);
+
+      // 5. Aggiornamento stato effimero
       await this.saveData();
     },
     async removeExclEvent(team: string, player: Player, excl: Exclution) {

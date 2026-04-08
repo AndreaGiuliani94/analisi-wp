@@ -125,8 +125,8 @@
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
 import { ref, nextTick, type PropType } from "vue";
-import type { Player } from "@/components/Interfaces/Player";
-import type { Team } from "./Interfaces/Team";
+import type { Player } from "@/interfaces/Player";
+import type { Team } from "../interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
 import { BoltIcon, EllipsisHorizontalCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
 import ShotButton from "./buttons/ShotButton.vue";

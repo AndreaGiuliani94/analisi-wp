@@ -103,7 +103,7 @@
 import { computed, ref } from 'vue';
 import ZoneBadge from './badges/ZoneBadge.vue';
 import { EvenShot, MenUpShot } from '@/enum/ShotDescription';
-import type { Shot } from './Interfaces/Shot';
+import type { Shot } from '../interfaces/Shot';
 
 interface ShotStats {
   goals: Shot[];

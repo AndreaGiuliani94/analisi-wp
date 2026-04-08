@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import PlayerItem from './PlayerItem.vue';
 import { ArrowRightIcon } from '@heroicons/vue/20/solid';
-import type { Team } from './Interfaces/Team';
+import type { Team } from '../interfaces/Team';
 import TimeOutButton from './buttons/TimeOutButton.vue';
-import type { Player } from './Interfaces/Player';
+import type { Player } from '../interfaces/Player';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useUserRole } from '@/composables/useUserRole';
 import { useGameStore } from '@/stores/gameStore';

@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Session } from '@/components/Interfaces/Session/Session'
+import type { Session } from '@/interfaces/session/Session'
 import { useSessionStore } from '@/stores/sessionStore'
 import { onMounted, ref } from 'vue'
 import RoleBadge from './badges/RoleBadge.vue'

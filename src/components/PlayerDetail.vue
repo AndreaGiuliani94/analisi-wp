@@ -134,19 +134,19 @@
 </template>
 
 <script setup lang="ts">
-import type { Player } from './Interfaces/Player';
-import type { Exclution } from './Interfaces/Exclution';
+import type { Player } from '../interfaces/Player';
+import type { Exclution } from '../interfaces/Exclution';
 import { shotCategories,shotFacedCategories } from '@/const/consts';
-import { evenZones, supZones } from './Interfaces/Shot/Zone';
+import { evenZones, supZones } from '../interfaces/shot/Zone';
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { computed, ref } from 'vue';
-import type { CategoryKey } from './Interfaces/Shot/Category';
-import type { Shot } from './Interfaces/Shot';
+import type { CategoryKey } from '../interfaces/shot/Category';
+import type { Shot } from '../interfaces/Shot';
 import { useGameStore } from '@/stores/gameStore';
-import type { Team } from './Interfaces/Team';
+import type { Team } from '../interfaces/Team';
 import ShotMap from './ShotMap.vue';
 import ShotAnalysisCard from './cards/ShotAnalysisCard.vue';
-import type { ShotKey } from './Interfaces/Shot/ShotKey';
+import type { ShotKey } from '../interfaces/shot/ShotKey';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { getExclution } from '@/utils/utils';
 import FoulAccordionCard from './cards/FoulAccordionCard.vue';

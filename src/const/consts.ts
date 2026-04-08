@@ -1,4 +1,4 @@
-import type { Category } from "@/components/Interfaces/Shot/Category";
+import type { Category } from "@/interfaces/shot/Category";
 
 export const shotCategories: Category[] = [
   { key: 'goals', label: 'Goal' },

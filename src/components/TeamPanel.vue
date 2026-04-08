@@ -6,8 +6,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Player } from './Interfaces/Player';
-import type { Team } from './Interfaces/Team';
+import type { Player } from '../interfaces/Player';
+import type { Team } from '../interfaces/Team';
 import TeamTable from '@/components/TeamTable.vue';
 import TeamStatistics from '@/components/TeamStatistics.vue';
 

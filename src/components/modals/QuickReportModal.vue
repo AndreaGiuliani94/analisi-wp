@@ -26,7 +26,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionRoot, Tab, TabGroup,
   TabList,
   TabPanels,
   TabPanel } from "@headlessui/vue";
-import type { Team } from "../Interfaces/Team";
+import type { Team } from "../../interfaces/Team";
 import type { PropType } from "vue";
 import MenUpTab from "../tabs/ManUpTab.vue";
 import EvenTab from "../tabs/EvenTab.vue";

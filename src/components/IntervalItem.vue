@@ -38,7 +38,7 @@
 
 <script setup lang=ts>
 import { useVideoStore } from '@/stores/videoStore';
-import type { VideoInterval } from './Interfaces/VideoInterval';
+import type { VideoInterval } from '../interfaces/VideoInterval';
 import CategoryListbox from './listbox/CategoryListbox.vue';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 import TimeInput from './inputs/TimeInput.vue';

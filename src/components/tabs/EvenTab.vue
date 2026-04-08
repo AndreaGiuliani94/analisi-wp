@@ -45,11 +45,11 @@
 
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
-import type { Team } from '../Interfaces/Team';
+import type { Team } from '../../interfaces/Team';
 import { EvenShot, ShotCategory } from '@/enum/ShotDescription';
-import type { CategoryKey } from '../Interfaces/Shot/Category';
+import type { CategoryKey } from '../../interfaces/shot/Category';
 import { shotCategories } from '@/const/consts';
-import { evenZones } from '../Interfaces/Shot/Zone';
+import { evenZones } from '../../interfaces/shot/Zone';
 import { useGameStore } from '@/stores/gameStore';
 
 const gameStore = useGameStore()

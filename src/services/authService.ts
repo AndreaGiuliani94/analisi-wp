@@ -1,4 +1,4 @@
-import type { Credentials } from "@/components/Interfaces/Credentials";
+import type { Credentials } from "@/interfaces/Credentials";
 import { useAuthStore } from "@/stores/authStore";
 
 export const loginWithGoogle = async (code: any) => {

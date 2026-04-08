@@ -99,7 +99,7 @@ import ClockManager from '@/components/ClockManager.vue';
 import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
 import { onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
-import type { Team } from '@/components/Interfaces/Team';
+import type { Team } from '@/interfaces/Team';
 import NavButton from '@/components/buttons/NavButton.vue';
 import TeamItem from '@/components/TeamItem.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';

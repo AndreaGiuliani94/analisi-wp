@@ -1,8 +1,8 @@
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import type { Player } from "@/components/Interfaces/Player"; 
-import type { Match } from "@/components/Interfaces/Match";
-import type { Event } from "@/components/Interfaces/Event";
+import type { Player } from "@/interfaces/Player"; 
+import type { Match } from "@/interfaces/Match";
+import type { Event } from "@/interfaces/event/Event";
 
 interface ExportOptions {
   match: Match;

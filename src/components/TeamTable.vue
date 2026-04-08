@@ -76,8 +76,8 @@
 <script setup lang="ts">
 
 import { useGameStore } from '../stores/gameStore';
-import type { Team } from './Interfaces/Team';
-import type { Player } from './Interfaces/Player';
+import type { Team } from '../interfaces/Team';
+import type { Player } from '../interfaces/Player';
 import { ref } from 'vue';
 import PlayerDetail from './PlayerDetail.vue';
 import { getExclution } from '@/utils/utils';

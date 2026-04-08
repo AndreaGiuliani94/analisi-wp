@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import ShareButton from '@/components/buttons/ShareButton.vue';
-import type { Participant } from '@/components/Interfaces/Participant';
+import type { Participant } from '@/interfaces/Participant';
 import RoleListbox from '@/components/listbox/RoleListbox.vue';
 import ConfirmModal from '@/components/modals/ConfirmModal.vue';
 import router from '@/router';

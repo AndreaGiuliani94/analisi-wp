@@ -1,4 +1,4 @@
-import type { Exclution } from "@/components/Interfaces/Exclution";
+import type { Exclution } from "@/interfaces/Exclution";
 
 export function getExclution (exclution: Exclution) {
     var str: string = '';

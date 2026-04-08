@@ -32,9 +32,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Category, CategoryKey } from '../Interfaces/Shot/Category';
-import type { ShotKey } from '../Interfaces/Shot/ShotKey';
-import type { Zone } from '../Interfaces/Shot/Zone';
+import type { Category, CategoryKey } from '../../interfaces/shot/Category';
+import type { ShotKey } from '../../interfaces/shot/ShotKey';
+import type { Zone } from '../../interfaces/shot/Zone';
 
 const props = defineProps<{
   title: string;

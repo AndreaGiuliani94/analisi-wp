@@ -64,7 +64,7 @@ import { ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { registerWithCredentials } from '@/services/authService';
-import type { Credentials } from '../Interfaces/Credentials';
+import type { Credentials } from '../../interfaces/Credentials';
 
 const props = defineProps({
   isOpen: Boolean
