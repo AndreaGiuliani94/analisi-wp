@@ -118,7 +118,7 @@ const isShrinked = ref(false)
 const headerRef = ref<HTMLElement | null>(null)
 const headerHeight = ref(0)
 
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const userRole = sessionStore.currentSession.user_role
 
 const updateHeaderHeight = () => {
   if (headerRef.value) {
@@ -135,7 +135,7 @@ const updateScroll = () => {
 onMounted(async () => {
   const sessionIdLS = localStorage.getItem("session_id");
   if (sessionIdLS !== null && authStore.user != null) {
-      console.log("Ruolo utente:", userRole.value);
+      console.log("Ruolo utente:", userRole);
   }
   updateHeaderHeight()
   window.addEventListener('resize', updateHeaderHeight)

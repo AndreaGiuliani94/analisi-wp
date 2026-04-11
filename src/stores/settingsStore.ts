@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    homeTeamName: 'SC QUINTO',
+    homeTeamName: 'SC QUINTO - U18',
     periodDuration: 8,
     totalPeriods: 4,
     maxPlayers: 15,

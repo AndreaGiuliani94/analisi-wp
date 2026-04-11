@@ -12,7 +12,7 @@ import { computed } from 'vue';
 import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 
 const sessionStore = useSessionStore()
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const userRole = sessionStore.currentSession.user_role
 const gameStore = useGameStore()
 
 const stats = computed(() => ({
@@ -34,7 +34,7 @@ const emit = defineEmits<{
 }>()
 
 const handleTimeOutToggle = (number: 1 | 2) => {
-  if(userRole && userRole.value !== 'viewer'){
+  if(userRole && userRole !== 'viewer'){
     emit('toggleTimeOut', { teamName: props.teamKey, number })
   }
 }
