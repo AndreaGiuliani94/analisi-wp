@@ -4,7 +4,7 @@
       <ListboxLabel class="text-sm font-medium">*Categoria:</ListboxLabel>
       <div class="relative">
         <ListboxButton
-          class="relative z-5 h-8 w-full rounded-md bg-white border-1 border-gray-300 pl-3 pr-10 text-left sm:text-sm active:ring-2 active:ring-blue-300 active:border-blue-400">
+          class="relative z-5 h-8 w-full rounded-md bg-white border border-gray-300 pl-3 pr-10 text-left sm:text-sm active:ring-2 active:ring-blue-300 active:border-blue-400">
 
           <span class="truncate">{{ modelValue || "Seleziona una categoria" }}</span>
           <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">

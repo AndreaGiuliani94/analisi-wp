@@ -6,8 +6,8 @@ export const joinSession = async (sessionId: string) => {
     return res;
 }
 
-export const getSession = async (sessionId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/single?session_id=${sessionId}`, {
+export const getMatchIdBySessionId = async (sessionId: string) => {
+    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/${sessionId}/match`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -92,5 +92,27 @@ export const deleteSession = async (sessionId: string) => {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' }
     });
+    return res;
+}
+
+export const getMatchDetails = async (matchId: string) => {
+    const res = await fetch(`${import.meta.env.VITE_BE_URL}/matches/${matchId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    })
+    return res;
+}
+
+export const getEvents = async (matchId: string) => {
+    const res = await fetch(`${import.meta.env.VITE_BE_URL}/events/match/${matchId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    })
     return res;
 }

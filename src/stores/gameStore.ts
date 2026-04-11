@@ -1,4 +1,4 @@
-import { defineStore, type Store } from "pinia";
+import { defineStore } from "pinia";
 import router from "@/router";
 import type { Player } from "@/interfaces/Player";
 import type { Event } from "@/interfaces/event/Event";
@@ -13,13 +13,14 @@ import type { Shot } from "@/interfaces/Shot";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
 import type { EventDetails } from "@/interfaces/event/EventDetails";
+import { createNewPlayer, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, updatePlayerName } from "@/services/matchService";
+import type { TeamInfo } from "@/interfaces/TeamInfo";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
     const savedEvents = localStorage.getItem("events");
     const savedMatch = localStorage.getItem("match");
     return {
-      opponentsTeamName: "",
       countdown: 0,
       countdownInterval: null as number | null,
       isCorrectionMode: false,
@@ -59,10 +60,10 @@ export const useGameStore = defineStore("gameStore", {
       const settingsStore = useSettingsStore();
       this.countdown = settingsStore.periodDuration * 60;
 
-      if (!this.match.homeTeam) {
+      if (!this.match.homeTeam || this.match.homeTeam.players.length == 0) {
         initializeHomeTeam.call(this, settingsStore);
       }
-      if (!this.match.awayTeam) {
+      if (!this.match.awayTeam  || this.match.awayTeam.players.length == 0) {
         initializeAwayTeam.call(this, settingsStore);
       }
       if (!this.match.quarter || this.match.quarter == 0) {
@@ -121,16 +122,19 @@ export const useGameStore = defineStore("gameStore", {
       
       await this.saveData();
     },
-    async updatePlayerName(number: number, name: string, team: number) {
-      var el;
-      if (team === 0)
-        el = this.match.homeTeam.players.find((el) => el.number === number);
-      else el = this.match.awayTeam.players.find((el) => el.number === number);
-      if (el) {
-        el.name = name;
-        await this.saveData();
+    async saveOrUpdatePlayer(player: Player, isHomeTeam: boolean) {
+      const sessionStateStore = useSessionStateStore();
+      // 1. SCENARIO A: Il giocatore esiste già (Ha un ID) -> Facciamo UPDATE
+      if (player.id) {
+          await updatePlayerName(player.id, player.name)
+          return;
       }
-    },
+
+      // 2. SCENARIO B: Il giocatore è nuovo (ID è null) -> Facciamo CREATE
+      const response = await createNewPlayer(sessionStateStore.matchId, isHomeTeam, player);
+      const data = await response.json();
+      player.id = data.id; 
+  },
     startGlobalTimer() {
       const settingsStore = useSettingsStore();
       // 1. PULIZIA PREVENTIVA: evita che il tempo scorra al doppio della velocità
@@ -505,8 +509,8 @@ export const useGameStore = defineStore("gameStore", {
     async saveData() {
       localStorage.setItem("match", JSON.stringify(this.match));
       localStorage.setItem("events", JSON.stringify(this.events));
-      const sessionStore = useSessionStateStore();
-      await sessionStore.updateState(this.match, this.events);
+      // const sessionStore = useSessionStateStore();
+      // await sessionStore.updateState(this.match, this.events);
     },
     formatTime(seconds: number) {
       const minutes = Math.floor(seconds / 60);
@@ -717,13 +721,36 @@ export const useGameStore = defineStore("gameStore", {
       else
         this.match.homeTeam.players.find(player => player.number === number)?.name
     },
+    async getTeamsByName(teamName: string): Promise<TeamInfo[]> {
+      const response = await getTeamsByName(teamName);
+      const data = await response.json();
+      return data;
+    },
+    async getTeamRoster(teamId: string) {
+      const response = await getTeamRoster(teamId);
+      const data = await response.json();
+      return data;
+    },
+    async getLastTeamRoster(teamId: string) {
+      const sessionStateStore = useSessionStateStore()
+      const response = await getLastTeamRoster(teamId, sessionStateStore.matchId);
+      const data = await response.json();
+      return data;
+    },
+    async getAllTeams(): Promise<TeamInfo[]> {
+      const response = await getAllTeams();
+      const data = await response.json();
+      return data;
+    }
   },
 });
 
 function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
   this.match.homeTeam = {
     activatedTimer: settingsStore.enableHomePlayersTime,
-    name: settingsStore.homeTeamName,
+    name: this.match.homeTeam.name ? this.match.homeTeam.name : settingsStore.homeTeamName,
+    id: this.match.homeTeam.id ? this.match.homeTeam.id : '',
+    category: this.match.homeTeam.category ? this.match.homeTeam.category : '',
     score: 0,
     timeOut1: false,
     timeOut2: false,
@@ -750,7 +777,9 @@ function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
 function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
   this.match.awayTeam = {
     activatedTimer: settingsStore.enableOppPlayersTime,
+    id: "",
     name: "",
+    category: "",
     score: 0,
     timeOut1: false,
     timeOut2: false,

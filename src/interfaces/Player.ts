@@ -3,6 +3,7 @@ import type { ShotFaced } from "./ShotFaced";
 import type { Shot } from "./Shot";
 
 export interface Player {
+  id?: string;
   number: number;
   name: string;
   activeTime: number;

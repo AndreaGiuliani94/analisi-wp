@@ -12,7 +12,7 @@ import { useSessionStateStore } from './stores/sessionStateStore';
 const sessionStateStore = useSessionStateStore()
 
 if (sessionStateStore.sessionId) {
-  sessionStateStore.subscribe() // riapre il canale se c’è sessionId
+  // sessionStateStore.subscribe() // riapre il canale se c’è sessionId TODO: SISTEMARE CON NUOVA STRUTTURA
 }
 
 </script>
