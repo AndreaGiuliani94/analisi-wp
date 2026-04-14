@@ -274,7 +274,7 @@ function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions
 const mappedCommessi = computed(() => {
     return props.player.exclutions.map(ex => ({
         primaryText: getExclution(ex),
-        secondaryText: ex.earnedBy ? `su ${gameStore.getOpponentsPlayerName(props.team, ex.earnedBy)}` : undefined
+        secondaryText: (ex.earnedBy && ex.earnedBy !== 0) ? `su ${gameStore.getOpponentsPlayerName(props.team, ex.earnedBy)}` : undefined
     }));
 });
 

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ElementManager from '../views/ScoreboardView.vue';
-import NameManager from '../views/NameManager.vue';
+import NameManager from '../views/MatchSetupView.vue';
 import ReportView from '@/views/ReportView.vue';
 import EventView from '@/views/EventView.vue';
 import DashboardView from '@/views/DashboardView.vue';

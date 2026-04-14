@@ -32,10 +32,10 @@
         :class="themeClasses.options"
           class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-opacity-5 focus:outline-none sm:text-sm"
         >
-          <div v-if="loading" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-500 italic">
+          <div v-if="loading" class="relative cursor-default select-none py-1.5 pl-3 pr-9 text-gray-500 italic">
             Caricamento...
           </div>
-          <div v-else-if="options.length === 0" class="relative cursor-default text-xs select-none py-2 pl-3 pr-9 text-gray-500 italic">
+          <div v-else-if="options.length === 0" class="relative cursor-default text-xs select-none py-1.5 pl-3 pr-9 text-gray-500 italic">
             Nessun elemento
           </div>
 
@@ -49,7 +49,7 @@
             <li
               :class="[
                 active ? themeClasses.optionActive : themeClasses.optionInactive,
-                'relative cursor-default select-none py-2 pl-3 pr-9 transition-colors'
+                'relative cursor-default select-none py-1.5 pl-3 pr-9 transition-colors'
               ]"
             >
               <span :class="[selected ? 'font-semibold' : '', 'block truncate text-xs']">

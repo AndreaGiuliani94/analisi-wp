@@ -197,24 +197,24 @@ const saveEdit = (team: number) => {
   if(userRole && userRole.value !== 'viewer'){
     isEditing.value = false;
     isHolding.value = false;
-    store.updatePlayerName(props.player.number, editableName.value, team);
+    //store.updatePlayerName(props.player.number, editableName.value, team);
   }
 };
 
 const addExclution = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
-  store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.ball, payload.earnedBy, exclNumber);
+  store.addExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.ball, payload.earnedBy, exclNumber);
 };
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
-  store.addShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.outcome)
+  store.addShoot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.outcome)
 };
 
 const removeShot = (payload : { type: ShotCategory }) => {
-  store.removeShot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type)
+  store.removeShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type)
 };
 
 const removeExclution = (exclNumber: number) => {
-  store.removeExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), exclNumber);
+  store.removeExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), exclNumber);
 };
 
 const getExclutionState = (index: number) => {

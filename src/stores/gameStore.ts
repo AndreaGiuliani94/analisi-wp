@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, type Store } from "pinia";
 import router from "@/router";
 import type { Player } from "@/interfaces/Player";
 import type { Event } from "@/interfaces/event/Event";
@@ -13,8 +13,9 @@ import type { Shot } from "@/interfaces/Shot";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
 import type { EventDetails } from "@/interfaces/event/EventDetails";
-import { createNewPlayer, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, updatePlayerName } from "@/services/matchService";
+import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, savePregameSetup, updatePlayer } from "@/services/matchService";
 import type { TeamInfo } from "@/interfaces/TeamInfo";
+import type { NewPlayer } from "@/interfaces/NewPlayer";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -69,13 +70,6 @@ export const useGameStore = defineStore("gameStore", {
       if (!this.match.quarter || this.match.quarter == 0) {
         this.match.quarter = 1;
       }
-      await this.saveData();
-    },
-    async updateMatch(opponentsTeam: string) {
-      if (opponentsTeam) {
-        this.match.awayTeam.name = opponentsTeam.toUpperCase();
-        await this.saveData();
-      }
     },
     async toggleElement(number: number, team: number) {
       const settingsStore = useSettingsStore();
@@ -120,21 +114,7 @@ export const useGameStore = defineStore("gameStore", {
         el.actualTime = 0; // Reset del tempo all'uscita
       }
       
-      await this.saveData();
     },
-    async saveOrUpdatePlayer(player: Player, isHomeTeam: boolean) {
-      const sessionStateStore = useSessionStateStore();
-      // 1. SCENARIO A: Il giocatore esiste già (Ha un ID) -> Facciamo UPDATE
-      if (player.id) {
-          await updatePlayerName(player.id, player.name)
-          return;
-      }
-
-      // 2. SCENARIO B: Il giocatore è nuovo (ID è null) -> Facciamo CREATE
-      const response = await createNewPlayer(sessionStateStore.matchId, isHomeTeam, player);
-      const data = await response.json();
-      player.id = data.id; 
-  },
     startGlobalTimer() {
       const settingsStore = useSettingsStore();
       // 1. PULIZIA PREVENTIVA: evita che il tempo scorra al doppio della velocità
@@ -197,13 +177,11 @@ export const useGameStore = defineStore("gameStore", {
       this.match = {} as Match;
       this.events = [];
       this.stopGlobalTimer();
-      await this.saveData();
       await this.loadStore();
       router.push("/game");
     },
     async clearDistinta() {
       this.match = {} as Match;
-      await this.saveData();
       await this.loadStore();
     },
     resetTimer() {
@@ -409,7 +387,6 @@ export const useGameStore = defineStore("gameStore", {
         if (this.isOut(el)) {
           el.active = false;
           el.actualTime = 0;
-          await this.saveData();
         }
       }
     },
@@ -436,8 +413,6 @@ export const useGameStore = defineStore("gameStore", {
           el.exclutions.splice(exclNumber, 1);
         }
       }
-
-      await this.saveData();
     },
     addShotFaced(number: number, team: number, type: string, position: string, outcome: string) {
       var el;
@@ -456,7 +431,6 @@ export const useGameStore = defineStore("gameStore", {
         : team === "HOME"
           ? (this.match.homeTeam.timeOut2 = true)
           : (this.match.awayTeam.timeOut2 = true);
-      await this.saveData();
     },
     async toggleTimeOut(number: number, team: string) {
       if (team === "HOME") {
@@ -468,7 +442,6 @@ export const useGameStore = defineStore("gameStore", {
           ? (this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1)
           : (this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2);
       }
-      await this.saveData();
     },
     getAllPlayerShots(player: Player) {
       var totalShots = [];
@@ -506,12 +479,6 @@ export const useGameStore = defineStore("gameStore", {
       }
       
     },
-    async saveData() {
-      localStorage.setItem("match", JSON.stringify(this.match));
-      localStorage.setItem("events", JSON.stringify(this.events));
-      // const sessionStore = useSessionStateStore();
-      // await sessionStore.updateState(this.match, this.events);
-    },
     formatTime(seconds: number) {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
@@ -519,11 +486,7 @@ export const useGameStore = defineStore("gameStore", {
         remainingSeconds,
       ).padStart(2, "0")}`;
     },
-    async saveData2() {
-      // Salvataggio locale per persistenza in caso di refresh
-      localStorage.setItem("match", JSON.stringify(this.match));
-      localStorage.setItem("events", JSON.stringify(this.events));
-      
+    async saveData2() {      
       // COSTRUIAMO IL PAYLOAD LEGGERO PER IL REALTIME (Supabase Channel)
       const sessionStore = useSessionStateStore();
       
@@ -552,7 +515,6 @@ export const useGameStore = defineStore("gameStore", {
         type: type,
       };
       this.events.push(event);
-      await this.saveData();
     },
     async saveEvents2(
       player: Player, 
@@ -599,8 +561,6 @@ export const useGameStore = defineStore("gameStore", {
       // 4. CHIAMATA AL BACKEND (Delegata al servizio API)
       // await apiService.postEvent(backendEventDTO);
 
-      // 5. Aggiornamento stato effimero
-      await this.saveData();
     },
     async removeExclEvent(team: string, player: Player, excl: Exclution) {
       const index = this.events.findIndex(
@@ -613,7 +573,6 @@ export const useGameStore = defineStore("gameStore", {
       if (index != -1) {
         this.events.splice(index, 1);
       }
-      await this.saveData();
     },
     async removeShootEvent(team: string, player: Player) {
       const index = this.events.findLastIndex(
@@ -626,7 +585,6 @@ export const useGameStore = defineStore("gameStore", {
       if (index != -1) {
         this.events.splice(index, 1);
       }
-      await this.saveData();
     },
     async back(seconds: number) {
       const settingsStore = useSettingsStore();
@@ -639,7 +597,6 @@ export const useGameStore = defineStore("gameStore", {
         }
         player.actualTime = Math.max(0, player.actualTime - seconds);
       });
-      await this.saveData();
     },
     async forward(seconds: number) {
       const settingsStore = useSettingsStore();
@@ -652,7 +609,6 @@ export const useGameStore = defineStore("gameStore", {
         }
         player.actualTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.actualTime + seconds);
       });
-      await this.saveData();
     },
     toggleCorrectionMode() {
       this.isCorrectionMode = !this.isCorrectionMode;
@@ -741,8 +697,118 @@ export const useGameStore = defineStore("gameStore", {
       const response = await getAllTeams();
       const data = await response.json();
       return data;
-    }
+    },
+    async savePregameData () {
+      const sessionStateStore = useSessionStateStore();
+      try {
+        // 1. PULIZIA DATI (Sanitization)
+        // Inviamo al BE solo i giocatori con un nome scritto.
+        const activeHomePlayers = this.match.homeTeam.players.filter(
+          (p: any) => p.name && p.name.trim() !== ''
+        );
+        
+        const activeAwayPlayers = this.match.awayTeam.players.filter(
+          (p: any) => p.name && p.name.trim() !== ''
+        );
+
+        // 2. CREAZIONE DEL PAYLOAD
+        const requestBody = {
+          home_team: {
+            id: this.match.homeTeam.id || null,
+            name: this.match.homeTeam.name,
+            category: this.match.homeTeam.category,
+            roster: activeHomePlayers
+          },
+          away_team: {
+            id: this.match.awayTeam.id || null,
+            name: this.match.awayTeam.name,
+            category: this.match.awayTeam.category,
+            roster: activeAwayPlayers
+          }
+        };
+
+        // 3. CHIAMATA API (Singola transazione)
+        const response = await savePregameSetup(sessionStateStore.matchId, requestBody);
+        const responseData = await response.json();
+
+        if(responseData.new_players && responseData.new_players.length > 0){
+          responseData.new_players.forEach((newPlayer: NewPlayer) => {
+            if(newPlayer.team_id === this.match.homeTeam.id) {
+              const player = this.match.homeTeam.players.find(pl => pl.number === newPlayer.number)
+              if (player) {
+                player.id = newPlayer.id;
+              }
+            } else if(newPlayer.team_id === this.match.awayTeam.id) {
+              const player = this.match.awayTeam.players.find(pl => pl.number === newPlayer.number)
+              if (player) {
+                player.id = newPlayer.id;
+              }
+            }
+          });
+        }
+
+        return responseData;
+
+      } catch (error) {
+        console.error("Errore critico durante il salvataggio pre-partita:", error);
+
+        throw error; 
+      }
+    },
+    async createNewTeam(team: Team) {
+      try {
+        const requestBody = {
+          club_name: team.name,
+          category: team.category
+        };
+        const response = await createNewTeam(requestBody);
+        const responseData = await response.json();
+        return responseData;
+
+      } catch (error) {
+        console.error("Errore critico durante il salvataggio pre-partita:", error);
+
+        throw error; 
+      }
+    },
+    async updatePlayer(payload: any) {
+      try {
+        if (!payload.id) throw new Error('Giocatore non trovato')
+        
+        const playerId = payload.id;
+        delete payload.id;
+        
+        const res = await updatePlayer(playerId, payload);
+        return res;
+
+      } catch (error) {
+        console.error("Errore critico durante il salvataggio pre-partita:", error);
+        throw error; 
+      }
+
   },
+    enableAutoSave() {
+      // Il $subscribe "ascolta" ogni singola mutazione dello state
+      this.$subscribe((mutation, state) => {
+        
+        if (state.match) {
+            localStorage.setItem("match", JSON.stringify(state.match));
+        }
+
+        if (state.events) {
+            localStorage.setItem("events", JSON.stringify(state.events));
+        }
+        
+      }, { 
+        // L'opzione detached: true è FONDAMENTALE. 
+        // Dice a Pinia di mantenere in vita questo "watch" anche se 
+        // il componente che lo ha attivato viene distrutto (cambio pagina).
+        detached: true 
+      });
+
+      console.log("Auto-salvataggio locale attivato!");
+    }
+  }
 });
 
 function initializeHomeTeam(this: any, settingsStore: SettingsStore) {

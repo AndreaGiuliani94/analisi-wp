@@ -109,7 +109,7 @@
                   class="group flex w-full items-center justify-center rounded-md px-2 py-1 min-w-8 text-sm whitespace-nowrap"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
-                  {{ sub }}
+                  {{ sub === 0 ? 'ND' : sub }}
                 </button>
               </MenuItem>
             </template>
@@ -172,7 +172,13 @@ function getFoulValue(key: keyof typeof FoulType): FoulType {
 
 const thirdLevelOptions: string[] = Object.values(FoulDescription);
 
-const fourthLevelOptions: number[] = props.team === 0 ? gameStore.actualOpponents.map(player => player.number) : gameStore.actualPlayers.map(player => player.number)
+const fourthLevelOptions: number[] = [
+  ...(props.team === 0 
+        ? gameStore.actualOpponents.map(player => player.number) 
+        : gameStore.actualPlayers.map(player => player.number)
+  ),
+  0
+];
 
 const currentOptionsLength = computed(() => {
   switch (activeStep.value) {

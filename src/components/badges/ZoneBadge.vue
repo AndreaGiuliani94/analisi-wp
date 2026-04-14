@@ -24,7 +24,7 @@
                     class="transition-all duration-500 ease-out"
                     :class="[
                         total === 0 ? 'text-slate-300' : 'text-emerald-500',
-                        highlight ? 'stroke-[4]' : 'stroke-[3]'
+                        highlight ? 'stroke-4' : 'stroke-3'
                     ]"
                     stroke="currentColor"
                     fill="none"

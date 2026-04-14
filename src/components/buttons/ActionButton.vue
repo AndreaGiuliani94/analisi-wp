@@ -7,7 +7,7 @@
         class="inline-flex items-center font-medium rounded-md cursor-pointer shadow-md transition-colors
             active:outline-none active:ring-2 
             disabled:border-gray-500 disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed"
-        :class="[colorClass + ' ' + justifyClass + ' ' + sizeClass  + ' ', loading ? 'w-fit min-w-1/2' : widthClass ]"
+        :class="[colorClass + ' ' + justifyClass + ' ' + sizeClass  + ' ', loading ? 'w-fit' : widthClass ]"
     >
       <svg 
         v-if="loading" 

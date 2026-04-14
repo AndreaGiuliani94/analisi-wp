@@ -1,5 +1,6 @@
+const BE_URL = import.meta.env.VITE_BE_URL;
 export const joinSession = async (sessionId: string) => {
-    const res = await fetch(import.meta.env.VITE_BE_URL + `/sessions/join/${sessionId}`, {
+    const res = await fetch(BE_URL + `/sessions/join/${sessionId}`, {
         method: 'POST',
         credentials: 'include'
     })
@@ -7,7 +8,7 @@ export const joinSession = async (sessionId: string) => {
 }
 
 export const getMatchIdBySessionId = async (sessionId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/${sessionId}/match`, {
+    const res = await fetch(`${BE_URL}/sessions/${sessionId}/match`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -18,7 +19,7 @@ export const getMatchIdBySessionId = async (sessionId: string) => {
 }
 
 export const updateSession = async (sessionId: string, match: any, events: any) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/state`, {
+    const res = await fetch(`${BE_URL}/sessions/state`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -34,7 +35,7 @@ export const updateSession = async (sessionId: string, match: any, events: any) 
 }
 
 export const createNewSession = async (title: string) => {
-    const res = await fetch(import.meta.env.VITE_BE_URL + '/sessions/create', {
+    const res = await fetch(BE_URL + '/sessions/create', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -48,7 +49,7 @@ export const createNewSession = async (title: string) => {
 }
 
 export const getAllSessions = async () => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/all`, {
+    const res = await fetch(`${BE_URL}/sessions/all`, {
         method: 'GET',
         credentials: 'include'
     });
@@ -56,14 +57,14 @@ export const getAllSessions = async () => {
 }
 
 export const getSessionDetails = async (sessionId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/session?session_id=${sessionId}`, {
+    const res = await fetch(`${BE_URL}/sessions/session?session_id=${sessionId}`, {
       credentials: 'include'
     });
     return res;
 }
 
 export const updateParticipantRole = async (sessionId: string, userId: string, newRole: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/${sessionId}/participants`, {
+    const res = await fetch(`${BE_URL}/sessions/${sessionId}/participants`, {
       method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -75,7 +76,7 @@ export const updateParticipantRole = async (sessionId: string, userId: string, n
 
 }
 export const deleteParticipant = async (sessionId: string, userId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/${sessionId}/participants/${userId}`, {
+    const res = await fetch(`${BE_URL}/sessions/${sessionId}/participants/${userId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -87,7 +88,7 @@ export const deleteParticipant = async (sessionId: string, userId: string) => {
 }
 
 export const deleteSession = async (sessionId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/sessions/session/${sessionId}`, {
+    const res = await fetch(`${BE_URL}/sessions/session/${sessionId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' }
@@ -96,7 +97,7 @@ export const deleteSession = async (sessionId: string) => {
 }
 
 export const getMatchDetails = async (matchId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/matches/${matchId}`, {
+    const res = await fetch(`${BE_URL}/matches/${matchId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -107,7 +108,7 @@ export const getMatchDetails = async (matchId: string) => {
 }
 
 export const getEvents = async (matchId: string) => {
-    const res = await fetch(`${import.meta.env.VITE_BE_URL}/events/match/${matchId}`, {
+    const res = await fetch(`${BE_URL}/events/match/${matchId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'

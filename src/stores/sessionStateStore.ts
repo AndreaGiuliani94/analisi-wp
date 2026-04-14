@@ -5,10 +5,11 @@ import { getEvents, getMatchDetails, getMatchIdBySessionId, updateSession } from
 import type { Match } from '@/interfaces/Match'
 import type { Event } from "@/interfaces/event/Event";
 import { useSessionStore } from './sessionStore'
-import type { SessionState } from '@/interfaces/Session/SessionState'
 import type { Player } from '@/interfaces/Player'
-import { mapPlayerToFE } from '@/utils/utils'
+import { mapPlayerToFE, padRosterToMax } from '@/utils/utils'
 import { MatchEventType } from '@/enum/MatchEventDescription'
+import type { SessionState } from '@/interfaces/session/SessionState'
+import { useSettingsStore } from './settingsStore'
 
 export const useSessionStateStore = defineStore('sessionState', {
     state: (): SessionState => {
@@ -38,9 +39,6 @@ export const useSessionStateStore = defineStore('sessionState', {
             const gameStore = useGameStore()
             gameStore.match = this.match as Match;
             gameStore.events = this.events as Event[];
-
-            localStorage.setItem("match", JSON.stringify(this.match));
-            localStorage.setItem("events", JSON.stringify(this.events));
 
             const sessionStore = useSessionStore()
             await sessionStore.joinSession(sessionId);
@@ -97,45 +95,54 @@ export const useSessionStateStore = defineStore('sessionState', {
             const data = await res.json()
 
             this.matchId = data.match_id
-            localStorage.setItem("match_id", JSON.stringify(this.matchId));
+            localStorage.setItem("match_id", this.matchId);
         },
 
         async getMatchDetails() {
             try {
+                const settings = useSettingsStore();
+                // 1. Chiamata al BE per recuperare la partita
                 const res = await getMatchDetails(this.matchId);
-                const data = await res.json();
+                const dbMatch = await res.json();
+                
+                // 2. Mappiamo i giocatori del BE per il Frontend (se lo facevi già)
+                const mappedHomePlayers = dbMatch.home_players.map(mapPlayerToFE);
+                const mappedAwayPlayers = dbMatch.away_players.map(mapPlayerToFE);
                     
                 // Popoliamo il match
                 this.match = {
-                    // Se il BE ti manda uno status o un quarto attuale, puoi prenderlo, altrimenti di default 1
-                    quarter: data.current_quarter, 
+                    quarter: dbMatch.current_quarter, 
                     
                     homeTeam: {
-                        name: (data.home_team) ? data.home_team.club_name : '',
-                        id: (data.home_team) ? data.home_team.id : (data.home_team_id ? data.home_team_id : ''),
-                        category: (data.home_team) ? data.home_team.category : '',
+                        name: (dbMatch.home_team) ? dbMatch.home_team.club_name : '',
+                        id: (dbMatch.home_team) ? dbMatch.home_team.id : (dbMatch.home_team_id ? dbMatch.home_team_id : ''),
+                        category: (dbMatch.home_team) ? dbMatch.home_team.category : '',
                         activatedTimer: false, // Lo setti a true/false in base ai tuoi settings successivi se serve
                         score: 0,
-                        timeOut1: data.home_timeouts == 1,
-                        timeOut2: data.home_timeouts == 2,
+                        timeOut1: dbMatch.home_timeouts == 1,
+                        timeOut2: dbMatch.home_timeouts == 2,
                         // Mappiamo i giocatori e li ordiniamo per numero di calottina (fondamentale per la UI!)
-                        players: data.home_players
-                            .map(mapPlayerToFE)
-                            .sort((a: Player, b: Player) => a.number - b.number) 
+                        players: padRosterToMax(
+                            mappedHomePlayers, 
+                            settings.maxPlayers, 
+                            settings.enableHomePlayersTime
+                        )
                     },
                     
                     awayTeam: {
-                        name: (data.away_team) ? data.away_team.club_name : '',
-                        id: (data.away_team) ? data.away_team.id : (data.away_team_id ? data.away_team_id : ''),
-                        category: (data.away_team) ? data.away_team.category : '',
+                        name: (dbMatch.away_team) ? dbMatch.away_team.club_name : '',
+                        id: (dbMatch.away_team) ? dbMatch.away_team.id : (dbMatch.away_team_id ? dbMatch.away_team_id : ''),
+                        category: (dbMatch.away_team) ? dbMatch.away_team.category : '',
                         activatedTimer: false,
                         score: 0,
-                        timeOut1: data.away_timeouts == 1,
-                        timeOut2: data.away_timeouts == 2,
+                        timeOut1: dbMatch.away_timeouts == 1,
+                        timeOut2: dbMatch.away_timeouts == 2,
                         // Mappiamo i giocatori e li ordiniamo per numero di calottina
-                        players: data.away_players
-                            .map(mapPlayerToFE)
-                            .sort((a: Player, b: Player) => a.number - b.number) 
+                        players: padRosterToMax(
+                            mappedAwayPlayers, 
+                            settings.maxPlayers, 
+                            settings.enableOppPlayersTime
+                        )
                     }
                 };
 

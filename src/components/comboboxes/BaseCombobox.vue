@@ -5,37 +5,46 @@
       @update:model-value="handleSelect"
       :disabled="disabled"
       as="div"
-      class="hidden lg:block"
+      class="hidden lg:block relative"
     >
-      <div class="relative">
+      <div class="relative text-blue-950">
         <ComboboxInput
-          class="w-full px-3 py-1.5 text-sm lg:text-md font-medium leading-4 lg:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
+          class="w-full px-3 py-1.5 text-sm font-medium leading-4 lg:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
           :class="{ 'uppercase': uppercase }"
           :placeholder="placeholder"
           :displayValue="(val) => val as string"
           @change="handleTyping"
           @focusout="emit('focusout')"
-          @keyup.enter="emit('enter')"
+          @keyup.enter="emit('enter')" 
         />
-        <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
-          <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
-        </ComboboxButton>
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+    
+          <slot name="action"></slot>
+          
+          <ComboboxButton class="flex items-center outline-none">
+            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+          </ComboboxButton>
+        </div>
+        
       </div>
 
       <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <ComboboxOptions class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <ComboboxOptions class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-blue-950 ring-opacity-5 focus:outline-none">
           <div v-if="filteredOptions.length === 0 && query !== ''" class="relative cursor-default select-none py-2 px-4 text-gray-500 italic">
-            Nessuna squadra trovata. Premi Invio per crearla.
+            Nessuna squadra trovata.
           </div>
-          <ComboboxOption v-for="option in filteredOptions" :key="option[optionValue] || option" :value="option[optionLabel]" v-slot="{ selected, active }" as="template">
-            <li :class="['relative cursor-default select-none py-2 pl-3 pr-9 transition-colors', active ? 'bg-blue-600 text-white' : 'text-gray-900']">
-                <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">
+          <ComboboxOption v-for="option in filteredOptions" :key="option[optionValue] || option" :value="option" v-slot="{ active }" as="template">
+            <li :class="['relative cursor-default select-none py-1.5 pl-3 pr-9 transition-colors', active ? 'bg-blue-50 rounded-lg mx-1 font-semibold' : 'font-normal']">
+                <span :class="['block truncate', isOptionSelected(option) ? 'font-semibold' : '']">
                     {{ option[optionLabel] }}
-                    <span v-if="optionDescription && option[optionDescription]" :class="active ? 'text-blue-200' : 'text-gray-500'" class="font-normal ml-1">
+                    <span v-if="optionDescription && option[optionDescription]" 
+                      :class="['font-normal text-gray-500 ml-0.5', 
+                        isOptionSelected(option) ? 'font-semibold' : '',
+                        active ? 'font-semibold' : '']">
                     - {{ option[optionDescription] }}
                     </span>
                 </span>
-                <span v-if="selected" :class="['absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600']">
+                <span v-if="isOptionSelected(option)" :class="['absolute inset-y-0 right-0 flex items-center pr-4 text-blue-950', active ? '' : '']">
                     <CheckIcon class="h-5 w-5" aria-hidden="true" />
                 </span>
             </li>
@@ -49,11 +58,17 @@
         type="button"
         @click="openMobileModal"
         :disabled="disabled"
-        class="w-full text-left px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:text-gray-400 flex justify-between items-center"
+        class="w-full text-left px-3 py-1.5 pr-14 relative text-sm font-medium border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:text-gray-400 flex justify-between items-center"
         :class="{ 'uppercase': uppercase, 'text-gray-400': !modelValue }"
       >
         <span class="truncate">{{ modelValue || placeholder }}</span>
-        <ChevronUpDownIcon class="h-5 w-5 text-gray-400 shrink-0" aria-hidden="true" />
+
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+          <div @click.stop class="flex items-center">
+            <slot name="action"></slot>
+          </div>
+          <ChevronUpDownIcon class="h-5 w-5 text-gray-400 shrink-0" aria-hidden="true" />
+        </div>
       </button>
 
       <TransitionRoot appear :show="isMobileModalOpen" as="template">
@@ -88,19 +103,19 @@
                 <div class="flex-1 overflow-y-auto p-2">
                   <ul class="space-y-1">
                     <li v-if="filteredOptions.length === 0 && query !== ''">
-                      <button @click="handleMobileEnter" class="w-full text-left p-3 rounded-lg flex items-center gap-3 hover:bg-gray-100">
+                      <button @click="handleMobileEnter" class="w-full text-left px-3 rounded-lg flex items-center gap-3 hover:bg-gray-100">
                         <PlusCircleIcon class="h-6 w-6 text-blue-600" />
                         <div>
                           <p class="text-sm font-medium text-gray-900">Usa "{{ uppercase ? query.toUpperCase() : query }}"</p>
-                          <p class="text-xs text-gray-500">Tocca per creare nuova squadra</p>
+                          <p class="text-xs text-gray-500">Tocca per creare</p>
                         </div>
                       </button>
                     </li>
                     
                     <li v-for="option in filteredOptions" :key="option[optionValue] || option">
                       <button 
-                            @click="handleSelect(option[optionLabel])"
-                            class="w-full text-left p-3 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-100 flex items-center justify-between"
+                            @click="handleSelect(option)"
+                            class="w-full text-left px-3 py-1.5 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-100 flex items-center justify-between"
                             >
                             <div class="truncate">
                                 {{ option[optionLabel] }}
@@ -108,7 +123,7 @@
                                 - {{ option[optionDescription] }}
                                 </span>
                             </div>
-                            <CheckIcon v-if="modelValue === option[optionLabel]" class="h-5 w-5 text-blue-600 shrink-0" />
+                            <CheckIcon v-if="isOptionSelected(option)" class="h-5 w-5 text-blue-600 shrink-0" />
                         </button>
                     </li>
                   </ul>
@@ -134,6 +149,7 @@ import {
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
+  selectedId: { type: [String, Number], default: '' },
   options: { type: Array as () => any[], default: () => [] },
   optionLabel: { type: String, default: 'name' },
   optionValue: { type: String, default: 'id' },
@@ -146,6 +162,17 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'focusout', 'enter', 'select']);
 
 const query = ref('');
+
+// NUOVA FUNZIONE: Controlla se l'opzione è quella selezionata basandosi sull'ID
+const isOptionSelected = (option: any) => {
+  // Se il genitore ci ha passato un ID, il controllo è infallibile (risolve le omonimie)
+  if (props.selectedId && option[props.optionValue]) {
+    return String(props.selectedId) === String(option[props.optionValue]);
+  }
+  // Fallback: se non c'è ID (es. nome squadra scritto a mano), controlliamo la stringa
+  const label = option[props.optionLabel] ? String(option[props.optionLabel]) : '';
+  return props.modelValue === label && props.modelValue !== '';
+};
 
 // Filtriamo i risultati unendo Testo Principale + Descrizione!
 const filteredOptions = computed(() => {
@@ -161,23 +188,26 @@ const filteredOptions = computed(() => {
   });
 });
 
-const handleSelect = (val: string) => {
-  let finalVal = val;
-  if (props.uppercase && finalVal) finalVal = finalVal.toUpperCase();
+// GESTIONE SELEZIONE (Da tendina o da Invio)
+const handleSelect = (valOrObj: any) => {
+  if (typeof valOrObj === 'object' && valOrObj !== null) {
+    // 1. L'utente ha cliccato un'opzione (riceviamo l'OGGETTO ESATTO, niente più omonimie!)
+    let finalName = String(valOrObj[props.optionLabel]);
+    if (props.uppercase) finalName = finalName.toUpperCase();
+    
+    emit('update:modelValue', finalName);
+    emit('select', valOrObj); // Inviamo l'oggetto corretto al genitore
+  } else {
+    // 2. L'utente ha digitato a mano una stringa nuova
+    let finalName = String(valOrObj || '');
+    if (props.uppercase) finalName = finalName.toUpperCase();
+    
+    emit('update:modelValue', finalName);
+    emit('select', null); // Se è un nome nuovo, azzeriamo l'ID!
+  }
   
-  // Aggiorna il testo dell'input
-  emit('update:modelValue', finalVal);
-
-  // CERCA L'OGGETTO ORIGINALE NELL'ARRAY
-  const fullObject = props.options.find(
-    opt => String(opt[props.optionLabel]).toLowerCase() === String(val).toLowerCase()
-  );
-  
-  // Emette l'oggetto completo (o null se l'utente ha digitato una squadra nuova)
-  emit('select', fullObject || null);
-  
-  closeMobileModal(); // Chiude la modale mobile se aperta
-  emit('enter'); // Simula l'invio per confermare
+  closeMobileModal();
+  emit('enter');
 };
 
 // === LOGICA DESKTOP ===
@@ -185,8 +215,12 @@ const handleTyping = (event: Event) => {
   const target = event.target as HTMLInputElement;
   let val = target.value;
   if (props.uppercase) val = val.toUpperCase();
+
   query.value = val;
   emit('update:modelValue', val);
+
+  // FIX FONDAMENTALE: Se l'utente inizia a cancellare/modificare il nome, sganciamo l'ID
+  emit('select', null);
 };
 
 // === LOGICA MOBILE ===

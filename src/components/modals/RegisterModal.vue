@@ -47,7 +47,7 @@
                             color="green"
                             type="submit"
                             :label="loading ? 'Registrazione...' : 'Registrati'"
-                            :disabled="loading"
+                            :loading="loading"
                             />
                     </div>
                     
