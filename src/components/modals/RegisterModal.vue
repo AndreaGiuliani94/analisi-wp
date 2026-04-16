@@ -1,10 +1,9 @@
-<template>
+<!-- <template>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog as="div" @close="closeModal" class="fixed inset-0 overflow-y-auto text-blue-950">
         <div class="flex items-center justify-center min-h-screen px-4">
             <DialogOverlay class="fixed inset-0 bg-black opacity-50 z-10" />
 
-            <!-- Contenitore della modale -->
             <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full transform transition-all z-20">
                 <DialogTitle class="text-xl font-semibold mb-4">Registrati</DialogTitle>
 
@@ -56,6 +55,60 @@
         </div>
     </Dialog>
   </TransitionRoot>
+</template> -->
+
+<template>
+  <BaseModal
+    :is-open="isOpen" 
+    title="Registrati" 
+    @close="closeModal"
+  >
+    <div >
+      <BaseInput
+          id="name"
+          label="Nome"
+          label-position="left"
+          v-model="name"
+          required/>
+      
+      <BaseInput
+          id="surname"
+          label="Cognome"
+          label-position="left"
+          v-model="surname"
+          required/>
+
+      <BaseInput
+          id="email"
+          type="email"
+          label="Email"
+          label-position="left"
+          v-model="email"
+          required/>
+
+      <BaseInput
+          id="password"
+          type="password"
+          label="Password"
+          label-position="left"
+          v-model="password"
+          required/>
+
+      <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
+      <div v-if="success" class="text-green-600 text-sm">Registrazione completata!</div>
+
+
+    </div>
+    <template #footer>
+        <ActionButton
+          color="green"
+          type="submit"
+          @click="register"
+          :label="loading ? 'Registrazione...' : 'Registrati'"
+          :loading="loading"
+        />
+    </template>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -65,6 +118,7 @@ import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { registerWithCredentials } from '@/services/authService';
 import type { Credentials } from '../../interfaces/Credentials';
+import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
   isOpen: Boolean

@@ -1,8 +1,15 @@
 export enum ShotCategory {
-  EVEN = 'Pari',
-  SUP = 'Superiorità',
-  PENALTY = 'Rigore',
+  EVEN = 'EVEN',
+  SUP = 'SUP',
+  PENALTY = 'PENALTY',
   OUTCOME = 'OUTCOME'
+}
+
+export enum ShotOutcome {
+    GOAL = 'GOAL', 
+    SAVED = 'SAVED',
+    MISSED = 'MISSED',
+    BLOCKED = 'BLOCKED'
 }
 
 export enum EvenShot {
@@ -23,12 +30,5 @@ export enum MenUpShot {
     P5 = 'P5',
     P6 = 'P6', 
     Rip = 'CF'
-}
-
-export enum ShotOutcome {
-    GOAL = 'Goal', 
-    SAVED = 'Parato',
-    MISSED = 'Fuori',
-    BLOCKED = 'Stoppato'
 }
 

@@ -1,20 +1,20 @@
 export enum FoulType {
-  EXCL = 'Espulsione',
+  EXCL = 'EXCL',
   EDCS = 'EDCS',
-  PEN = 'Rigore'
+  PEN = 'PEN'
 }
 
 export enum FoulPosition {
-    EXT = 'Perimetro',
-    CB = 'Centroboa', 
-    RIP = 'Ripartenza',
-    OTHER = 'Altro'
+    EXT = 'EXT',
+    CB = 'CB', 
+    CF = 'CF',
+    OTHER = 'OTHER'
 }
 
 export enum EDCSType {
-    BRUTALITA = 'Brutalità', 
-    GIOCO_VIOLENTO = 'Gioco Violento',
-    PROTESTE = 'Proteste'
+    BRUTALITA = 'BRUTALITA', 
+    GIOCO_VIOLENTO = 'GIOCO_VIOLENTO',
+    PROTESTE = 'PROTESTE'
 }
 
  export enum FoulDescription {

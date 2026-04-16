@@ -7,7 +7,7 @@
             </div>
             
             <div class="flex flex-col items-center">
-                <h1 class="text-lg font-bold text-blue-950 uppercase tracking-wide">Play-by-Play</h1>
+                <h1 class="text-lg font-bold text-blue-950 uppercase tracking-wide">Eventi</h1>
                 <div class="text-sm font-semibold text-slate-500">
                     {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}
                 </div>
@@ -36,7 +36,7 @@
                         v-for="(event, index) in store.events" 
                         :key="index" 
                         class="transition-colors duration-150"
-                        :class="getRowStyle(event.description)"
+                        :class="getRowStyle(event)"
                     >
                         <td class="px-4 py-3 whitespace-nowrap text-center font-bold">
                             {{ event.quarter }}°
@@ -57,10 +57,10 @@
                         
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-between">
-                                <span class="font-semibold">{{ event.description }}</span>
+                                <span class="font-semibold">{{ getEventDescription(event) }}</span>
                                 
                                 <div 
-                                    v-if="isGoal(event.description) && event.homeScore !== undefined" 
+                                    v-if="isGoal(event) && event.homeScore !== undefined" 
                                     class="ml-3 flex items-center rounded overflow-hidden border border-blue-800 shadow-sm font-mono text-sm font-bold leading-none"
                                 >
                                     <span 
@@ -100,6 +100,10 @@ import { useGameStore } from '../stores/gameStore';
 import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
 import { exportEventsToExcel } from '@/utils/export';
+import { MatchEventType } from '@/enum/MatchEventDescription';
+import type { MatchEvent } from '@/interfaces/MatchEvent';
+import { ShotOutcome } from '@/enum/ShotDescription';
+import { getEventDescription } from '@/utils/utils';
 
 const store = useGameStore();
 
@@ -108,8 +112,8 @@ const downloadExcel = () => {
 }
 
 // Funzione helper per determinare se l'evento è un goal
-const isGoal = (description: string): boolean => {
-    return description.toLowerCase().includes('goal');
+const isGoal = (event: MatchEvent): boolean => {
+    return event.eventType === MatchEventType.SHOT && event.shotOutcome === ShotOutcome.GOAL;
 }
 
 // Controlla se l'evento è della squadra di casa
@@ -119,16 +123,15 @@ const isHomeEvent = (eventTeam: string): boolean => {
 }
 
 // Logica per colorare l'intera riga (Sfondo chiaro + Testo in tinta)
-const getRowStyle = (description: string): string => {
-    const desc = description.toLowerCase();
+const getRowStyle = (event: MatchEvent): string => {
     
     // Goal: Sfondo verdino chiarissimo, testo verde scuro
-    if (desc.includes('goal')) {
+    if (isGoal(event)) {
         return 'bg-emerald-50/50 text-emerald-800 hover:bg-emerald-50';
     }
     
     // Penalità gravi (Espulsioni/Rigori): Sfondo rossino chiarissimo, testo rosso scuro
-    if (desc.includes('espulsione') || desc.includes('rigore') || desc.includes('violento')) {
+    if (event.eventType === MatchEventType.FOUL) {
         return 'bg-red-50/50 text-red-800 hover:bg-red-50';
     }
     

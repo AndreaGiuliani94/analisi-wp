@@ -1,46 +1,38 @@
 <template>
-  <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog as="div" @close="closeModal" class="fixed inset-0 overflow-y-auto text-blue-950">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <DialogOverlay class="fixed inset-0 bg-black opacity-50 z-10" />
+  <BaseModal
+    :is-open="isOpen" 
+    title="Unisciti alla Partita" 
+    @close="closeModal"
+  >
+    <div >
+      <BaseInput
+        id="code"
+        v-model="code"
+        placeholder="602086fa-4c2.."
+        label="Codice"
+        required/>
 
-            <!-- Contenitore della modale -->
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full transform transition-all z-20">
-                <DialogTitle class="text-xl font-semibold mb-4">Unisciti alla Partita</DialogTitle>
+      <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
+      <div v-if="success" class="text-green-600 text-sm">Ti sei unito!</div>
 
-                <form @submit.prevent="join" class="space-y-2">
-                    <BaseInput
-                        id="code"
-                        v-model="code"
-                        placeholder="602086fa-4c2.."
-                        label="Codice"
-                        required/>
-
-                    <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
-                    <div v-if="success" class="text-green-600 text-sm">Ti sei unito!</div>
-
-                    <div class="mt-4">
-                        <ActionButton
-                            color="blue"
-                            type="submit"
-                            :label="loading ? 'Unione...' : 'Unisciti'"
-                            :disabled="loading"
-                            />
-                    </div>
-                    
-                </form>
-            </div>
-        </div>
-    </Dialog>
-  </TransitionRoot>
+    </div>
+    <template #footer>
+        <ActionButton
+          color="blue"
+          type="submit"
+          :label="loading ? 'Unione...' : 'Unisciti'"
+          :disabled="loading"
+          />
+    </template>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, TransitionRoot } from '@headlessui/vue'
 import { ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { joinSession } from '@/services/sessionService';
+import BaseModal from './BaseModal.vue';
 
 const props = defineProps({
   isOpen: Boolean

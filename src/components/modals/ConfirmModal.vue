@@ -13,6 +13,7 @@
 
 <script setup lang="ts">
 import ActionButton from "../buttons/ActionButton.vue";
+import BaseModal from "./BaseModal.vue";
 
 const props = defineProps({
   isOpen: Boolean,

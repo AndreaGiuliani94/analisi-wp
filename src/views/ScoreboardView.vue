@@ -97,7 +97,7 @@
 import { useGameStore } from '@/stores/gameStore';
 import ClockManager from '@/components/ClockManager.vue';
 import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
-import { onBeforeUnmount, onMounted, ref, toRef } from 'vue';
+import { onBeforeUnmount, onMounted, onUnmounted, ref, toRef } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/interfaces/Team';
 import NavButton from '@/components/buttons/NavButton.vue';
@@ -108,10 +108,12 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUserRole } from '@/composables/useUserRole';
 import ModeToggleItem from '@/components/ModeToggleItem.vue';
 import { MinusIcon } from '@heroicons/vue/24/outline';
+import { useRealtimeStore } from '@/stores/realtimeStore';
 
+const authStore = useAuthStore()
 const gameStore = useGameStore();
 const sessionStore = useSessionStore()
-const authStore = useAuthStore()
+const realtimeStore = useRealtimeStore()
 const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
 
 const isShrinked = ref(false)
@@ -132,20 +134,6 @@ const updateScroll = () => {
   isShrinked.value = window.scrollY > scrollThreshold
 }
 
-onMounted(async () => {
-  const sessionIdLS = localStorage.getItem("session_id");
-  if (sessionIdLS !== null && authStore.user != null) {
-      console.log("Ruolo utente:", userRole.value);
-  }
-  updateHeaderHeight()
-  window.addEventListener('resize', updateHeaderHeight)
-  window.addEventListener('scroll', updateScroll)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateHeaderHeight)
-  window.removeEventListener('scroll', updateScroll)
-})
 
 const toggleTimeOut = (payload : { number: number, teamName: string}) => {
   gameStore.toggleTimeOut(payload.number, payload.teamName);
@@ -154,7 +142,7 @@ const toggleTimeOut = (payload : { number: number, teamName: string}) => {
 const showConfirmModal = ref(false);
 
 const confirmCleanup = async () => {
-    showConfirmModal.value = false;
+  showConfirmModal.value = false;
 };
 
 const team = ref();
@@ -163,5 +151,27 @@ const openModal = (team_: Team) => {
   showConfirmModal.value = true;
   team.value = team_;
 }
+
+onMounted(async () => {
+  const sessionIdLS = localStorage.getItem("session_id");
+  if (sessionIdLS !== null && authStore.user != null) {
+      console.log("Ruolo utente:", userRole.value);
+  }
+  updateHeaderHeight()
+  window.addEventListener('resize', updateHeaderHeight)
+  window.addEventListener('scroll', updateScroll)
+
+  realtimeStore.subscribeToMatch();
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateHeaderHeight)
+  window.removeEventListener('scroll', updateScroll)
+})
+
+onUnmounted(() => {
+  // Quando usciamo dalla pagina Live, chiudiamo il WebSocket
+  realtimeStore.unsubscribe();
+});
 
 </script>

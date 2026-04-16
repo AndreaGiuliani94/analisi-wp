@@ -21,7 +21,7 @@
                 <div v-for="(zone, zIndex) in card.zones" :key="zIndex" class="mb-3 last:mb-0">
                     
                     <div class="flex justify-between items-center text-xs font-bold mb-1"
-                         :class="zone.total === 0 ? 'text-slate-300' : 'text-slate-700'">
+                         :class="zone.total === 0 ? 'text-slate-300' : 'text-blue-950'">
                         <span>{{ zone.label }}</span>
                         <span class="font-mono">{{ zone.total }}</span>
                     </div>
@@ -57,6 +57,7 @@ import type { Team } from '../../interfaces/Team';
 import type { Exclution } from '../../interfaces/Exclution';
 import { computed, type PropType } from 'vue';
 import { ArrowTurnDownRightIcon } from '@heroicons/vue/24/outline';
+import { FoulPosition, FoulType } from '@/enum/ExclutionDescription';
 
 const props = defineProps({
     team: {
@@ -68,9 +69,10 @@ const props = defineProps({
 const foulStats = computed(() => {
   // Definiamo le zone per ciclare facilmente i calcoli
   const zones = [
-    { id: 'PERIMETRO', label: 'Esterne' },
-    { id: 'RIPARTENZA', label: 'Ripartenze' },
-    { id: 'CENTROBOA', label: 'Centroboa' }
+    { id: FoulPosition.EXT, label: 'Esterne' },
+    { id: FoulPosition.CF, label: 'Ripartenze' },
+    { id: FoulPosition.CB, label: 'Centroboa' },
+    { id: FoulPosition.OTHER, label: 'Altro' }
   ];
 
   // 1. ESPULSIONI
@@ -85,9 +87,9 @@ const foulStats = computed(() => {
     },
     zones: zones.map(z => ({
       label: z.label,
-      total: getFouls('ESPULSIONE', z.id),
-      withBall: getFoulsWith('ESPULSIONE', z.id),
-      withoutBall: getFoulsWithout('ESPULSIONE', z.id)
+      total: getFouls(FoulType.EXCL, z.id),
+      withBall: getFoulsWith(FoulType.EXCL, z.id),
+      withoutBall: getFoulsWithout(FoulType.EXCL, z.id)
     }))
   };
 
@@ -103,9 +105,9 @@ const foulStats = computed(() => {
     },
     zones: zones.map(z => ({
       label: z.label,
-      total: getFouls('RIGORE', z.id),
-      withBall: getFoulsWith('RIGORE', z.id),
-      withoutBall: getFoulsWithout('RIGORE', z.id)
+      total: getFouls(FoulType.PEN, z.id),
+      withBall: getFoulsWith(FoulType.PEN, z.id),
+      withoutBall: getFoulsWithout(FoulType.PEN, z.id)
     }))
   };
 
@@ -121,9 +123,9 @@ const foulStats = computed(() => {
     },
     zones: zones.map(z => ({
       label: z.label,
-      total: getFouls('ESPULSIONE', z.id) + getFouls('RIGORE', z.id),
-      withBall: getFoulsWith('ESPULSIONE', z.id) + getFoulsWith('RIGORE', z.id),
-      withoutBall: getFoulsWithout('ESPULSIONE', z.id) + getFoulsWithout('RIGORE', z.id)
+      total: getFouls(FoulType.EXCL, z.id) + getFouls(FoulType.PEN, z.id),
+      withBall: getFoulsWith(FoulType.EXCL, z.id) + getFoulsWith(FoulType.PEN, z.id),
+      withoutBall: getFoulsWithout(FoulType.EXCL, z.id) + getFoulsWithout(FoulType.PEN, z.id)
     }))
   };
 
@@ -138,21 +140,21 @@ const getAllFouls = () => {
 
 const getExclutions = () => {
     return {
-        exclutions: getAllFouls().filter(excl => excl.type.toUpperCase() === 'ESPULSIONE' ),
-        penalties: getAllFouls().filter(excl => excl.type.toUpperCase() === 'RIGORE' )
+        exclutions: getAllFouls().filter(excl => excl.type.toUpperCase() === FoulType.EXCL ),
+        penalties: getAllFouls().filter(excl => excl.type.toUpperCase() === FoulType.PEN )
       }
 }
 
 const getFouls = (type: string, position: string) => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === type.toUpperCase() && excl.position.toUpperCase() === position.toUpperCase() ).length
+    return getAllFouls().filter(excl => excl.type.toUpperCase() === type.toUpperCase() && excl.position?.toUpperCase() === position.toUpperCase() ).length
 }
 
 const getFoulsWith = (type: string, position: string) => {
     switch(type.toUpperCase()) {
-        case 'ESPULSIONE':
-            return getExclutions().exclutions.filter(excl => excl.position.toUpperCase() === position.toUpperCase() && excl.ball ).length;
-        case 'RIGORE':
-            return getExclutions().penalties.filter(excl => excl.position.toUpperCase() === position.toUpperCase() && excl.ball ).length;
+        case FoulType.EXCL:
+            return getExclutions().exclutions.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && excl.ball ).length;
+        case FoulType.PEN:
+            return getExclutions().penalties.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && excl.ball ).length;
         default:
             return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && excl.ball ).length
     }
@@ -160,10 +162,10 @@ const getFoulsWith = (type: string, position: string) => {
 
 const getFoulsWithout = (type: string, position: string) => {
     switch(type.toUpperCase()) {
-        case 'ESPULSIONE':
-            return getExclutions().exclutions.filter(excl => excl.position.toUpperCase() === position.toUpperCase() && !excl.ball ).length;
-        case 'RIGORE':
-            return getExclutions().penalties.filter(excl => excl.position.toUpperCase() === position.toUpperCase() && !excl.ball ).length;
+        case FoulType.EXCL:
+            return getExclutions().exclutions.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && !excl.ball ).length;
+        case FoulType.PEN:
+            return getExclutions().penalties.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && !excl.ball ).length;
         default:
             return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && !excl.ball ).length
     }

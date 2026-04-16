@@ -54,19 +54,22 @@
       :disabled="userRole === 'viewer'"
       :team="team.name == settings.homeTeamName ? 0 : 1"
       :exclution-state="getExclutionState(0)"
-      @handleExclution="addExclution($event, 0)"
+      @handleFoul="addFoul($event, 0)"
+      @handleEDCS="addEDCS($event, 0)" 
       @remove="removeExclution(0)" />
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
       :team="team.name == settings.homeTeamName ? 0 : 1"
       :exclution-state="getExclutionState(1)"
-      @handleExclution="addExclution($event, 1)"
+      @handleFoul="addFoul($event, 1)"
+      @handleEDCS="addEDCS($event, 1)" 
       @remove="removeExclution(1)" />
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
       :team="team.name == settings.homeTeamName ? 0 : 1"
       :exclution-state="getExclutionState(2)"
-      @handleExclution="addExclution($event, 2)" 
+      @handleFoul="addFoul($event, 2)" 
+      @handleEDCS="addEDCS($event, 2)" 
       @remove="removeExclution(2)" />
   </div>
 
@@ -135,6 +138,9 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useUserRole } from "@/composables/useUserRole";
 import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
+import { foulCategoryLabels, foulPositionLabels } from "@/const/consts";
+import { getLabel } from "@/utils/utils";
+import type { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
 
 const props = defineProps({
   player: {
@@ -201,12 +207,16 @@ const saveEdit = (team: number) => {
   }
 };
 
-const addExclution = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
-  store.addExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.ball, payload.earnedBy, exclNumber);
+const addFoul = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
+  store.addExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type as FoulType, payload.position as FoulPosition, payload.ball, payload.earnedBy, exclNumber);
+}
+;
+const addEDCS = (payload : { type: string, edcsType: string }, exclNumber: number) => {
+  store.addEDCS(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type as FoulType, payload.edcsType as EDCSType, exclNumber);
 };
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
-  store.addShoot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.outcome)
+  store.addShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.outcome)
 };
 
 const removeShot = (payload : { type: ShotCategory }) => {
@@ -220,10 +230,10 @@ const removeExclution = (exclNumber: number) => {
 const getExclutionState = (index: number) => {
   if(props.player.exclutions[index]) {
     if(props.player.exclutions[index].type === 'EDCS'){
-      return props.player.exclutions[index].type.toUpperCase().substring(0,2);
+      return getLabel(props.player.exclutions[index].type, foulCategoryLabels).toUpperCase().substring(0,2);
     }
     else {
-      return props.player.exclutions[index].type.charAt(0) + '-' +  props.player.exclutions[index].position.charAt(0)
+      return getLabel(props.player.exclutions[index].type, foulCategoryLabels).charAt(0) + '-' + getLabel(props.player.exclutions[index].position, foulPositionLabels).charAt(0)
     }
   }
   return '';

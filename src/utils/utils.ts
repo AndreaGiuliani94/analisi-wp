@@ -1,12 +1,19 @@
+import { edcsCategoryLabels, foulCategoryLabels, foulPositionLabels, shotCategoryLabels, shotOutcomeLabels, shotPositionLabels } from "@/const/consts";
+import { FoulType } from "@/enum/ExclutionDescription";
+import { MatchEventType } from "@/enum/MatchEventDescription";
+import type { MatchEvent } from "@/interfaces/MatchEvent";
 import type { Exclution } from "@/interfaces/Exclution";
 import type { Player } from "@/interfaces/Player";
+import { useGameStore } from "@/stores/gameStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 export function getExclution (exclution: Exclution) {
     var str: string = '';
-    str += exclution.quarter + 'T ' + exclution.time + ' ' + (exclution.type + ' ' + exclution.position);
+    str += exclution.quarter + 'T ' + exclution.time + ' ' + getLabel(exclution.type, foulCategoryLabels) + ' ';
     if(exclution.type !== 'EDCS') {
-        str += ' ';
-        str += exclution.ball ? 'Con palla' : 'Senza palla';
+      str += getLabel(exclution.position, foulPositionLabels) + ' ' + (exclution.ball ? 'Con palla' : 'Senza palla');
+    } else {
+      str += getLabel(exclution.edcsType, edcsCategoryLabels);
     }
     return str;
 }
@@ -20,8 +27,7 @@ export const mapPlayerToFE = (bePlayer: any): Player => {
         activeTime: bePlayer.active_time,
         benchTime: bePlayer.bench_time,
         actualTime: 0,
-        active: bePlayer.is_playing, // Nessuno in acqua all'inizio
-        // Capiamo se è portiere dal ruolo stringa, o per fallback dal numero di calottina
+        active: bePlayer.is_playing, 
         isGK: bePlayer.player_info.is_gk,
         // Inizializziamo tutti gli array vuoti richiesti dal FE
         exclutions: [],
@@ -70,3 +76,51 @@ export const padRosterToMax = (
         } as Player;
     });
 };
+
+export const getEventDescription = (event: MatchEvent): string => {
+  switch (event.eventType) {
+    case MatchEventType.SHOT:
+      return getShotDescription(event);
+
+    case MatchEventType.FOUL:
+      return getFoulDescription(event);
+
+    default:
+      return 'Azione di gioco';
+  }
+};
+
+/**
+ * Traduce una stringa tecnica in una label leggibile usando un dizionario.
+ * Se la traduzione non esiste, ritorna il valore originale.
+ */
+export const getLabel = (value: string | undefined, mapping: Record<string, string>): string => {
+  if (!value) return '';
+  return mapping[value] || value;
+};
+
+function getFoulDescription(event: MatchEvent) {
+  const fType = foulCategoryLabels[event.foulType || ''] || event.foulType || '';
+  if(event.foulType === FoulType.EDCS) {
+    const fEdcsCat = (edcsCategoryLabels[event.edcsType || ''] || event.edcsType || '')
+    return `${fType}${fEdcsCat ? ' - ' + fEdcsCat : ''}`.trim();
+  }
+  const fPos = foulPositionLabels[event.foulPosition || ''] || event.foulPosition || '';
+  const fBall = event.foulWithBall ? 'con palla' : 'senza palla';
+  const fEarnedBy = event.earnedByPlayerId ?
+    (event.team === useSettingsStore().homeTeamName
+      ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.earnedByPlayerId)?.name
+      : useGameStore().match.homeTeam.players.find(pl => pl.id === event.earnedByPlayerId)?.name) : '';
+  return `${fType}${fPos ? ' - ' + fPos : ''}, ${fBall}${fEarnedBy ? ', guadagnata da ' + fEarnedBy : ''}`.trim();
+}
+
+function getShotDescription(event: MatchEvent) {
+  const outcome = shotOutcomeLabels[event.shotOutcome || ''] || event.shotOutcome || '';
+  const category = shotCategoryLabels[event.shotCategory || ''] || event.shotCategory || '';
+  const pos = shotPositionLabels[event.shotPosition || ''] || event.shotPosition || '';
+  const gk = event.defendingGoalkeeperId ?
+    (event.team === useSettingsStore().homeTeamName
+      ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name
+      : useGameStore().match.homeTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name) : '';
+  return `${outcome} - ${category}${pos ? ', ' + pos : ''}${gk ? ', portiere: ' + gk : ''}`.trim();
+}

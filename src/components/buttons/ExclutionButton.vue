@@ -49,7 +49,7 @@
                   class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
-                  {{ getFoulValue(item) }}
+                  {{ getLabel(item, foulCategoryLabels) }}
                 </button>
               </MenuItem>
               <template v-if="props.exclutionState">
@@ -77,7 +77,7 @@
                   class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                 >
-                  {{ sub }}
+                  {{ firstSelection === FoulType.EDCS ? getLabel(sub, edcsCategoryLabels) : getLabel(sub, foulPositionLabels) }}
                 </button>
               </MenuItem>
             </template>
@@ -137,6 +137,8 @@ import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { XCircleIcon } from "@heroicons/vue/24/outline";
 import { EDCSType, FoulDescription, FoulPosition, FoulType } from '@/enum/ExclutionDescription';
 import { useGameStore } from '@/stores/gameStore';
+import { getLabel } from '@/utils/utils';
+import { edcsCategoryLabels, foulCategoryLabels, foulPositionLabels } from '@/const/consts';
 
 const gameStore = useGameStore();
 const props = defineProps<{
@@ -147,6 +149,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'handleExclution', payload: { type: string, position: string, ball: boolean, earnedBy: number, }): void
+  (e: 'handleEDCS', payload: {type: string, edcsType: string }): void
   (e: 'remove'): void
 }>()
 
@@ -165,10 +168,6 @@ const secondLevelOptions: Record<keyof typeof FoulType, string[]> = {
   PEN: Object.values(FoulPosition),
   EDCS: Object.values(EDCSType)
 };
-
-function getFoulValue(key: keyof typeof FoulType): FoulType {
-  return FoulType[key]
-}
 
 const thirdLevelOptions: string[] = Object.values(FoulDescription);
 
@@ -210,11 +209,9 @@ const handleSecondSelect = (item: string, close: () => void) => {
     selectedCode.value = `${item.toUpperCase().substring(0,1)}`
     state.value = 'selected'
     if(firstSelection.value) {
-      emit('handleExclution', {
+      emit('handleEDCS', {
         type: firstSelection.value,
-        position: item,
-        ball: false,
-        earnedBy: 0
+        edcsType: item
       })
     }
     resetSelection();

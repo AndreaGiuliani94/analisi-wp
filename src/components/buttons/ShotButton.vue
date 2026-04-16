@@ -35,7 +35,7 @@
                 <button @click.stop.prevent="handleStatClick(item, close)"
                   class="group flex w-full items-center justify-center rounded-md p-1 min-w-8 text-sm whitespace-nowrap"
                   :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'">
-                  {{ item }}
+                  {{ getLabel(item, shotOutcomeLabels) }}
                 </button>
                 </MenuItem>
               </template>
@@ -45,7 +45,7 @@
                 <button @click="handleSecondSelect(sub, close)"
                   class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
                   :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'">
-                  {{ sub }}
+                  {{ getLabel(sub, shotOutcomeLabels) }}
                 </button>
                 </MenuItem>
               </template>
@@ -89,7 +89,7 @@
               <button @click="handleSecondSelect(sub, close)"
                 class="group flex w-full items-center rounded-md p-1 text-sm"
                 :class="active ? 'bg-blue-950 text-white' : 'text-blue-950'">
-                {{ sub }}
+                {{ getLabel(sub, shotOutcomeLabels) }}
               </button>
               </MenuItem>
 
@@ -111,6 +111,8 @@ import { PlusIcon, MinusIcon } from '@heroicons/vue/24/outline';
 import { EvenShot, MenUpShot, ShotOutcome, ShotCategory } from '@/enum/ShotDescription';
 import { useGameStore } from '@/stores/gameStore';
 import ActionButton from './ActionButton.vue';
+import { getLabel } from '@/utils/utils';
+import { shotOutcomeLabels } from '@/const/consts';
 
 const gameStore = useGameStore()
 const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
