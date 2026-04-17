@@ -148,7 +148,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'handleExclution', payload: { type: string, position: string, ball: boolean, earnedBy: number, }): void
+  (e: 'handleFoul', payload: { type: string, position: string, ball: boolean, earnedBy: number, }): void
   (e: 'handleEDCS', payload: {type: string, edcsType: string }): void
   (e: 'remove'): void
 }>()
@@ -221,7 +221,7 @@ const handleSecondSelect = (item: string, close: () => void) => {
     selectedCode.value = `${firstSelection.value?.charAt(0)}-${item.charAt(0)}`
     secondSelection.value = item;
     if(secondSelection.value == FoulPosition.OTHER && firstSelection.value) {
-      emit('handleExclution', {
+      emit('handleFoul', {
         type: firstSelection.value,
         position: secondSelection.value,
         ball: false,
@@ -242,7 +242,7 @@ const handleThirdSelect = (item: string, close: () => void) => {
 const handleFourthSelect = (item: number, close: () => void) => {
   state.value = 'selected'
   if(firstSelection.value && secondSelection.value && thirdSelection.value) {
-    emit('handleExclution', {
+    emit('handleFoul', {
       type: FoulType[firstSelection.value as (keyof typeof FoulType)],
       position: secondSelection.value,
       ball: thirdSelection.value == FoulDescription.WITH,

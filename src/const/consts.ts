@@ -18,7 +18,8 @@ export const shotOutcomeLabels: Record<string, string> = {
   [ShotOutcome.GOAL]: 'Gol',
   [ShotOutcome.SAVED]: 'Parato',
   [ShotOutcome.MISSED]: 'Fuori',
-  [ShotOutcome.BLOCKED]: 'Stoppato'
+  [ShotOutcome.BLOCKED]: 'Stoppato',
+  [ShotOutcome.NULL]: 'Annullato'
 };
 
 export const shotCategoryLabels: Record<string, string> = {

@@ -9,7 +9,8 @@ export enum ShotOutcome {
     GOAL = 'GOAL', 
     SAVED = 'SAVED',
     MISSED = 'MISSED',
-    BLOCKED = 'BLOCKED'
+    BLOCKED = 'BLOCKED',
+    NULL = 'NULL'
 }
 
 export enum EvenShot {

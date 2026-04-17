@@ -688,8 +688,8 @@ export const useGameStore = defineStore("gameStore", {
 
         const response = await res.json();
         
-        if (response && response.id) {
-          newEvent.id = response.id;
+        if (response && response.event.id) {
+          newEvent.id = response.event.id;
         }
         
       } catch (error) {
