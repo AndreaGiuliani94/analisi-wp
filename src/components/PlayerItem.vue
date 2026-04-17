@@ -39,13 +39,13 @@
     </div>
   </div>
 
-  <div v-if="team.activatedTimer" class="flex flex-col gap-1">
+  <div v-if="team.activatedTimer && userRole === 'owner'" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5 text-blue-950">
       
       <BoltIcon v-if="player.active" class="w-5 h-5 text-red-800" />
       <EllipsisHorizontalCircleIcon v-else class="w-5 h-5 text-gray-400" />
       
-      <span class="tabular-nums">{{ store.formatTime(player.actualTime) }}</span>
+      <span class="tabular-nums">{{ formatTime(player.actualTime) }}</span>
     </div>
   </div>
 
@@ -139,7 +139,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useUserRole } from "@/composables/useUserRole";
 import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
 import { foulCategoryLabels, foulPositionLabels } from "@/const/consts";
-import { getLabel } from "@/utils/utils";
+import { formatTime, getLabel } from "@/utils/utils";
 import type { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
 
 const props = defineProps({

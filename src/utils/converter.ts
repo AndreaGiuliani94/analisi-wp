@@ -93,3 +93,26 @@ export const applyStatsToPlayer = (player: Player, playerStats: any, opposingTea
   // 4. Calcoliamo lo stato attivo usando la funzione passata dallo store
   player.active = !checkIsOut(player);
 };
+
+
+export const refactorSaveEventPayload = (myClientId: string, newEvent: MatchEvent) => {
+  return {
+        sender_client_id: myClientId,
+        match_id: newEvent.matchId,
+        player_id: newEvent.playerId || null,
+        quarter: newEvent.quarter,
+        time: newEvent.time,
+        event_category: newEvent.eventType,
+        
+        shot_category: newEvent.shotCategory || null,
+        shot_position: newEvent.shotPosition || null,
+        shot_outcome: newEvent.shotOutcome || null,
+        defending_goalkeeper_id: newEvent.defendingGoalkeeperId || null,
+        
+        foul_type: newEvent.foulType || null,
+        foul_position: newEvent.foulPosition || null,
+        edcs_type: newEvent.edcsType || null,
+        foul_with_ball: newEvent.foulWithBall ?? null, // Usiamo ?? per i booleani
+        earned_by_player_id: newEvent.earnedByPlayerId || null,
+      };
+}

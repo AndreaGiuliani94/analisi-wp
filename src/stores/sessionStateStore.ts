@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useGameStore } from './gameStore'
-import { getEvents, getMatchDetails, getMatchIdBySessionId, updateSession } from '@/services/sessionService'
+import { getEvents, getMatchDetails, getMatchIdBySessionId } from '@/services/sessionService'
 import { useSessionStore } from './sessionStore'
 import { mapPlayerToFE, padRosterToMax } from '@/utils/utils'
 import type { SessionState } from '@/interfaces/session/SessionState'
@@ -10,6 +10,7 @@ import type { Player } from '@/interfaces/Player';
 import { MatchEventType } from '@/enum/MatchEventDescription';
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { convertDbEventToUI } from '@/utils/converter';
+import { useTimerStore } from './timerStore'
 
 export const useSessionStateStore = defineStore('sessionState', {
     state: (): SessionState => {
@@ -33,22 +34,8 @@ export const useSessionStateStore = defineStore('sessionState', {
             await this.getEvents();
 
             const sessionStore = useSessionStore()
-            await sessionStore.joinSession(sessionId);
-        },
-
-        async updateState(match: any, events: any[]) {
-            if (!this.sessionId) {
-                console.log("sessionId non trovato, lo recupero da local storage");
-                const sessionIdLS = localStorage.getItem("session_id");
-                if (sessionIdLS !== null) {
-                    console.log("LocalStorageSessionId: " + sessionIdLS);
-                    this.sessionId = sessionIdLS;
-                } else {
-                    console.log("session_id non trovato in localStorage");
-                    return;
-                }
-            }
-            await updateSession(this.sessionId, match, events);
+            const data = await sessionStore.joinSession(sessionId);
+            useTimerStore().isTimerMaster = data.user_role === 'owner';
         },
 
         async getMatchIdBySessionId() {
@@ -71,10 +58,11 @@ export const useSessionStateStore = defineStore('sessionState', {
                 const mappedAwayPlayers = dbMatch.away_players.map(mapPlayerToFE);
                 const gameStore = useGameStore()
 
+                useTimerStore().currentQuarter = dbMatch.current_quarter,
+
                 // Popoliamo il match
                 gameStore.match = {
-                    quarter: dbMatch.current_quarter, 
-                    
+                    id: this.matchId,
                     homeTeam: {
                         name: (dbMatch.home_team) ? dbMatch.home_team.club_name : '',
                         id: (dbMatch.home_team) ? dbMatch.home_team.id : (dbMatch.home_team_id ? dbMatch.home_team_id : ''),

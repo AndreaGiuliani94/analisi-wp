@@ -1,7 +1,7 @@
 import type { Team } from "./Team";
 
 export interface Match {
-  quarter: number;
+  id: string;
   homeTeam: Team;
   awayTeam: Team;
 }

@@ -124,3 +124,12 @@ function getShotDescription(event: MatchEvent) {
       : useGameStore().match.homeTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name) : '';
   return `${outcome} - ${category}${pos ? ', ' + pos : ''}${gk ? ', portiere: ' + gk : ''}`.trim();
 }
+
+
+export function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds,
+  ).padStart(2, "0")}`;
+}

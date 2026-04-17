@@ -61,7 +61,7 @@ import { Tab, TabGroup,
   TabPanels,
   TabPanel } from "@headlessui/vue";
 import TeamPanel from '@/components/TeamPanel.vue';
-import { getExclution } from '@/utils/utils';
+import { formatTime, getExclution } from '@/utils/utils';
 
 const store = useGameStore();
 
@@ -82,7 +82,7 @@ const getExclutions = (element: Player) => {
 const downloadExcel = () => {
     exportTeamsToExcel({
         match: store.match,
-        formatTime: store.formatTime,
+        formatTime: formatTime,
         getAllShoots,
         getExclutions,
   });

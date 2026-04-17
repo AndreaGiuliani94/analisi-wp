@@ -18,8 +18,8 @@
                   <span class="flex items-center" >
                     <span class="text-xs mr-0.5 text-gray-400" v-if="i > 0">|</span>
                     <span :class="[
-                      i + 1 > gameStore.match.quarter ? 'text-gray-400' : 'text-blue-950', 
-                      i + 1 == gameStore.match.quarter ? 'animate-pulse bg-blue-950 text-white px-1 rounded-2xl' : '']" 
+                      i + 1 > timerStore.currentQuarter ? 'text-gray-400' : 'text-blue-950', 
+                      i + 1 == timerStore.currentQuarter ? 'animate-pulse bg-blue-950 text-white px-1 rounded-2xl' : '']" 
                       >{{ p.home }}-{{ p.away }}</span>
                   </span>
                 </template>
@@ -49,7 +49,7 @@
           <ModeToggleItem :hide-labels="isShrinked" class="transition-all duration-300" />
         </div>
         <div class="font-bold flex justify-center text-end m-2 text-blue-950 text-4xl">
-          {{ gameStore.formatTime(gameStore.countdown) }}
+          {{ timerStore.formattedTime }}
         </div>
         <div v-if="isShrinked" class="flex justify-end items-center mr-2 text-xl font-bold text-center text-blue-950 transition-all duration-300">
           <div class="grid grid-rows-2 transition-all duration-300">
@@ -61,11 +61,12 @@
                         disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
                 <MinusIcon class="size-3 stroke-4 text-white" /> 
               </button>
-              <div :class="isCorrectionMode ? 'ml-2' : ''">{{ gameStore.match.quarter }} T</div>
+              <div :class="isCorrectionMode ? 'ml-2' : ''">{{ timerStore.currentQuarter }} T</div>
             </div>
           </div>
         </div>
       </div>
+      
       <ClockManager :shrink="isShrinked" />
       
     </div>
@@ -109,9 +110,11 @@ import { useUserRole } from '@/composables/useUserRole';
 import ModeToggleItem from '@/components/ModeToggleItem.vue';
 import { MinusIcon } from '@heroicons/vue/24/outline';
 import { useRealtimeStore } from '@/stores/realtimeStore';
+import { useTimerStore } from '@/stores/timerStore';
 
 const authStore = useAuthStore()
-const gameStore = useGameStore();
+const gameStore = useGameStore()
+const timerStore = useTimerStore()
 const sessionStore = useSessionStore()
 const realtimeStore = useRealtimeStore()
 const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');

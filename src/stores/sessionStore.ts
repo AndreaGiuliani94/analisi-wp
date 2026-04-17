@@ -33,7 +33,7 @@ export const useSessionStore = defineStore('session', {
             this.currentSession = data;
             return data;
         },
-        async getUserRoleByEmail(userEmail: string) {
+        getUserRoleByEmail(userEmail: string) {
             return this.currentSession.participants.find(p => p.email === userEmail)?.role ?? 'viewer';
         },
         async joinSession(sessionId: string) {

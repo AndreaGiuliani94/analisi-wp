@@ -41,8 +41,8 @@
                                 {{ player.name }}
                             </span>
                         </td>
-                        <td class="p-2 font-mono">{{ store.formatTime(player.activeTime) }}</td>
-                        <td class="p-2 font-mono">{{ store.formatTime(player.benchTime) }}</td>
+                        <td class="p-2 font-mono">{{ formatTime(player.activeTime) }}</td>
+                        <td class="p-2 font-mono">{{ formatTime(player.benchTime) }}</td>
                         <td class="p-2 font-mono font-semibold">{{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</td>
                         <td class="p-2 font-mono font-semibold">{{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</td>
                         <td class="p-2 font-mono font-semibold">{{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</td>
@@ -80,7 +80,7 @@ import type { Team } from '../interfaces/Team';
 import type { Player } from '../interfaces/Player';
 import { ref } from 'vue';
 import PlayerDetail from './PlayerDetail.vue';
-import { getExclution } from '@/utils/utils';
+import { formatTime, getExclution } from '@/utils/utils';
 
 const store = useGameStore();
 

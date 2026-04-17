@@ -6,17 +6,18 @@ import type { Match } from "@/interfaces/Match";
 import type { Exclution } from "@/interfaces/Exclution";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
-import { useSessionStateStore } from "./sessionStateStore";
 import { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
 import { useToast } from "vue-toastification";
 import type { Shot } from "@/interfaces/Shot";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
-import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, savePregameSetup, updatePlayer } from "@/services/matchService";
+import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, savePregameSetup, updatePlayer, updateSubstitutions } from "@/services/matchService";
 import type { TeamInfo } from "@/interfaces/TeamInfo";
 import type { NewPlayer } from "@/interfaces/NewPlayer";
 import { deleteMatchEvent, saveMatchEvent } from "@/services/eventService";
-import { applyStatsToPlayer, convertDbEventToUI } from "@/utils/converter";
+import { applyStatsToPlayer, convertDbEventToUI, refactorSaveEventPayload } from "@/utils/converter";
+import { useTimerStore } from "./timerStore";
+import type { Substitutions } from "@/interfaces/Substitutions";
 
 const myClientId = crypto.randomUUID();
 
@@ -25,9 +26,9 @@ export const useGameStore = defineStore("gameStore", {
     const savedEvents = localStorage.getItem("events");
     const savedMatch = localStorage.getItem("match");
     return {
-      countdown: 0,
-      countdownInterval: null as number | null,
       isCorrectionMode: false,
+      pendingSubstitutions: [] as Substitutions[],
+      subsTimeoutId: null as any,
       events: savedEvents ? (JSON.parse(savedEvents) as MatchEvent[]) : [],
       match: savedMatch ? (JSON.parse(savedMatch) as Match) : ({} as Match),
     };
@@ -62,16 +63,12 @@ export const useGameStore = defineStore("gameStore", {
   actions: {
     async loadStore() {
       const settingsStore = useSettingsStore();
-      this.countdown = settingsStore.periodDuration * 60;
 
       if (!this.match.homeTeam || this.match.homeTeam.players.length == 0) {
         initializeHomeTeam.call(this, settingsStore);
       }
       if (!this.match.awayTeam  || this.match.awayTeam.players.length == 0) {
         initializeAwayTeam.call(this, settingsStore);
-      }
-      if (!this.match.quarter || this.match.quarter == 0) {
-        this.match.quarter = 1;
       }
     },
     async toggleElement(number: number, team: number) {
@@ -107,79 +104,112 @@ export const useGameStore = defineStore("gameStore", {
         }
 
         // 3. Attivazione effettiva
-        el.active = true;
-        el.actualTime = 0; // Reset del tempo per il nuovo ingresso
+        this.togglePlayerActive(el)
       } else {
         // 4. Disattivazione semplice
         if(!enablePlayersTime)
           return
-        el.active = false;
-        el.actualTime = 0; // Reset del tempo all'uscita
+        this.togglePlayerActive(el)
       }
       
     },
-    startGlobalTimer() {
-      const settingsStore = useSettingsStore();
-      // 1. PULIZIA PREVENTIVA: evita che il tempo scorra al doppio della velocità
-      this.stopGlobalTimer(); 
-      // 2. UNICO INTERVALLO
-      this.countdownInterval = window.setInterval(() => {
-        // --- LOGICA CRONOMETRO GARA ---
-        if (this.countdown > 0) {
-          this.countdown--;
-          // --- LOGICA STATISTICHE GIOCATORI ---
-          // Facciamo avanzare i tempi dei giocatori SOLO se il cronometro sta scorrendo
-          this.match.homeTeam.players.forEach((player) => {
-            if (player.active) {
-              player.activeTime++;
-            } else {
-              player.benchTime++;
-            }
-            player.actualTime++;
-          });
-          // Se hai anche la squadra ospite, aggiungila qui
-          this.match.awayTeam.players.forEach((player) => {
-            if (player.active) {
-              player.activeTime++;
-            } else {
-              player.benchTime++;
-            }
-            player.actualTime++;
-          });
+    togglePlayerActive(player: any) {
+      // 1. OPTIMISTIC UI: Aggiorniamo istantaneamente la grafica
+      player.active = !player.active;
+      
+      // Il cambio azzera sempre il tempo effettivo in vasca dell'ultimo "shift"
+      player.actualTime = 0; 
 
-        } else {
-          // --- FINE PERIODO ---
-          this.handleEndOfQuarter(settingsStore);
-        }
-        // Salvataggio automatico ogni secondo (opzionale, per persistenza PWA)
-        // this.saveData();
-      }, 1000);
-
-    },
-    handleEndOfQuarter(settingsStore: any) {
-      this.stopGlobalTimer();
-      if(this.match.quarter + 1 == 5)
-        return
-      this.match.quarter++;
-      this.countdown = settingsStore.periodDuration * 60;
-    },
-    stopGlobalTimer() {
-      if (this.countdownInterval) {
-        clearInterval(this.countdownInterval);
-        this.countdownInterval = null;
-      }
-    },
-    toggleGlobalTimer() {
-      if (this.countdownInterval) {
-        this.stopGlobalTimer();
+      // 2. AGGIUNTA ALLA CODA
+      // Se l'operatore clicca due volte (entra ed esce subito), aggiorniamo lo stato nella coda
+      const existingIndex = this.pendingSubstitutions.findIndex(s => s.playerId === player.id);
+      if (existingIndex !== -1) {
+        this.pendingSubstitutions[existingIndex].isActive = player.active;
       } else {
-        this.startGlobalTimer();
+        this.pendingSubstitutions.push({ playerId: player.id, isActive: player.active });
       }
+
+      // 3. DEBOUNCING
+      // Cancelliamo il timer precedente se l'utente sta ancora cliccando
+      if (this.subsTimeoutId) clearTimeout(this.subsTimeoutId);
+
+      // Impostiamo un nuovo timer di 500ms
+      this.subsTimeoutId = setTimeout(() => {
+        this.flushSubstitutions();
+      }, 800);
+    },
+    async flushSubstitutions() {
+      if (this.pendingSubstitutions.length === 0) return;
+
+      const timerStore = useTimerStore(); // Prendiamo il tempo esatto in questo istante
+      const payload = [...this.pendingSubstitutions];
+      this.pendingSubstitutions = [];
+
+      try {
+        await updateSubstitutions(
+          this.match.id, 
+          {
+            sender_client_id: myClientId,
+            time: timerStore.formattedTime,
+            quarter: timerStore.currentQuarter,
+            substitutions: payload 
+        });
+      } catch (error) {
+        console.error("Errore salvataggio cambi:", error);
+      }
+    },
+    /**
+     * Chiamato 1 volta al secondo dal timerStore.
+     * Incrementa i contatori temporanei di chi è in vasca e chi è in panchina.
+     */
+    tickPlayerTimes() {
+      const updateTimes = (team: Team) => {
+        team.players.forEach((p: Player) => {
+          if (p.active) {
+            p.activeTime = (p.activeTime || 0) + 1;
+            p.actualTime = (p.actualTime || 0) + 1;
+          } else {
+            p.benchTime = (p.benchTime || 0) + 1;
+          }
+        });
+      };
+
+      updateTimes(this.match.homeTeam);
+      updateTimes(this.match.awayTeam);
+    },
+    /**
+     * Modifica massivamente i tempi dei giocatori.
+     * @param seconds Quanti secondi aggiungere (es. 1 per lo scorrere normale, o 30 per forward). 
+     * Usare valori negativi per il 'back' (es. -10).
+     */
+    adjustPlayerTimes(seconds: number) {
+      const settingsStore = useSettingsStore();
+      const maxSeconds = settingsStore.periodDuration * 60 * settingsStore.totalPeriods; // Limite massimo partita
+
+      const updateTeam = (team: any) => {
+        team.players.forEach((player: any) => {
+          
+          if (player.active) {
+            // Aggiunge (o sottrae) secondi, assicurandosi di restare tra 0 e il massimo possibile
+            player.activeTime = Math.max(0, Math.min(maxSeconds, (player.activeTime || 0) + seconds));
+          } else {
+            player.benchTime = Math.max(0, Math.min(maxSeconds, (player.benchTime || 0) + seconds));
+          }
+          
+          // actualTime (che si resetta ai cambi) si aggiorna di conseguenza
+          player.actualTime = Math.max(0, Math.min(maxSeconds, (player.actualTime || 0) + seconds));
+        });
+      };
+
+      if(settingsStore.enableHomePlayersTime)
+        updateTeam(this.match.homeTeam);
+      if(settingsStore.enableOppPlayersTime)
+        updateTeam(this.match.awayTeam);
     },
     async resetAll() {
       this.match = {} as Match;
       this.events = [];
-      this.stopGlobalTimer();
+      // this.stopGlobalTimer();
       await this.loadStore();
       router.push("/game");
     },
@@ -189,7 +219,6 @@ export const useGameStore = defineStore("gameStore", {
     },
     resetTimer() {
       const settingsStore = useSettingsStore();
-      this.match.quarter = 1;
       this.match.homeTeam.score = 0;
       this.match.homeTeam.timeOut1 = false;
       this.match.homeTeam.timeOut2 = false;
@@ -222,7 +251,6 @@ export const useGameStore = defineStore("gameStore", {
         player.isGK =
           player.number === 1 || player.number === 13 ? true : false;
       });
-      this.countdown = settingsStore.periodDuration * 60;
       this.events = [];
     },
     addShot(
@@ -391,9 +419,9 @@ export const useGameStore = defineStore("gameStore", {
         position: position,
         type: type,
         ball: ball,
-        quarter: this.match.quarter,
+        quarter: useTimerStore().currentQuarter,
         earnedBy: earnedBy,
-        time: this.formatTime(this.countdown),
+        time: useTimerStore().formattedTime,
       };
 
       // Logica sicura per inserimento/sovrascrittura (Correction Mode)
@@ -438,8 +466,8 @@ export const useGameStore = defineStore("gameStore", {
       const exclusionData = {
         type: type,
         edcsType: edcsType,
-        quarter: this.match.quarter,
-        time: this.formatTime(this.countdown),
+        quarter: useTimerStore().currentQuarter,
+        time: useTimerStore().formattedTime,
       };
 
       // Logica sicura per inserimento/sovrascrittura (Correction Mode)
@@ -570,43 +598,6 @@ export const useGameStore = defineStore("gameStore", {
       }
       
     },
-    formatTime(seconds: number) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `${String(minutes).padStart(2, "0")}:${String(
-        remainingSeconds,
-      ).padStart(2, "0")}`;
-    },
-    async saveData2() {      
-      // COSTRUIAMO IL PAYLOAD LEGGERO PER IL REALTIME (Supabase Channel)
-      const sessionStore = useSessionStateStore();
-      
-      const liveSessionPayload = {
-        quarter: this.match.quarter,
-        clock: this.formatTime(this.countdown),
-        homeScore: this.match.homeTeam.score,
-        awayScore: this.match.awayTeam.score,
-        // Inviamo solo gli ID/Numeri dei giocatori in acqua
-        activeHomePlayers: this.match.homeTeam.players.filter(p => p.active).map(p => p.number),
-        activeAwayPlayers: this.match.awayTeam.players.filter(p => p.active).map(p => p.number)
-      };
-
-      // Invece di inviare i mega JSON, inviamo solo lo statino leggero!
-      // await sessionStore.updateLiveState(liveSessionPayload);
-    },
-    async saveEvents(description: string, player: Player, team: string, type: MatchEventType) {
-      const event: any = {
-        team: team,
-        player: player,
-        time: this.formatTime(this.countdown),
-        description: description,
-        quarter: this.match.quarter,
-        homeScore: this.match.homeTeam.score,
-        awayScore: this.match.awayTeam.score,
-        eventType: type,
-      };
-      this.events.push(event);
-    },
     async saveEvent(payload: {
       eventType: MatchEventType;
       currentTeam: Team;
@@ -626,7 +617,6 @@ export const useGameStore = defineStore("gameStore", {
       }
     }) {
       const details = payload.details || {};
-      const sessionStateStore = useSessionStateStore()
 
       // 2. Creazione dell'evento locale (TypeScript camelCase)
       const newEvent: MatchEvent = {
@@ -637,10 +627,10 @@ export const useGameStore = defineStore("gameStore", {
         awayScore: this.match.awayTeam.score,
 
         // Info Database
-        matchId: sessionStateStore.matchId,
+        matchId: this.match.id,
         playerId: payload.player?.id,
-        quarter: this.match.quarter,
-        time: this.formatTime(this.countdown), // Usa il tuo metodo di formattazione timer
+        quarter: useTimerStore().currentQuarter,
+        time: useTimerStore().formattedTime,
         eventType: payload.eventType,
 
         // Dati specifici
@@ -657,34 +647,11 @@ export const useGameStore = defineStore("gameStore", {
       };
 
       // 3. OPTIMISTIC UI UPDATE: Inseriamo subito in cima all'array locale
-      // La tabella su Vue si aggiornerà all'istante senza aspettare il server
       this.events.push(newEvent);
-
-      // 4. PREPARAZIONE PAYLOAD PER IL BACKEND (Conversione in snake_case)
-      // Qui mappiamo esattamente ciò che si aspetta la tua classe Pydantic
-      const backendPayload = {
-        sender_client_id: myClientId,
-        match_id: newEvent.matchId,
-        player_id: newEvent.playerId || null,
-        quarter: newEvent.quarter,
-        time: newEvent.time,
-        event_category: newEvent.eventType,
-        
-        shot_category: newEvent.shotCategory || null,
-        shot_position: newEvent.shotPosition || null,
-        shot_outcome: newEvent.shotOutcome || null,
-        defending_goalkeeper_id: newEvent.defendingGoalkeeperId || null,
-        
-        foul_type: newEvent.foulType || null,
-        foul_position: newEvent.foulPosition || null,
-        edcs_type: newEvent.edcsType || null,
-        foul_with_ball: newEvent.foulWithBall ?? null, // Usiamo ?? per i booleani
-        earned_by_player_id: newEvent.earnedByPlayerId || null,
-      };
 
       // 5. CHIAMATA AL BACKEND
       try {
-        const res = await saveMatchEvent(backendPayload); // La tua POST
+        const res = await saveMatchEvent(refactorSaveEventPayload(myClientId, newEvent)); // La tua POST
 
         const response = await res.json();
         
@@ -703,30 +670,6 @@ export const useGameStore = defineStore("gameStore", {
         if (index > -1) this.events.splice(index, 1);
       }
     },
-    async back(seconds: number) {
-      const settingsStore = useSettingsStore();
-      this.countdown = Math.min(settingsStore.periodDuration * 60, this.countdown + seconds);
-      this.match.homeTeam.players.forEach((player) => {
-        if (player.active) {
-          player.activeTime = Math.max(0, player.activeTime - seconds);
-        } else {
-          player.benchTime = Math.max(0, player.benchTime - seconds);
-        }
-        player.actualTime = Math.max(0, player.actualTime - seconds);
-      });
-    },
-    async forward(seconds: number) {
-      const settingsStore = useSettingsStore();
-      this.countdown = Math.max(0, this.countdown - seconds);
-      this.match.homeTeam.players.forEach((player) => {
-        if (player.active) {
-          player.activeTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.activeTime + seconds);
-        } else {
-          player.benchTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.benchTime + seconds);
-        }
-        player.actualTime = Math.min(settingsStore.periodDuration * 60 * settingsStore.totalPeriods, player.actualTime + seconds);
-      });
-    },
     toggleCorrectionMode() {
       this.isCorrectionMode = !this.isCorrectionMode;
     },
@@ -734,7 +677,7 @@ export const useGameStore = defineStore("gameStore", {
       this.isCorrectionMode = value;
     },
     removeQuarter() {
-      this.match.quarter = Math.min(1, this.match.quarter - 1)
+      useTimerStore().removeQuarter()
       this.toggleCorrectionMode()
     },
     getAllTeamShotsByType(team: Team, type: ShotCategory) {
@@ -805,8 +748,7 @@ export const useGameStore = defineStore("gameStore", {
       return data;
     },
     async getLastTeamRoster(teamId: string) {
-      const sessionStateStore = useSessionStateStore()
-      const response = await getLastTeamRoster(teamId, sessionStateStore.matchId);
+      const response = await getLastTeamRoster(teamId, this.match.id);
       const data = await response.json();
       return data;
     },
@@ -816,7 +758,6 @@ export const useGameStore = defineStore("gameStore", {
       return data;
     },
     async savePregameData () {
-      const sessionStateStore = useSessionStateStore();
       try {
         // 1. PULIZIA DATI (Sanitization)
         // Inviamo al BE solo i giocatori con un nome scritto.
@@ -845,7 +786,7 @@ export const useGameStore = defineStore("gameStore", {
         };
 
         // 3. CHIAMATA API (Singola transazione)
-        const response = await savePregameSetup(sessionStateStore.matchId, requestBody);
+        const response = await savePregameSetup(this.match.id, requestBody);
         const responseData = await response.json();
 
         if(responseData.new_players && responseData.new_players.length > 0){
@@ -903,6 +844,41 @@ export const useGameStore = defineStore("gameStore", {
         throw error; 
       }
 
+    },
+    syncPlayerTimes(stats: any[]) {
+      // subsFromBackend = [{ id: "..", isActive: true, activeTime: 120, benchTime: 45 }, ...]
+
+      stats.forEach(sub => {
+        let player = this.match.homeTeam.players.find((p: any) => p.id === sub.id) 
+                  || this.match.awayTeam.players.find((p: any) => p.id === sub.id);
+
+        if (player) {
+          // 1. Allineiamo lo stato (entrato/uscito)
+          player.active = sub.is_playing;
+          // 2. SOVRASCRIVIAMO I TEMPI con la verità assoluta del Database
+          player.activeTime = sub.active_time;
+          player.benchTime = sub.bench_time;
+        }
+      });
+    },
+    applyBulkSubstitutions(subsFromBackend: any[]) {
+      subsFromBackend.forEach(sub => {
+        let player = this.match.homeTeam.players.find((p: Player) => p.id === sub.player_id) 
+                  || this.match.awayTeam.players.find((p: Player) => p.id === sub.player_id);
+
+        if (player) {
+          // 1. Allineiamo lo stato (entrato/uscito)
+          player.active = sub.is_playing;
+          
+          // 2. SOVRASCRIVIAMO I TEMPI con la verità assoluta del Database
+          player.activeTime = sub.active_time;
+          player.benchTime = sub.bench_time;
+
+          // 3. Resettiamo il cronometro parziale del Frontend
+          if(sub.is_changed)
+          player.actualTime = 0; 
+        }
+      });
     },
     enableAutoSave() {
       // Il $subscribe "ascolta" ogni singola mutazione dello state
@@ -989,6 +965,8 @@ export const useGameStore = defineStore("gameStore", {
         if (idx !== -1) {
           this.events.splice(idx, 1);
         }
+      } else if (payloadData.action === 'SUBSTITUTIONS') {
+        this.applyBulkSubstitutions(payloadData.substitutions); 
       }
     }
   }
