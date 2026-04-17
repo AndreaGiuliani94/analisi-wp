@@ -471,7 +471,7 @@ export const useGameStore = defineStore("gameStore", {
         player.exclutions.some((excl) => excl.type === "EDCS")
       );
     },
-    removeExclution(number: number, team: number, exclNumber: number) {
+    async removeExclution(number: number, team: number, exclNumber: number) {
       // 1. Identificazione sicura
       const currentTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
       const player = currentTeam.players.find((p: any) => p.number === number);
@@ -481,7 +481,7 @@ export const useGameStore = defineStore("gameStore", {
       // 2. Verifichiamo che il fallo da rimuovere esista davvero
       if (exclusionToRemove) {
         // Rimuoviamo l'evento dalla cronaca
-        this.removeExclEvent(currentTeam.name, player, exclusionToRemove);
+        await this.removeExclEvent(player, exclusionToRemove);
         // Rimuoviamo il fallo dallo statino del giocatore
         player.exclutions.splice(exclNumber, 1);
         // Riattiviamo il giocatore
@@ -490,18 +490,28 @@ export const useGameStore = defineStore("gameStore", {
         }
       }
     },
-    removeExclEvent(team: string, player: Player, excl: Exclution) {
+    async removeExclEvent(player: Player, excl: Exclution) {
       // Troviamo l'evento esatto nella cronaca
-      const index = this.events.findIndex(
-        (e: any) => 
-          e.player_id === player.id &&
-          e.type === MatchEventType.FOUL &&
+      const eventToRemove = this.events.find(
+        (e: MatchEvent) => 
+          e.player.id === player.id &&
+          e.eventType === MatchEventType.FOUL &&
           e.quarter === excl.quarter &&
           e.time === excl.time
       );
-      // Se lo troviamo, lo eliminiamo dalla timeline
-      if (index !== -1) {
-        this.events.splice(index, 1);
+      if(eventToRemove && eventToRemove.id) {
+        const eventIndex = this.events.findIndex((e: MatchEvent) => e.id === eventToRemove.id);
+        // Se lo troviamo, lo eliminiamo dalla timeline
+        if (eventIndex !== -1) {
+          this.events.splice(eventIndex, 1);
+        }
+        // Chiamata al BE
+        try {
+          await deleteMatchEvent(eventToRemove.id, myClientId);
+        } catch (error) {
+            console.error("Errore durante l'eliminazione dell'evento:", error);
+            // Opzionale: gestire un "rollback" visivo reinserendo l'evento se fallisce la cancellazione
+          }
       }
     },
     async addTimeOut(number: number, team: string) {
