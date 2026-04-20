@@ -20,6 +20,7 @@
                 <RoleListbox
                   v-model="p.role"
                   :userRole="userRole"
+                  :hasTimekeeper="isTimekeeperAssigned"
                   @update:modelValue="(newRole) => updateRole(p.user_id, newRole)"
                 />
                 <ActionButton
@@ -75,7 +76,7 @@ import router from '@/router';
 import { updateParticipantRole, deleteParticipant, deleteSession } from '@/services/sessionService';
 import { useSessionStore } from '@/stores/sessionStore';
 import { PlayIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/solid';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -88,6 +89,10 @@ const userRole = ref('');
 const showRemoveConfirmModal = ref(false);
 const confirmRemoveMessage = ref('');
 const sessionStore = useSessionStore();
+
+const isTimekeeperAssigned = computed(() => {
+  return participants.value.some(p => p.role === 'timekeeper');
+});
 
 // Fetch session details + participants
 async function fetchSession() {

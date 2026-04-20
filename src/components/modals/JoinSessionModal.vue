@@ -22,6 +22,7 @@
           type="submit"
           :label="loading ? 'Unione...' : 'Unisciti'"
           :disabled="loading"
+          @click="join"
           />
     </template>
   </BaseModal>

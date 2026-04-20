@@ -12,6 +12,8 @@ import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { convertDbEventToUI } from '@/utils/converter';
 import { useTimerStore } from './timerStore'
 
+const myClientId = crypto.randomUUID();
+
 export const useSessionStateStore = defineStore('sessionState', {
     state: (): SessionState => {
         const savedSessionId = localStorage.getItem("session_id");
@@ -20,7 +22,8 @@ export const useSessionStateStore = defineStore('sessionState', {
             sessionId: savedSessionId ? savedSessionId : '',
             matchId: savedMatchId ? savedMatchId : '',
             channel: null,
-            title: ''
+            title: '',
+            clientId: myClientId,
         }
     },
 
@@ -35,7 +38,8 @@ export const useSessionStateStore = defineStore('sessionState', {
 
             const sessionStore = useSessionStore()
             const data = await sessionStore.joinSession(sessionId);
-            useTimerStore().isTimerMaster = data.user_role === 'owner';
+            localStorage.setItem("user_role", data.user_role);
+            useTimerStore().setTimerMaster(data);
         },
 
         async getMatchIdBySessionId() {
@@ -53,13 +57,16 @@ export const useSessionStateStore = defineStore('sessionState', {
                 const res = await getMatchDetails(this.matchId);
                 const dbMatch = await res.json();
                 
+                const timerStore = useTimerStore();
+                timerStore.currentQuarter = dbMatch.current_quarter
+                timerStore.setTimeFromString(dbMatch.current_time)
+                timerStore.isTimerRunning = dbMatch.is_timer_running
+
                 // 2. Mappiamo i giocatori del BE per il Frontend (se lo facevi già)
                 const mappedHomePlayers = dbMatch.home_players.map(mapPlayerToFE);
                 const mappedAwayPlayers = dbMatch.away_players.map(mapPlayerToFE);
+                
                 const gameStore = useGameStore()
-
-                useTimerStore().currentQuarter = dbMatch.current_quarter,
-
                 // Popoliamo il match
                 gameStore.match = {
                     id: this.matchId,
@@ -123,7 +130,7 @@ export const useSessionStateStore = defineStore('sessionState', {
                         p.shotsSup = [];
                         p.shotsPenalty = [];
                         p.exclutions = [];
-                        p.active = !isHome;
+                        p.active = p.active ? p.active : !isHome;
                         p.shotsFaced = [];
                     });
                 };

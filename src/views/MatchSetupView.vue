@@ -4,12 +4,7 @@
             <NavButton
                 :label="'Pulisci'"
                 :icon="TrashIcon"
-                :onClick="store.clearDistinta">
-            </NavButton>
-            <NavButton
-                :label="'Reset'"
-                :icon="ArrowPathIcon"
-                :onClick="store.resetAll">
+                :onClick="resetAll">
             </NavButton>
         </div>
     </div>
@@ -74,6 +69,7 @@ import { useSessionStateStore } from '@/stores/sessionStateStore';
 import type { Team } from '@/interfaces/Team';
 import { useToast } from 'vue-toastification';
 import type { Player } from '@/interfaces/Player';
+import { useTimerStore } from '@/stores/timerStore';
 
 const store = useGameStore();
 const sessionStore = useSessionStore();
@@ -284,6 +280,11 @@ const handleUpdatePlayerName = async (payload: any) => {
         toast.error("Impossibile aggiornare l'anagrafica");
     }
 };
+
+const resetAll = async() => {
+    store.clearDistinta();
+    useTimerStore().resetTimer();
+}
 
 onMounted(async () => {
   store.loadStore();

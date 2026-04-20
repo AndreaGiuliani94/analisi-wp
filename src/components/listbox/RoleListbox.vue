@@ -5,7 +5,7 @@
         <ListboxButton 
           v-slot="{ open }" 
           class="relative z-5 cursor-pointer rounded bg-gray-200 
-            flex justify-center items-center shadow disabled:cursor-default"
+            flex justify-center items-center disabled:cursor-default"
             >
             <!-- Usa il badge qui -->
             <RoleBadge :role="modelValue" >
@@ -24,7 +24,13 @@
                 v-for="role in roles"
                 :key="role"
                 :value="role"
-                class="cursor-pointer select-none p-1 hover:bg-gray-100"
+                :disabled="role === 'timekeeper' && hasTimekeeper && modelValue !== 'timekeeper'"
+                class="select-none p-1"
+                :class="[
+                  role === 'timekeeper' && hasTimekeeper && modelValue !== 'timekeeper'
+                    ? 'opacity-50 cursor-not-allowed bg-gray-50' 
+                    : 'cursor-pointer hover:bg-gray-100'
+                ]"
             >
                 <RoleBadge :role="role" />
             </ListboxOption>
@@ -38,19 +44,21 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headless
 import RoleBadge, { type RoleType } from '../badges/RoleBadge.vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
 import { ChevronUpIcon } from '@heroicons/vue/20/solid';
+import { computed } from 'vue';
 
 const props = defineProps<{
-  modelValue: 'owner' | 'editor' | 'viewer'
+  modelValue: 'owner' | 'editor' | 'viewer' | 'timekeeper'
   userRole: string | undefined
+  hasTimekeeper: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: 'owner' | 'editor' | 'viewer'): void
+  (e: 'update:modelValue', value: 'editor' | 'viewer' | 'timekeeper'): void
 }>()
 
-const roles: Array<'owner' | 'editor' | 'viewer'> = ['owner', 'editor', 'viewer']
+const roles: Array< 'editor' | 'viewer' | 'timekeeper'> = [ 'editor', 'viewer', 'timekeeper']
 
-function updateValue(newRole: 'owner' | 'editor' | 'viewer') {
+function updateValue(newRole: 'editor' | 'viewer' | 'timekeeper') {
   emit('update:modelValue', newRole)
 }
 </script>

@@ -3,4 +3,5 @@ export interface SessionState {
     matchId: string
     channel: any | null,
     title: string
+    clientId: string
 }

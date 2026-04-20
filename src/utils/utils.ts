@@ -6,6 +6,7 @@ import type { Exclution } from "@/interfaces/Exclution";
 import type { Player } from "@/interfaces/Player";
 import { useGameStore } from "@/stores/gameStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import type { Team } from "@/interfaces/Team";
 
 export function getExclution (exclution: Exclution) {
     var str: string = '';
@@ -133,3 +134,44 @@ export function formatTime(seconds: number) {
     remainingSeconds,
   ).padStart(2, "0")}`;
 }
+
+export function resetTeam (team: Team, isHome: boolean) {
+  team.category = '';
+  team.id = '';
+  team.activatedTimer = isHome ? useSettingsStore().enableHomePlayersTime : useSettingsStore().enableOppPlayersTime;
+  team.name = isHome ? useSettingsStore().homeTeamName : '';
+  team.score = 0;
+  team.timeOut1 = false;
+  team.timeOut2 = false;
+  team.players.forEach((p: Player) => {
+    p.id = '';
+    p.name = '';
+    p.isGK = p.number === 1 || p.number === 13;
+    p.shotsEven = [];
+    p.shotsSup = [];
+    p.shotsPenalty = [];
+    p.exclutions = [];
+    p.active = p.active ? p.active : !isHome;
+    p.activeTime = 0;
+    p.actualTime = 0;
+    p.benchTime = 0;
+    p.shotsFaced = [];
+  });
+};
+
+export function clearTeam (team: Team, isHome: boolean) {
+  team.score = 0;
+  team.timeOut1 = false;
+  team.timeOut2 = false;
+  team.players.forEach((p: Player) => {
+    p.shotsEven = [];
+    p.shotsSup = [];
+    p.shotsPenalty = [];
+    p.exclutions = [];
+    p.active = !isHome;
+    p.activeTime = 0;
+    p.actualTime = 0;
+    p.benchTime = 0;
+    p.shotsFaced = [];
+  });
+};

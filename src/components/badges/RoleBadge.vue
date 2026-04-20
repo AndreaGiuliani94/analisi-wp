@@ -2,11 +2,12 @@
 <template>
   <span
     :class="[
-      'inline-flex items-center gap-0.5 px-2 py-1 text-xs rounded-full font-semibold',
+      'inline-flex items-center gap-0.5 px-2 py-1 text-xs rounded-full shadow font-semibold',
       {
         'bg-green-100 text-green-700': props.role === 'owner',
         'bg-blue-100 text-blue-700': props.role === 'editor',
-        'bg-amber-100 text-amber-700': props.role === 'viewer'
+        'bg-amber-100 text-amber-700': props.role === 'timekeeper',
+        'bg-slate-50 text-blue-950': props.role === 'viewer'
       }
     ]"
   >
@@ -17,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-export type RoleType = 'owner' | 'editor' | 'viewer'
+export type RoleType = 'owner' | 'editor' | 'viewer' | 'timekeeper'
 const props = defineProps<{
   role: RoleType
 }>()
@@ -25,7 +26,8 @@ const props = defineProps<{
 const roleLabelMap = {
   owner: 'Proprietario',
   editor: 'Editor',
-  viewer: 'Visualizzatore'
+  viewer: 'Visualizzatore',
+  timekeeper: 'Cronometrista'
 }
 
 const roleLabel = roleLabelMap[props.role]

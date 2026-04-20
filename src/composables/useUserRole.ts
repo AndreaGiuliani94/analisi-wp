@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 export interface Participant {
   email: string
-  role: 'owner' | 'editor' | 'viewer'
+  role: 'owner' | 'editor' | 'viewer' | 'timekeeper'
 }
 
 /**

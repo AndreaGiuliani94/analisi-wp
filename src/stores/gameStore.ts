@@ -11,15 +11,15 @@ import { useToast } from "vue-toastification";
 import type { Shot } from "@/interfaces/Shot";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
-import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, savePregameSetup, updatePlayer, updateSubstitutions } from "@/services/matchService";
+import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, restartMatch, savePregameSetup, updatePlayer, updateSubstitutions } from "@/services/matchService";
 import type { TeamInfo } from "@/interfaces/TeamInfo";
 import type { NewPlayer } from "@/interfaces/NewPlayer";
 import { deleteMatchEvent, saveMatchEvent } from "@/services/eventService";
 import { applyStatsToPlayer, convertDbEventToUI, refactorSaveEventPayload } from "@/utils/converter";
 import { useTimerStore } from "./timerStore";
 import type { Substitutions } from "@/interfaces/Substitutions";
-
-const myClientId = crypto.randomUUID();
+import { useSessionStateStore } from "./sessionStateStore";
+import { clearTeam, resetTeam } from "@/utils/utils";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -149,7 +149,7 @@ export const useGameStore = defineStore("gameStore", {
         await updateSubstitutions(
           this.match.id, 
           {
-            sender_client_id: myClientId,
+            sender_client_id: useSessionStateStore().clientId,
             time: timerStore.formattedTime,
             quarter: timerStore.currentQuarter,
             substitutions: payload 
@@ -206,52 +206,19 @@ export const useGameStore = defineStore("gameStore", {
       if(settingsStore.enableOppPlayersTime)
         updateTeam(this.match.awayTeam);
     },
-    async resetAll() {
-      this.match = {} as Match;
-      this.events = [];
-      // this.stopGlobalTimer();
-      await this.loadStore();
-      router.push("/game");
-    },
     async clearDistinta() {
-      this.match = {} as Match;
+      resetTeam(this.match.homeTeam, true);
+      resetTeam(this.match.awayTeam, false);
       await this.loadStore();
     },
-    resetTimer() {
-      const settingsStore = useSettingsStore();
-      this.match.homeTeam.score = 0;
-      this.match.homeTeam.timeOut1 = false;
-      this.match.homeTeam.timeOut2 = false;
-      this.match.homeTeam.players.forEach((player) => {
-        player.activeTime = 0;
-        player.actualTime = 0;
-        player.benchTime = 0;
-        player.exclutions = [];
-        player.shotsEven = [];
-        player.shotsSup = [];
-        player.shotsPenalty = [];
-        player.shotsFaced = [];
-        player.active = !settingsStore.enableHomePlayersTime;
-        player.isGK =
-          player.number === 1 || player.number === 13 ? true : false;
-      });
-      this.match.awayTeam.score = 0;
-      this.match.awayTeam.timeOut1 = false;
-      this.match.awayTeam.timeOut2 = false;
-      this.match.awayTeam.players.forEach((player) => {
-        player.activeTime = 0;
-        player.actualTime = 0;
-        player.benchTime = 0;
-        player.exclutions = [];
-        player.shotsEven = [];
-        player.shotsSup = [];
-        player.shotsPenalty = [];
-        player.shotsFaced = [];
-        player.active = !settingsStore.enableOppPlayersTime;
-        player.isGK =
-          player.number === 1 || player.number === 13 ? true : false;
-      });
+    clearTeams() {
+      clearTeam(this.match.homeTeam, true);
+      clearTeam(this.match.awayTeam, false);
+    },
+    async restartMatch() {
+      this.clearTeams();
       this.events = [];
+      await restartMatch(this.match.id, {sender_client_id: useSessionStateStore().clientId});
     },
     addShot(
       number: number,
@@ -378,7 +345,7 @@ export const useGameStore = defineStore("gameStore", {
         if (eventId) {
           try {
             // Passiamo l'ID e il myClientId per la deduplicazione!
-            await deleteMatchEvent(eventId, myClientId); 
+            await deleteMatchEvent(eventId, useSessionStateStore().clientId); 
           } catch (error) {
             console.error("Errore durante l'eliminazione dell'evento:", error);
             // Opzionale: gestire un "rollback" visivo reinserendo l'evento se fallisce la cancellazione
@@ -535,7 +502,7 @@ export const useGameStore = defineStore("gameStore", {
         }
         // Chiamata al BE
         try {
-          await deleteMatchEvent(eventToRemove.id, myClientId);
+          await deleteMatchEvent(eventToRemove.id, useSessionStateStore().clientId);
         } catch (error) {
             console.error("Errore durante l'eliminazione dell'evento:", error);
             // Opzionale: gestire un "rollback" visivo reinserendo l'evento se fallisce la cancellazione
@@ -651,7 +618,7 @@ export const useGameStore = defineStore("gameStore", {
 
       // 5. CHIAMATA AL BACKEND
       try {
-        const res = await saveMatchEvent(refactorSaveEventPayload(myClientId, newEvent)); // La tua POST
+        const res = await saveMatchEvent(refactorSaveEventPayload(useSessionStateStore().clientId, newEvent)); // La tua POST
 
         const response = await res.json();
         
@@ -905,11 +872,6 @@ export const useGameStore = defineStore("gameStore", {
      * Funzione chiamata dal Socket Listener quando arriva un broadcast
      */
     handleIncomingBroadcast(broadcastData: any) {
-      // 1. DEDUPLICAZIONE: Controlliamo se siamo stati noi a generare l'evento
-      if (broadcastData.sender_client_id === myClientId) {
-        console.log("Broadcast ignorato: sono il mittente.");
-        return; 
-      }
       const payloadData = broadcastData.payload_json;
 
       if (payloadData.matchData) {
@@ -1029,3 +991,5 @@ function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
     }),
   };
 }
+
+

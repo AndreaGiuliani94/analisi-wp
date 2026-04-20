@@ -159,3 +159,25 @@ export const updateSubstitutions = async (matchId: string, requestBody: any) => 
   
   return response;
 };
+
+export const restartMatch = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/restart`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};

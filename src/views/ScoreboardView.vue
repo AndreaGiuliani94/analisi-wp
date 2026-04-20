@@ -34,7 +34,7 @@
           v-if="userRole && userRole !== 'viewer'"
           :label="'Restart'"
           :icon="ArrowPathIcon"
-          :onClick="gameStore.resetTimer">
+          :onClick="restartMatch">
         </NavButton>
       </div>
     </div>
@@ -67,7 +67,7 @@
         </div>
       </div>
       
-      <ClockManager :shrink="isShrinked" />
+      <ClockManager v-if="timerStore.isTimerMaster" :shrink="isShrinked" />
       
     </div>
   
@@ -154,6 +154,11 @@ const openModal = (team_: Team) => {
   showConfirmModal.value = true;
   team.value = team_;
 }
+
+const restartMatch = async () => {
+  gameStore.restartMatch();
+  timerStore.resetTimer();
+};
 
 onMounted(async () => {
   const sessionIdLS = localStorage.getItem("session_id");

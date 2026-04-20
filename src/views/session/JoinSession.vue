@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import { joinSession } from '@/services/sessionService'
 import { useAuthStore } from '@/stores/authStore'
+import { useGameStore } from '@/stores/gameStore'
 import { useSessionStateStore } from '@/stores/sessionStateStore'
 import { useSessionStore } from '@/stores/sessionStore'
 import { onMounted, ref } from 'vue'
@@ -33,11 +34,12 @@ onMounted(async () => {
     const sessionStateStore = useSessionStateStore();
     const authStore = useAuthStore()
     const sessionStore = useSessionStore()
+    const gameStore = useGameStore()
 
     await sessionStateStore.joinSession(sessionId);
     
     const userRole = sessionStore.getUserRoleByEmail(authStore.user?.email ?? '');
-    if (await userRole === 'viewer')
+    if (userRole === 'viewer' || (gameStore.match.homeTeam.id && gameStore.match.awayTeam.id))
       router.push("/game/live")
     else
       router.push('/game');

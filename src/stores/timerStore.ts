@@ -1,14 +1,16 @@
 import { defineStore } from 'pinia';
 import { useGameStore } from './gameStore';
 import { useSettingsStore } from './settingsStore';
-// import { playTimerApi, stopTimerApi } from '@/services/timerService'; // Le tue API
+import { useSessionStateStore } from './sessionStateStore';
+import { timerPlay, timerStop } from '@/services/timerService';
+import { useToast } from 'vue-toastification';
 
 export const useTimerStore = defineStore('timerStore', {
   state: () => ({
     countdown: 480,
     currentQuarter: 1,
     isTimerRunning: false,
-    isTimerMaster: false,
+    isTimerMaster: localStorage.getItem("is_timer_master") === "true",
     timerInterval: null as any,
   }),
 
@@ -21,6 +23,55 @@ export const useTimerStore = defineStore('timerStore', {
   },
 
   actions: {
+    setTimerMaster(data: any) {
+      let isMaster = false;
+      if(data.user_role === 'timekeeper') {
+          isMaster = true;
+      } else if(data.user_role === 'owner') {
+          const isAnyTimekeeper = data.participants.some((u: any) => u.role === 'timekeeper');
+          isMaster = !isAnyTimekeeper;
+      }
+      this.isTimerMaster = isMaster;
+      localStorage.setItem("is_timer_master", isMaster ? "true" : "false");
+    },
+    giveUpTimerMaster() {
+      console.log("È entrato un Timekeeper. Cedo il controllo del tempo.");
+
+      const timerStore = useTimerStore();
+      timerStore.isTimerMaster = false;
+      localStorage.setItem("is_timer_master", "false");
+
+      // Opzionale: Mostra un Toast/Alert all'owner per avvisarlo!
+      useToast().info("Non sei più il gestore del tempo!");
+    },
+    takeTimerMaster() {
+      console.log("È uscito un Timekeeper. Prendo il controllo del tempo.");
+      
+      const timerStore = useTimerStore();
+      timerStore.isTimerMaster = true;
+      localStorage.setItem("is_timer_master", "true");
+      
+      // Opzionale: Mostra un Toast/Alert all'owner per avvisarlo!
+      useToast().info("Sei diventato il nuovo gestore del tempo!")
+    },
+    setTimeFromString(timeString: string) {
+      if (!timeString || !timeString.includes(':')) {
+        console.warn("Formato tempo non valido ricevuto dal BE:", timeString);
+        return;
+      }
+
+      // Dividiamo la stringa in un array [minuti, secondi] e li convertiamo in numeri
+      const [minutes, seconds] = timeString.split(':').map(num => parseInt(num, 10));
+
+      // Controllo di sicurezza nel caso arrivino stringhe sporche tipo "08:xx"
+      if (isNaN(minutes) || isNaN(seconds)) {
+        console.warn("Impossibile convertire il tempo:", timeString);
+        return;
+      }
+
+      // Aggiorniamo il vero state numerico!
+      this.countdown = (minutes * 60) + seconds;
+    },
     // --- AZIONI MASTER (chiamate dai bottoni UI) ---
     async toggleGlobalTimer() {
       if (this.isTimerRunning) await this.masterStop();
@@ -29,14 +80,30 @@ export const useTimerStore = defineStore('timerStore', {
 
     async masterPlay() {
       if (this.isTimerRunning) return;
-      // await timerPlayApi({...}) --> Notifica gli Slave
       this.runLocalTimer();
+      const gameStore = useGameStore();
+      const sessionStateStore = useSessionStateStore();
+      const payload = {
+        match_id: gameStore.match.id,
+        sender_client_id: sessionStateStore.clientId,
+        quarter: this.currentQuarter,
+        time: this.formattedTime
+      }
+      await timerPlay(payload)
     },
 
     async masterStop() {
       if (!this.isTimerRunning) return;
       this.stopLocalTimer();
-      // await timerStopApi({...}) --> Notifica gli Slave e salva a DB
+      const gameStore = useGameStore();
+      const sessionStateStore = useSessionStateStore();
+      const payload = {
+        match_id: gameStore.match.id,
+        sender_client_id: sessionStateStore.clientId,
+        quarter: this.currentQuarter,
+        time: this.formattedTime
+      }
+      await timerStop(payload);
     },
 
     async masterBack(seconds: number) {
@@ -45,8 +112,6 @@ export const useTimerStore = defineStore('timerStore', {
       
       this.countdown = Math.min(settingsStore.periodDuration * 60, this.countdown + seconds);
       gameStore.adjustPlayerTimes(-seconds); // Togliamo secondi alle stats
-      
-      // await syncTimerApi(this.countdown, gameStore.getPlayerStats()); --> Sincronizza tutti
     },
 
     async masterForward(seconds: number) {
@@ -54,8 +119,6 @@ export const useTimerStore = defineStore('timerStore', {
 
       this.countdown = Math.max(0, this.countdown - seconds);
       gameStore.adjustPlayerTimes(seconds); // Aggiungiamo secondi alle stats
-      
-      // await syncTimerApi(this.countdown, gameStore.getPlayerStats()); --> Sincronizza tutti
     },
 
     removeQuarter() {
@@ -64,7 +127,6 @@ export const useTimerStore = defineStore('timerStore', {
 
     // --- LOGICA CONDIVISA (L'intervallo locale) ---
     runLocalTimer() {
-      this.stopLocalTimer(); // 1. PULIZIA PREVENTIVA (come avevi fatto tu!)
       this.isTimerRunning = true;
       const gameStore = useGameStore();
 
@@ -97,6 +159,16 @@ export const useTimerStore = defineStore('timerStore', {
       
       this.currentQuarter++;
       this.countdown = settingsStore.periodDuration * 60;
+    },
+
+    resetTimer() {
+      const settingsStore = useSettingsStore();
+      this.stopLocalTimer();
+      this.currentQuarter = 1;
+      this.countdown = settingsStore.periodDuration * 60;
+      this.isTimerRunning = true;
+      if(this.isTimerMaster)
+        this.masterStop();
     }
   }
 });
