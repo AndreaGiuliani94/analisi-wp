@@ -43,11 +43,5 @@ const updateValue = (e: Event) => {
 
 const computedPlaceholder = props.placeholder || props.label || '';
 
-const alignmentClass = {
-  center: 'text-center',
-  left: 'text-start',
-  right: 'text-end',
-}[props.labelPosition || 'center']
-
 </script>
 

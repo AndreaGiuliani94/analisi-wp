@@ -41,10 +41,9 @@
 
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
-import RoleBadge, { type RoleType } from '../badges/RoleBadge.vue';
+import RoleBadge from '../badges/RoleBadge.vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
 import { ChevronUpIcon } from '@heroicons/vue/20/solid';
-import { computed } from 'vue';
 
 const props = defineProps<{
   modelValue: 'owner' | 'editor' | 'viewer' | 'timekeeper'

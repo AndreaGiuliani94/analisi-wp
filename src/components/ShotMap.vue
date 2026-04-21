@@ -100,17 +100,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import ZoneBadge from './badges/ZoneBadge.vue';
 import { EvenShot, MenUpShot } from '@/enum/ShotDescription';
-import type { Shot } from '../interfaces/Shot';
+import type { MatchEvent } from '@/interfaces/MatchEvent';
 
 interface ShotStats {
-  goals: Shot[];
-  shots: Shot[];
-  parati: Shot[];
-  fuori: Shot[];
-  stoppati: Shot[];
+  goals: MatchEvent[];
+  shots: MatchEvent[];
+  parati: MatchEvent[];
+  fuori: MatchEvent[];
+  stoppati: MatchEvent[];
   // parati, fuori, stoppati ci sono, ma per la mappa ci bastano goals e shots
 }
 
@@ -154,74 +154,6 @@ const supZoneMapping: Record<string, string[]> = {
     'Controfuga': ['Ripartenze', 'RIPARTENZE', 'Ripartenza', MenUpShot.Rip]
 };
 
-// 2. I METODI DI CALCOLO
-const getEvenZoneGoals = (zoneName: string): number => {
-    if (!props.stats) return 0;
-    
-    // Recuperiamo i codici posizione associati a questa zona grafica
-    const validPositions = evenZoneMapping[zoneName] || [];
-    let totalGoals = 0;
-
-    // Sommiamo i goal da tutte le situazioni di gioco
-    if(props.stats.evens)
-        totalGoals += countGoals(props.stats.evens, validPositions);
-    // totalGoals += countGoals(props.stats.penalties);
-
-    return totalGoals;
-};
-
-const getEvenZoneTotal = (zoneName: string): number => {
-    if (!props.stats) return 0;
-    
-    const validPositions = evenZoneMapping[zoneName] || [];
-    let totalShotsCount = 0;
-
-    if(props.stats.evens)
-        totalShotsCount += countShots(props.stats.evens, validPositions);
-
-    return totalShotsCount;
-};
-
-const getSupZoneGoals = (zoneName: string): number => {
-    if (!props.stats) return 0;
-    
-    // Recuperiamo i codici posizione associati a questa zona grafica
-    const validPositions = supZoneMapping[zoneName] || [];
-    let totalGoals = 0;
-
-    // Funzione helper per evitare ripetizioni
-    
-    // Sommiamo i goal da tutte le situazioni di gioco
-    if(props.stats.sup)
-        totalGoals += countGoals(props.stats.sup, validPositions);
-    // totalGoals += countGoals(props.stats.penalties);
-
-
-    return totalGoals;
-};
-
-const getSupZoneTotal = (zoneName: string): number => {
-    if (!props.stats) return 0;
-    
-    const validPositions = evenZoneMapping[zoneName] || [];
-    let totalShotsCount = 0;    
-
-    if(props.stats.sup)
-        totalShotsCount += countShots(props.stats.sup, validPositions);
-
-    return totalShotsCount;
-};
-
-const countGoals = (categoryStats: ShotStats, validPositions: string[]) => {
-    if (!categoryStats) return 0;
-    return categoryStats.goals.filter(shot => validPositions.includes(shot.position)).length;
-};
-
-const countShots = (categoryStats: ShotStats, validPositions: string[]) => {
-    if (!categoryStats) return 0;
-    return categoryStats.shots.filter(shot => validPositions.includes(shot.position)).length;
-};
-
 const getEvenZoneStats = (zoneName: string) => {
     const validPositions = evenZoneMapping[zoneName] || [];
     
@@ -229,7 +161,7 @@ const getEvenZoneStats = (zoneName: string) => {
     let goals = 0, saved = 0, missed = 0, blocked = 0;
 
     // Helper per contare una singola categoria (es. evens.goals, sup.saved)
-    const count = (arr?: Shot[]) => arr ? arr.filter(shot => validPositions.includes(shot.position)).length : 0;
+    const count = (arr?: MatchEvent[]) => arr ? arr.filter(shot => shot.shotPosition ? validPositions.includes(shot.shotPosition) : false ).length : 0;
 
     if (props.stats) {
         goals += count(props.stats.evens?.goals);
@@ -249,7 +181,7 @@ const getSupZoneStats = (zoneName: string) => {
     let goals = 0, saved = 0, missed = 0, blocked = 0;
 
     // Helper per contare una singola categoria (es. evens.goals, sup.saved)
-    const count = (arr?: Shot[]) => arr ? arr.filter(shot => validPositions.includes(shot.position)).length : 0;
+    const count = (arr?: MatchEvent[]) => arr ? arr.filter(shot => shot.shotPosition ? validPositions.includes(shot.shotPosition) : false ).length : 0;
 
     if (props.stats) {
         goals += count(props.stats.sup?.goals);

@@ -33,7 +33,7 @@
       </div>
 
       <ExclamationTriangleIcon 
-        v-if="store.isOut(player)"
+        v-if="gameStore.isOut(player)"
         class="size-4 text-red-500 animate-pulse" 
       />
     </div>
@@ -81,7 +81,7 @@
         :type="ShotCategory.EVEN" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
-      <div class="h-6 w-8 flex items-center"> {{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</div>
+      <div class="h-6 w-8 flex items-center"> {{ playerShots?.even.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.even.length }}</div>
     </div>
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">SUP</div>
@@ -91,7 +91,7 @@
         :is-goal="false" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
-      <div class="h-6 w-8 flex items-center"> {{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</div>
+      <div class="h-6 w-8 flex items-center"> {{ playerShots?.sup.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.sup.length }}</div>
     </div>
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">RIG</div>
@@ -101,15 +101,15 @@
         :is-goal="false" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
-      <div class="h-6 w-8 flex items-center"> {{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</div>
+      <div class="h-6 w-8 flex items-center"> {{ playerShots?.penalty.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.penalty.length }}</div>
     </div>
     <div class="inline-flex ml-2 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center font-bold text-base"> 
         <span v-if="player.isGK">
-          {{ store.getAllSaves(player).saves + '/' + store.getAllSaves(player).shots }}
+          {{ playerShotsFaced?.saves.length + '/' + playerShotsFaced?.shots.length }}
         </span>
         <span v-else>
-          {{ store.getAllPlayerShots(player).goals + '/' + store.getAllPlayerShots(player).shots }}
+          {{ gameStore.getAllPlayerShots(player).goals + '/' + gameStore.getAllPlayerShots(player).shots }}
         </span>
       </div>
     </div>
@@ -127,7 +127,7 @@
 
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
-import { ref, nextTick, type PropType } from "vue";
+import { ref, nextTick, type PropType, computed } from "vue";
 import type { Player } from "@/interfaces/Player";
 import type { Team } from "../interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
@@ -140,7 +140,7 @@ import { useUserRole } from "@/composables/useUserRole";
 import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
 import { foulCategoryLabels, foulPositionLabels } from "@/const/consts";
 import { formatTime, getLabel } from "@/utils/utils";
-import type { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
+import { FoulType, type EDCSType, type FoulPosition } from "@/enum/ExclutionDescription";
 
 const props = defineProps({
   player: {
@@ -153,7 +153,7 @@ const props = defineProps({
   },
 });
 
-const store = useGameStore();
+const gameStore = useGameStore();
 const settings = useSettingsStore();
 const sessionStore = useSessionStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
@@ -163,6 +163,19 @@ const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
 const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+
+const playerShots = computed(() => {
+  if(props.player.id) 
+    return gameStore.getPlayerShotsByCategory(props.player.id)
+  }
+);
+
+const playerShotsFaced = computed(() => {
+  if(props.player.id && props.player.isGK) 
+    return gameStore.getGoalkeeperShotsFaced(props.player.id)
+  }
+);
+
 
 const startHold = () => {
   isHolding.value = false; // Reset del flag prima di iniziare
@@ -196,7 +209,7 @@ const handleClick = (team: number) => {
     return;
   }
 
-  store.toggleElement(props.player.number, team);
+  gameStore.toggleElement(props.player.number, team);
 };
 
 const saveEdit = (team: number) => {
@@ -208,32 +221,50 @@ const saveEdit = (team: number) => {
 };
 
 const addFoul = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
-  store.addExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type as FoulType, payload.position as FoulPosition, payload.ball, payload.earnedBy, exclNumber);
+  gameStore.processFoul({
+    number: props.player.number, 
+    team: (props.team.name === settings.homeTeamName ? 0 : 1), 
+    type: payload.type as FoulType, 
+    exclNumber: exclNumber, 
+    position: payload.position as FoulPosition, 
+    ball: payload.ball, 
+    earnedBy: payload.earnedBy
+  });
 }
 ;
 const addEDCS = (payload : { type: string, edcsType: string }, exclNumber: number) => {
-  store.addEDCS(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type as FoulType, payload.edcsType as EDCSType, exclNumber);
+  gameStore.processFoul({
+    number: props.player.number, 
+    team: (props.team.name === settings.homeTeamName ? 0 : 1), 
+    type: payload.type as FoulType, 
+    edcsType: payload.edcsType as EDCSType, 
+    exclNumber:exclNumber
+  });
 };
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
-  store.addShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.outcome)
+  gameStore.addShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.outcome)
 };
 
 const removeShot = (payload : { type: ShotCategory }) => {
-  store.removeShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type)
+  gameStore.removeShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type)
 };
 
 const removeExclution = (exclNumber: number) => {
-  store.removeExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), exclNumber);
+  gameStore.removeExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), exclNumber);
 };
 
 const getExclutionState = (index: number) => {
-  if(props.player.exclutions[index]) {
-    if(props.player.exclutions[index].type === 'EDCS'){
-      return getLabel(props.player.exclutions[index].type, foulCategoryLabels).toUpperCase().substring(0,2);
-    }
-    else {
-      return getLabel(props.player.exclutions[index].type, foulCategoryLabels).charAt(0) + '-' + getLabel(props.player.exclutions[index].position, foulPositionLabels).charAt(0)
+  if(props.player.id){
+
+    const excl = gameStore.getPlayerFouls(props.player.id)[index];
+    if(excl) {
+      if(excl.foulType === FoulType.EDCS){
+        return getLabel(excl.foulType, foulCategoryLabels).toUpperCase().substring(0,2);
+      }
+      else {
+        return getLabel(excl.foulType, foulCategoryLabels).charAt(0) + '-' + getLabel(excl.foulPosition, foulPositionLabels).charAt(0)
+      }
     }
   }
   return '';

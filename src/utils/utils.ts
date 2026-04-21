@@ -2,17 +2,16 @@ import { edcsCategoryLabels, foulCategoryLabels, foulPositionLabels, shotCategor
 import { FoulType } from "@/enum/ExclutionDescription";
 import { MatchEventType } from "@/enum/MatchEventDescription";
 import type { MatchEvent } from "@/interfaces/MatchEvent";
-import type { Exclution } from "@/interfaces/Exclution";
 import type { Player } from "@/interfaces/Player";
 import { useGameStore } from "@/stores/gameStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { Team } from "@/interfaces/Team";
 
-export function getExclution (exclution: Exclution) {
+export function getExclution (exclution: MatchEvent) {
     var str: string = '';
-    str += exclution.quarter + 'T ' + exclution.time + ' ' + getLabel(exclution.type, foulCategoryLabels) + ' ';
-    if(exclution.type !== 'EDCS') {
-      str += getLabel(exclution.position, foulPositionLabels) + ' ' + (exclution.ball ? 'Con palla' : 'Senza palla');
+    str += exclution.quarter + 'T ' + exclution.time + ' ' + getLabel(exclution.foulType, foulCategoryLabels) + ' ';
+    if(exclution.foulType !== FoulType.EDCS) {
+      str += getLabel(exclution.foulPosition, foulPositionLabels) + ' ' + (exclution.foulWithBall ? 'Con palla' : 'Senza palla');
     } else {
       str += getLabel(exclution.edcsType, edcsCategoryLabels);
     }
@@ -30,12 +29,6 @@ export const mapPlayerToFE = (bePlayer: any): Player => {
         actualTime: 0,
         active: bePlayer.is_playing, 
         isGK: bePlayer.player_info.is_gk,
-        // Inizializziamo tutti gli array vuoti richiesti dal FE
-        exclutions: [],
-        shotsEven: [],
-        shotsSup: [],
-        shotsPenalty: [],
-        shotsFaced: []
     };
 };
 
@@ -67,11 +60,6 @@ export const padRosterToMax = (
             activeTime: 0,
             benchTime: 0,
             actualTime: 0,
-            shotsEven: [],
-            shotsSup: [],
-            shotsPenalty: [],
-            exclutions: [],
-            shotsFaced: [],
             active: !enablePlayersTime,
             isGK: (playerNumber === 1 || playerNumber === 13),
         } as Player;
@@ -147,15 +135,10 @@ export function resetTeam (team: Team, isHome: boolean) {
     p.id = '';
     p.name = '';
     p.isGK = p.number === 1 || p.number === 13;
-    p.shotsEven = [];
-    p.shotsSup = [];
-    p.shotsPenalty = [];
-    p.exclutions = [];
     p.active = p.active ? p.active : !isHome;
     p.activeTime = 0;
     p.actualTime = 0;
     p.benchTime = 0;
-    p.shotsFaced = [];
   });
 };
 
@@ -164,14 +147,9 @@ export function clearTeam (team: Team, isHome: boolean) {
   team.timeOut1 = false;
   team.timeOut2 = false;
   team.players.forEach((p: Player) => {
-    p.shotsEven = [];
-    p.shotsSup = [];
-    p.shotsPenalty = [];
-    p.exclutions = [];
     p.active = !isHome;
     p.activeTime = 0;
     p.actualTime = 0;
     p.benchTime = 0;
-    p.shotsFaced = [];
   });
 };

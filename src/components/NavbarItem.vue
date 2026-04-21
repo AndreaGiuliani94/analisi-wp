@@ -7,8 +7,8 @@
                 <span class="hidden sm:inline">Match Live WP</span>
             </router-link>
             <div class="space-x-4 flex">
-                <router-link v-if="authStore.isLoggedIn" :to="(userRole === 'viewer' || gameStore.match.homeTeam?.players?.length > 0 )? '/game/live' : '/game' " class="flex items-center space-x-1"
-                    :class="{ 'font-bold': $route.path.includes('/game') }">
+                <router-link v-if="authStore.isLoggedIn" :to="(userRole === 'viewer' || gameStore.match.homeTeam?.players?.length > 0 )? 'live' : 'setup' " class="flex items-center space-x-1"
+                    :class="{ 'font-bold': $route.path.includes('/live') }">
                     <Icon name="water_polo" size="w-5 h-5" />
                     <span class="hidden sm:inline">Partita</span>
                 </router-link>
@@ -17,8 +17,8 @@
                     <Icon name="analisi" size="w-5 h-5" view-box="0 0 122.88 108.06" />
                     <span class="hidden sm:inline">Analisi</span>
                 </router-link>
-                <router-link v-if="authStore.isLoggedIn && userRole !== 'viewer'" to="/settings" class="flex items-center space-x-1"
-                    :class="{ 'font-bold': $route.path === '/settings' }">
+                <router-link v-if="authStore.isLoggedIn && userRole !== 'viewer'" to="settings" class="flex items-center space-x-1"
+                    :class="{ 'font-bold': $route.path.includes('/settings') }">
                     <WrenchScrewdriverIcon class="size-5"></WrenchScrewdriverIcon>
                     <span class="hidden sm:inline">Impostazioni</span>
                 </router-link>

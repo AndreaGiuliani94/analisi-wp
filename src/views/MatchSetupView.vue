@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useGameStore } from '../stores/gameStore';
-import { ArrowPathIcon, PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
+import { PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import { useUserRole } from '@/composables/useUserRole';
@@ -65,10 +65,8 @@ import { useSessionStore } from '@/stores/sessionStore';
 import type { TeamInfo } from '@/interfaces/TeamInfo';
 import TeamRosterEditor from '@/components/TeamRosterEditor.vue';
 import { useRouter } from 'vue-router';
-import { useSessionStateStore } from '@/stores/sessionStateStore';
 import type { Team } from '@/interfaces/Team';
 import { useToast } from 'vue-toastification';
-import type { Player } from '@/interfaces/Player';
 import { useTimerStore } from '@/stores/timerStore';
 
 const store = useGameStore();
@@ -240,12 +238,8 @@ const startLiveMatch = async () => {
         // 2. CHIAMATE AL BACKEND (Bulk Save)
         await store.savePregameData();
 
-        // Opzionale: un piccolo feedback se il salvataggio è molto veloce
-        console.log("Distinte salvate con successo! Andiamo in Live...");
-
         // 3. NAVIGAZIONE ALLA PARTITA
-        // Solo se le chiamate API non vanno in errore (nessun throw/catch), si cambia pagina
-        router.push('/game/live');
+        router.push('live');
 
     } catch (error) {
         console.error("Errore fatale durante il salvataggio pre-partita:", error);

@@ -10,7 +10,7 @@
                     
                     <div class="flex items-center gap-2">
                         <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
-                            {{ gameStore.getAllSaves(player).saves }}/{{ gameStore.getAllSaves(player).shots }}
+                            {{ playerShotsFaced.saves.length }}/{{ playerShotsFaced.shots.length }}
                         </span>
                     </div>
                 </div>
@@ -135,21 +135,19 @@
 
 <script setup lang="ts">
 import type { Player } from '../interfaces/Player';
-import type { Exclution } from '../interfaces/Exclution';
 import { shotCategories,shotFacedCategories } from '@/const/consts';
 import { evenZones, supZones } from '../interfaces/shot/Zone';
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { computed, ref } from 'vue';
 import type { CategoryKey } from '../interfaces/shot/Category';
-import type { Shot } from '../interfaces/Shot';
 import { useGameStore } from '@/stores/gameStore';
 import type { Team } from '../interfaces/Team';
 import ShotMap from './ShotMap.vue';
 import ShotAnalysisCard from './cards/ShotAnalysisCard.vue';
 import type { ShotKey } from '../interfaces/shot/ShotKey';
-import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { getExclution } from '@/utils/utils';
 import FoulAccordionCard from './cards/FoulAccordionCard.vue';
+import type { MatchEvent } from '@/interfaces/MatchEvent';
 
 const gameStore = useGameStore()
 
@@ -158,58 +156,73 @@ const props = defineProps<{
     player: Player;
     align: 'row' | 'col';
     showGKShots: boolean;
-    getExclution: (excl: Exclution) => string;
+    getExclution: (excl: MatchEvent) => string;
     isModal: boolean;
 }>();
 
 const viewMode = ref('map');
+const exclEarned = computed(() => props.player.id ? gameStore.getFoulsEarnedByPlayer(props.player.id) : []);
+
+const playerShots = computed(() => {
+  if(props.player.id) {
+    return gameStore.getPlayerShotsByCategory(props.player.id) 
+  } 
+  else {
+    return{ even: [], sup: [], penalty: [] }
+  }
+}
+);
+
+const playerShotsFaced = computed(() => {
+    if(props.player.id && props.player.isGK) 
+        return gameStore.getGoalkeeperShotsFaced(props.player.id)
+    else
+        return {saves: [], shots: []}
+  }
+);
 
 const totalShots = computed(() => ({
-  evens: getShotsByType(props.player.shotsEven),
-  sup: getShotsByType(props.player.shotsSup)
+  evens: getShotsByType(playerShots.value.even),
+  sup: getShotsByType(playerShots.value.sup)
 }))
-
-const exclEarned = computed( () => gameStore.getAllExclutionsEarned(props.team, props.player));
 
 const totalShotsFaced = computed(() => ({
   evens: { 
-    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
-    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && shot.outcome === ShotOutcome.GOAL),
-    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && shot.outcome === ShotOutcome.SAVED),
+    shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
+    goals: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && shot.shotOutcome === ShotOutcome.GOAL),
+    parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
   },
   sup: {
-    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
-    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.GOAL),
-    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.SAVED),
+    shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
+    goals: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && shot.shotOutcome === ShotOutcome.GOAL),
+    parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
   },
   penalties: {
-    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
-    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && shot.outcome === ShotOutcome.GOAL),
-    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && shot.outcome === ShotOutcome.SAVED),
+    shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
+    goals: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && shot.shotOutcome === ShotOutcome.GOAL),
+    parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
   }
 }))
 
 
-function getShotsByType(shots: Shot[]): {
-  goals: Shot[]
-  parati: Shot[]
-  fuori: Shot[]
-  stoppati: Shot[]
-  shots: Shot[]
+function getShotsByType(shots: MatchEvent[]): {
+  goals: MatchEvent[]
+  parati: MatchEvent[]
+  fuori: MatchEvent[]
+  stoppati: MatchEvent[]
+  shots: MatchEvent[]
 } {
-  const toUpper = (s: string) => s.toUpperCase()
-
   return {
-    goals: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.GOAL)),
-    parati: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.SAVED)),
-    fuori: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.MISSED)),
-    stoppati: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.BLOCKED)),
+    goals: shots.filter(shot => shot.shotOutcome === ShotOutcome.GOAL),
+    parati: shots.filter(shot => shot.shotOutcome === ShotOutcome.SAVED),
+    fuori: shots.filter(shot => shot.shotOutcome === ShotOutcome.MISSED),
+    stoppati: shots.filter(shot => shot.shotOutcome === ShotOutcome.BLOCKED),
     shots
   }
 }
@@ -217,9 +230,9 @@ function getShotsByType(shots: Shot[]): {
 function getShotsByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
     switch (type) {
         case 'evens':
-            return totalShots.value.evens[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShots.value.evens[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         case 'sup':
-            return totalShots.value.sup[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShots.value.sup[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         default:
             return 0;
     }
@@ -262,9 +275,9 @@ function getFacedZoneValue(type: ShotKey, category: CategoryKey, values: (EvenSh
 function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
     switch (type) {
         case 'evens':
-            return totalShotsFaced.value.evens[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShotsFaced.value.evens[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         case 'sup':
-            return totalShotsFaced.value.sup[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShotsFaced.value.sup[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         default:
             return 0;
     }
@@ -272,17 +285,20 @@ function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions
 
 // Mappiamo i falli commessi
 const mappedCommessi = computed(() => {
-    return props.player.exclutions.map(ex => ({
-        primaryText: getExclution(ex),
-        secondaryText: (ex.earnedBy && ex.earnedBy !== 0) ? `su ${gameStore.getOpponentsPlayerName(props.team, ex.earnedBy)}` : undefined
-    }));
+    if(props.player.id)
+        return gameStore.getPlayerFouls(props.player.id).map(ex => ({
+            primaryText: getExclution(ex),
+            secondaryText: ex.earnedByPlayerId ? `su ${gameStore.getOpponentsPlayerName(ex.earnedByPlayerId, props.team)}` : undefined
+        }));
+    else
+        return []
 });
 
 // Mappiamo i falli guadagnati
 const mappedGuadagnati = computed(() => {
-    return exclEarned.value.map(ex => ({
+    return exclEarned.value.map((ex: MatchEvent) => ({
         primaryText: getExclution(ex),
-        secondaryText: ex.earnedOn ? `su ${ex.earnedOn}` : undefined
+        secondaryText: ex.playerId ? `su ${gameStore.getOpponentsPlayerName(ex.playerId, props.team)}` : undefined
     }));
 });
 

@@ -45,3 +45,25 @@ export const deleteMatchEvent = async (eventId: string, myClientId: string ) => 
   
   return response;
 };
+
+export const updateMatchEvent = async (eventId: string, payload: any ) => {
+  const response = await fetch(
+    `${BE_URL}/events/${eventId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};

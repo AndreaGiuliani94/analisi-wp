@@ -12,15 +12,9 @@
 </template>
   
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, TransitionRoot, Tab, TabGroup,
-  TabList,
-  TabPanels,
-  TabPanel } from "@headlessui/vue";
+
 import type { Team } from "../../interfaces/Team";
 import type { PropType } from "vue";
-import MenUpTab from "../tabs/ManUpTab.vue";
-import EvenTab from "../tabs/EvenTab.vue";
-import ExclutionsTab from "../tabs/ExclutionsTab.vue";
 import TeamStatistics from "../TeamStatistics.vue";
 import BaseModal from "./BaseModal.vue";
 
@@ -31,8 +25,6 @@ team: {
     required: true,
 }
 });
-
-const tabs = ['Superiorità', 'Pari', 'Falli']
 
 const emit = defineEmits(["confirm", "close"]);
 

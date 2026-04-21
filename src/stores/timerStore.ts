@@ -28,8 +28,7 @@ export const useTimerStore = defineStore('timerStore', {
       if(data.user_role === 'timekeeper') {
           isMaster = true;
       } else if(data.user_role === 'owner') {
-          const isAnyTimekeeper = data.participants.some((u: any) => u.role === 'timekeeper');
-          isMaster = !isAnyTimekeeper;
+          isMaster = true
       }
       this.isTimerMaster = isMaster;
       localStorage.setItem("is_timer_master", isMaster ? "true" : "false");

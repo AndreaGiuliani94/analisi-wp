@@ -5,7 +5,7 @@
         <NavButton
         :label="'Distinta'"
         :icon="ArrowLeftIcon"
-          to="/game">
+          to="setup">
         </NavButton>
       </div>
       <div class="flex flex-col items-center">
@@ -84,8 +84,8 @@
     </div>
   
     <div class="flex justify-center items-center gap-10" role="group">
-      <ActionButton :icon="TableCellsIcon" label="Report" to="/game/report" color="green" position="center"/>
-      <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="/game/events" color="green" position="center" :disabled="gameStore.events.length == 0"/>
+      <ActionButton :icon="TableCellsIcon" label="Report" to="report" color="green" position="center"/>
+      <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="events" color="green" position="center" :disabled="gameStore.events.length == 0"/>
     </div>
     <!-- Modale con statistiche -->
     <QuickReportModal v-if="team" :isOpen="showConfirmModal" :team="team"
@@ -105,18 +105,14 @@ import NavButton from '@/components/buttons/NavButton.vue';
 import TeamItem from '@/components/TeamItem.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import { useSessionStore } from '@/stores/sessionStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useUserRole } from '@/composables/useUserRole';
 import ModeToggleItem from '@/components/ModeToggleItem.vue';
 import { MinusIcon } from '@heroicons/vue/24/outline';
-import { useRealtimeStore } from '@/stores/realtimeStore';
 import { useTimerStore } from '@/stores/timerStore';
 
-const authStore = useAuthStore()
 const gameStore = useGameStore()
 const timerStore = useTimerStore()
 const sessionStore = useSessionStore()
-const realtimeStore = useRealtimeStore()
 const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
 
 const isShrinked = ref(false)
@@ -136,7 +132,6 @@ const updateScroll = () => {
   const scrollThreshold = 60 
   isShrinked.value = window.scrollY > scrollThreshold
 }
-
 
 const toggleTimeOut = (payload : { number: number, teamName: string}) => {
   gameStore.toggleTimeOut(payload.number, payload.teamName);
@@ -161,15 +156,9 @@ const restartMatch = async () => {
 };
 
 onMounted(async () => {
-  const sessionIdLS = localStorage.getItem("session_id");
-  if (sessionIdLS !== null && authStore.user != null) {
-      console.log("Ruolo utente:", userRole.value);
-  }
   updateHeaderHeight()
   window.addEventListener('resize', updateHeaderHeight)
   window.addEventListener('scroll', updateScroll)
-
-  realtimeStore.subscribeToMatch();
 })
 
 onBeforeUnmount(() => {
@@ -177,9 +166,5 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', updateScroll)
 })
 
-onUnmounted(() => {
-  // Quando usciamo dalla pagina Live, chiudiamo il WebSocket
-  realtimeStore.unsubscribe();
-});
 
 </script>

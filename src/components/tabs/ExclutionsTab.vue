@@ -1,5 +1,3 @@
-
-
 <template>
     <div class=" rounded-b-xl p-2 pt-4 w-full">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -54,10 +52,11 @@
 
 <script setup lang="ts">
 import type { Team } from '../../interfaces/Team';
-import type { Exclution } from '../../interfaces/Exclution';
 import { computed, type PropType } from 'vue';
 import { ArrowTurnDownRightIcon } from '@heroicons/vue/24/outline';
 import { FoulPosition, FoulType } from '@/enum/ExclutionDescription';
+import { useGameStore } from '@/stores/gameStore';
+import type { MatchEvent } from '@/interfaces/MatchEvent';
 
 const props = defineProps({
     team: {
@@ -133,41 +132,43 @@ const foulStats = computed(() => {
 });
 
 const getAllFouls = () => {
-    var allFouls: Exclution[] = [];
-    props.team.players.forEach(pl => allFouls.push(...pl.exclutions));
+    var allFouls: MatchEvent[] = [];
+    props.team.players.forEach(pl => {
+        if(pl.id) allFouls.push(...useGameStore().getPlayerFouls(pl.id))
+    });
     return allFouls;
 }
 
 const getExclutions = () => {
     return {
-        exclutions: getAllFouls().filter(excl => excl.type.toUpperCase() === FoulType.EXCL ),
-        penalties: getAllFouls().filter(excl => excl.type.toUpperCase() === FoulType.PEN )
+        exclutions: getAllFouls().filter(excl => excl.foulType === FoulType.EXCL ),
+        penalties: getAllFouls().filter(excl => excl.foulType === FoulType.PEN )
       }
 }
 
 const getFouls = (type: string, position: string) => {
-    return getAllFouls().filter(excl => excl.type.toUpperCase() === type.toUpperCase() && excl.position?.toUpperCase() === position.toUpperCase() ).length
+    return getAllFouls().filter(excl => excl.foulType === type.toUpperCase() && excl.foulPosition === position.toUpperCase() ).length
 }
 
 const getFoulsWith = (type: string, position: string) => {
     switch(type.toUpperCase()) {
         case FoulType.EXCL:
-            return getExclutions().exclutions.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && excl.ball ).length;
+            return getExclutions().exclutions.filter(excl => excl.foulPosition === position.toUpperCase() && excl.foulWithBall ).length;
         case FoulType.PEN:
-            return getExclutions().penalties.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && excl.ball ).length;
+            return getExclutions().penalties.filter(excl => excl.foulPosition === position.toUpperCase() && excl.foulWithBall ).length;
         default:
-            return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && excl.ball ).length
+            return getAllFouls().filter(excl => excl.foulType !== FoulType.EDCS && excl.foulWithBall ).length
     }
 }
 
 const getFoulsWithout = (type: string, position: string) => {
     switch(type.toUpperCase()) {
         case FoulType.EXCL:
-            return getExclutions().exclutions.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && !excl.ball ).length;
+            return getExclutions().exclutions.filter(excl => excl.foulPosition === position.toUpperCase() && !excl.foulWithBall ).length;
         case FoulType.PEN:
-            return getExclutions().penalties.filter(excl => excl.position?.toUpperCase() === position.toUpperCase() && !excl.ball ).length;
+            return getExclutions().penalties.filter(excl => excl.foulPosition === position.toUpperCase() && !excl.foulWithBall ).length;
         default:
-            return getAllFouls().filter(excl => excl.type.toUpperCase() !== 'EDCS' && !excl.ball ).length
+            return getAllFouls().filter(excl => excl.foulType !== FoulType.EDCS && !excl.foulWithBall ).length
     }
 }
 

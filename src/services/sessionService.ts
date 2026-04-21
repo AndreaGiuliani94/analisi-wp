@@ -24,7 +24,7 @@ export const updateSession = async (sessionId: string, match: any, events: any) 
         headers: {
             'Content-Type': 'application/json'
         },
-        credentials: 'include', // per cookie HttpOnly
+        credentials: 'include',
         body: JSON.stringify({
             session_id: sessionId,
             match: match,

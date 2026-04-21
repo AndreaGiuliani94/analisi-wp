@@ -43,17 +43,19 @@
                         </td>
                         <td class="p-2 font-mono">{{ formatTime(player.activeTime) }}</td>
                         <td class="p-2 font-mono">{{ formatTime(player.benchTime) }}</td>
-                        <td class="p-2 font-mono font-semibold">{{ player.shotsEven.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsEven.length }}</td>
-                        <td class="p-2 font-mono font-semibold">{{ player.shotsSup.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsSup.length }}</td>
-                        <td class="p-2 font-mono font-semibold">{{ player.shotsPenalty.filter(shot => shot.outcome.toUpperCase() === 'GOAL' ).length + '/' + player.shotsPenalty.length }}</td>
-                        <td class="p-2 font-mono font-black text-blue-900">{{ getAllShoots(player) }}</td>
-                        
-                        <td class="whitespace-normal wrap-break-word p-2 text-xs text-gray-500">
-                            <div class="flex gap-1 flex-wrap">
-                                <span v-for="(ex, i) in player.exclutions.slice(0, 3)" :key="i"
-                                    class="bg-red-50 text-red-700 border border-red-100 px-1.5 py-0.5 rounded-md">
-                                    {{ getExclution(ex) }}
-                                </span>
+                        <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'even') }}</td>
+                        <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'sup') }}</td>
+                        <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'penalty') }}</td>
+                        <td class="p-2 font-mono font-bold">{{ getTotalShotStats(player.id) }}</td>
+
+                        <td class="p-2">
+                            <div class="flex gap-1" v-if="gameStore.getPlayerFouls(player.id).length > 0">
+                                <FoulBadge
+                                    v-for="foul in gameStore.getPlayerFouls(player.id)" 
+                                    :key="foul.id" 
+                                    :event="foul"
+                                    :text="getExclution(foul)" 
+                                />
                             </div>
                         </td>
                     </tr>
@@ -77,16 +79,16 @@
 
 import { useGameStore } from '../stores/gameStore';
 import type { Team } from '../interfaces/Team';
-import type { Player } from '../interfaces/Player';
 import { ref } from 'vue';
 import PlayerDetail from './PlayerDetail.vue';
 import { formatTime, getExclution } from '@/utils/utils';
+import { ShotOutcome } from '@/enum/ShotDescription';
+import FoulBadge from './badges/FoulBadge.vue';
 
-const store = useGameStore();
+const gameStore = useGameStore();
 
 const props = defineProps<{
     team: Team;
-    getAllShoots: (player: Player) => string;
 }>();
 
 const expandedRows = ref<number[]>([])
@@ -98,6 +100,41 @@ function toggle(playerNumber: number) {
     expandedRows.value.push(playerNumber)
   }
 }
+
+/**
+ * Interroga lo store e formatta la stringa "Gol / Tiri" per la categoria richiesta
+ */
+const getShotStats = (playerId: string | undefined, category: 'even' | 'sup' | 'penalty') => {
+    if (!playerId) return "0/0";
+    
+    // Recuperiamo i tiri tramite il Getter
+    const shots = gameStore.getPlayerShotsByCategory(playerId)[category] || [];
+    
+    // Contiamo quanti di questi tiri hanno avuto esito GOAL
+    const goals = shots.filter(s => s.shotOutcome === ShotOutcome.GOAL).length;
+    
+    return `${goals}/${shots.length}`;
+};
+
+/**
+ * Unisce tutte le categorie per fare il totale
+ */
+const getTotalShotStats = (playerId: string | undefined) => {
+    if (!playerId) return "0/0";
+
+    const categorizedShots = gameStore.getPlayerShotsByCategory(playerId);
+    
+    // Appiattiamo gli array in un unico listone di tiri
+    const allShots = [
+        ...(categorizedShots.even || []), 
+        ...(categorizedShots.sup || []), 
+        ...(categorizedShots.penalty || [])
+    ];
+    
+    const goals = allShots.filter(s => s.shotOutcome === ShotOutcome.GOAL).length;
+    
+    return `${goals}/${allShots.length}`;
+};
 
 </script>
 

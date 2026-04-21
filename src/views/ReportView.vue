@@ -6,12 +6,12 @@
             <NavButton
                 :label="'Live'"
                 :icon="ArrowLeftIcon"
-                to="/game/live" />
+                to="live" />
             </div>
             <!-- Colonna centrale: titolo -->
             <h1 class="text-lg font-bold text-blue-950 text-center">
                 Report di 
-                <div>{{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}</div>
+                <div>{{ gameStore.match.homeTeam.name }} - {{ gameStore.match.awayTeam.name }}</div>
             </h1>
             <!-- Colonna destra: export button-->
             <div class="justify-self-end">
@@ -39,10 +39,10 @@
 
             <TabPanels class="">
                 <TabPanel>
-                    <TeamPanel :team="store.match.homeTeam" :getAllShoots="getAllShoots"></TeamPanel>
+                    <TeamPanel :team="gameStore.match.homeTeam" :getAllShoots="getAllShoots"></TeamPanel>
                 </TabPanel>
                 <TabPanel>
-                    <TeamPanel :team="store.match.awayTeam" :getAllShoots="getAllShoots"></TeamPanel>
+                    <TeamPanel :team="gameStore.match.awayTeam" :getAllShoots="getAllShoots"></TeamPanel>
                 </TabPanel>
             </TabPanels>
         </TabGroup>
@@ -63,25 +63,25 @@ import { Tab, TabGroup,
 import TeamPanel from '@/components/TeamPanel.vue';
 import { formatTime, getExclution } from '@/utils/utils';
 
-const store = useGameStore();
+const gameStore = useGameStore();
 
-const tabs = [store.match.homeTeam.name, store.match.awayTeam.name]
+const tabs = [gameStore.match.homeTeam.name, gameStore.match.awayTeam.name]
 
 const getAllShoots = (element: Player) => {
-    return store.getAllPlayerShots(element).goals + '/' + store.getAllPlayerShots(element).shots;
+    return gameStore.getAllPlayerShots(element).goals + '/' + gameStore.getAllPlayerShots(element).shots;
 }
 
 const getExclutions = (element: Player) => {
-    // Se non ci sono falli, ritorniamo stringa vuota
-    if (!element.exclutions || element.exclutions.length === 0) return '';
-    
-    // Mappiamo ogni fallo e li uniamo con l'a capo (\n)
-    return element.exclutions.map(excl => getExclution(excl)).join('\n');
+    if(!element.id) return ''
+
+    const fouls = gameStore.getPlayerFouls(element.id);
+    if (!fouls || fouls.length === 0) return '';
+    return fouls.map(excl => getExclution(excl)).join('\n');    
 }
 
 const downloadExcel = () => {
     exportTeamsToExcel({
-        match: store.match,
+        match: gameStore.match,
         formatTime: formatTime,
         getAllShoots,
         getExclutions,

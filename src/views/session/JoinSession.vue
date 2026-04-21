@@ -1,28 +1,31 @@
 <!-- views/JoinSession.vue -->
 <template>
-  <div class="flex items-center justify-center h-[80vh]">
+  <div v-if="isLoading" class="flex items-center justify-center h-[80vh]">
     <div class="text-center space-y-4">
       <h2 class="text-2xl font-bold">Unione alla sessione...</h2>
       <p class="text-gray-600">Attendere mentre ti aggiungiamo alla sessione.</p>
       <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
     </div>
   </div>
+  <div v-else class="h-full w-full">
+    <router-view />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { joinSession } from '@/services/sessionService'
-import { useAuthStore } from '@/stores/authStore'
-import { useGameStore } from '@/stores/gameStore'
+import { useRealtimeStore } from '@/stores/realtimeStore'
 import { useSessionStateStore } from '@/stores/sessionStateStore'
-import { useSessionStore } from '@/stores/sessionStore'
-import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const router = useRouter()
 
 const sessionId = route.params.id as string
+const isLoading = ref(true)
 const error = ref('')
+
+const realtimeStore = useRealtimeStore()
 
 onMounted(async () => {
   try {
@@ -30,21 +33,17 @@ onMounted(async () => {
     if (!res.ok) {
       throw new Error('Errore durante l’unione alla sessione.')
     }
-    
     const sessionStateStore = useSessionStateStore();
-    const authStore = useAuthStore()
-    const sessionStore = useSessionStore()
-    const gameStore = useGameStore()
-
     await sessionStateStore.joinSession(sessionId);
-    
-    const userRole = sessionStore.getUserRoleByEmail(authStore.user?.email ?? '');
-    if (userRole === 'viewer' || (gameStore.match.homeTeam.id && gameStore.match.awayTeam.id))
-      router.push("/game/live")
-    else
-      router.push('/game');
+    realtimeStore.subscribeToMatch();
   } catch (err: any) {
     error.value = err.message || 'Errore sconosciuto'
+  } finally {
+    isLoading.value = false;
   }
+})
+
+onUnmounted(() => {
+  realtimeStore.unsubscribe();
 })
 </script>

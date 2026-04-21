@@ -55,10 +55,6 @@
         >
             <div v-if="isPopoverOpen" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-white/95 backdrop-blur-md shadow-xl rounded-lg border border-slate-200 p-2.5 z-50 cursor-default">
                 
-                <!-- <div class="text-xs font-bold text-slate-700 border-b border-slate-100 pb-1.5 mb-1.5 text-center uppercase tracking-wider">
-                    Dettaglio {{ name }}
-                </div> -->
-                
                 <div class="flex flex-col gap-0.5 text-[11px]">
                     <div class="flex justify-between items-center" :class="goals > 0 ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         <span>Goal</span> <span class="font-mono">{{ goals }}</span>

@@ -1,21 +1,18 @@
-import { defineStore, type Store } from "pinia";
-import router from "@/router";
+import { defineStore } from "pinia";
 import type { Player } from "@/interfaces/Player";
 import type { MatchEvent } from "@/interfaces/MatchEvent";
 import type { Match } from "@/interfaces/Match";
-import type { Exclution } from "@/interfaces/Exclution";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
 import { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
 import { useToast } from "vue-toastification";
-import type { Shot } from "@/interfaces/Shot";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
 import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, restartMatch, savePregameSetup, updatePlayer, updateSubstitutions } from "@/services/matchService";
 import type { TeamInfo } from "@/interfaces/TeamInfo";
 import type { NewPlayer } from "@/interfaces/NewPlayer";
-import { deleteMatchEvent, saveMatchEvent } from "@/services/eventService";
-import { applyStatsToPlayer, convertDbEventToUI, refactorSaveEventPayload } from "@/utils/converter";
+import { deleteMatchEvent, saveMatchEvent, updateMatchEvent } from "@/services/eventService";
+import { convertDbEventToUI, refactorSaveEventPayload } from "@/utils/converter";
 import { useTimerStore } from "./timerStore";
 import type { Substitutions } from "@/interfaces/Substitutions";
 import { useSessionStateStore } from "./sessionStateStore";
@@ -23,14 +20,12 @@ import { clearTeam, resetTeam } from "@/utils/utils";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
-    const savedEvents = localStorage.getItem("events");
-    const savedMatch = localStorage.getItem("match");
     return {
       isCorrectionMode: false,
       pendingSubstitutions: [] as Substitutions[],
       subsTimeoutId: null as any,
-      events: savedEvents ? (JSON.parse(savedEvents) as MatchEvent[]) : [],
-      match: savedMatch ? (JSON.parse(savedMatch) as Match) : ({} as Match),
+      events: [] as MatchEvent[],
+      match: {} as Match,
     };
   },
   getters: {
@@ -58,6 +53,83 @@ export const useGameStore = defineStore("gameStore", {
         }
       });
       return partials;
+    },
+    /**
+     * Restituisce tutti i tiri di un giocatore, filtrabili (opzionalmente) per quarto
+     */
+    getPlayerShots: (state) => {
+      return (playerId?: string, quarter?: number) => {
+        if (!playerId) return [];
+        let playerEvents: MatchEvent[] = state.events.filter(e => 
+          e.playerId === playerId && 
+          (e.eventType === MatchEventType.SHOT)
+        );
+
+        if (quarter) {
+          playerEvents = playerEvents.filter(e => e.quarter === quarter);
+        }
+
+        return playerEvents;
+      }
+    },
+    /**
+     * Separa automaticamente i tiri per categoria
+     */
+    getPlayerShotsByCategory: (state) => {
+      return (playerId: string) => {
+        const allShots = state.events.filter(e => 
+          e.playerId === playerId && e.eventType === MatchEventType.SHOT
+        );
+
+        return {
+          even: allShots.filter(s => s.shotCategory === ShotCategory.EVEN),
+          sup: allShots.filter(s => s.shotCategory === ShotCategory.SUP),
+          penalty: allShots.filter(s => s.shotCategory === ShotCategory.PENALTY),
+        };
+      }
+    },
+    /**
+     * Statistiche Portiere
+     */
+    getGoalkeeperShotsFaced: (state) => {
+      return (goalkeeperId: string) => {
+        const totalShotsFaced = state.events.filter(e => e.defendingGoalkeeperId === goalkeeperId);
+
+        return {
+          saves: totalShotsFaced.filter(e => e.shotOutcome === ShotOutcome.SAVED),
+          shots: totalShotsFaced
+        }
+      }
+    },
+    /**
+     * Restituisce tutti i falli di un giocatore, filtrabili (opzionalmente) per quarto
+     */
+    getPlayerFouls: (state) => {
+      return (playerId?: string, quarter?: number) => {
+        if (!playerId) return [];
+        let playerEvents: MatchEvent[] = state.events.filter(e => 
+          e.playerId === playerId && 
+          (e.eventType === MatchEventType.FOUL)
+        );
+
+        if (quarter) {
+          playerEvents = playerEvents.filter(e => e.quarter === quarter);
+        }
+
+        return playerEvents ?? [];
+      }
+    },
+    /**
+     * Restituisce tutti i falli GUADAGNATI da un giocatore specifico (es. Centro Boa)
+     */
+    getFoulsEarnedByPlayer: (state) => {
+      return (playerId?: string) => {
+        if (!playerId) return [];
+        return state.events.filter(e => 
+          (e.eventType === MatchEventType.FOUL) && 
+          e.earnedByPlayerId === playerId
+        );
+      }
     }
   },
   actions: {
@@ -93,7 +165,7 @@ export const useGameStore = defineStore("gameStore", {
         const currentActiveCount = this.match.homeTeam.players.filter(p => p.active).length;
         
         // Controllo espulsioni definitive
-        if (el.exclutions.length >= 3 || el.exclutions.findIndex(excl => excl.type === FoulType.EDCS) != -1) {
+        if (this.isOut(el)) {
           toast.warning("Giocatore espulso definitivamente");
           return;
         }
@@ -159,25 +231,6 @@ export const useGameStore = defineStore("gameStore", {
       }
     },
     /**
-     * Chiamato 1 volta al secondo dal timerStore.
-     * Incrementa i contatori temporanei di chi è in vasca e chi è in panchina.
-     */
-    tickPlayerTimes() {
-      const updateTimes = (team: Team) => {
-        team.players.forEach((p: Player) => {
-          if (p.active) {
-            p.activeTime = (p.activeTime || 0) + 1;
-            p.actualTime = (p.actualTime || 0) + 1;
-          } else {
-            p.benchTime = (p.benchTime || 0) + 1;
-          }
-        });
-      };
-
-      updateTimes(this.match.homeTeam);
-      updateTimes(this.match.awayTeam);
-    },
-    /**
      * Modifica massivamente i tempi dei giocatori.
      * @param seconds Quanti secondi aggiungere (es. 1 per lo scorrere normale, o 30 per forward). 
      * Usare valori negativi per il 'back' (es. -10).
@@ -233,26 +286,13 @@ export const useGameStore = defineStore("gameStore", {
       
       if (!player) return; 
 
-      // 2. Aggiornamento Statistiche Giocatore 
-      const shotData = { position, outcome };
-      const targetArray = {
-        [ShotCategory.EVEN]: player.shotsEven,
-        [ShotCategory.SUP]: player.shotsSup,
-        [ShotCategory.PENALTY]: player.shotsPenalty,
-        [ShotCategory.OUTCOME]: null
-      }[type];
-
-      if (targetArray) targetArray.push(shotData);
-
       // 3. Statistiche Portiere Avversario
       const opposingTeam = team === 0 ? this.match.awayTeam : this.match.homeTeam;
       const activeGoalkeeper = opposingTeam.players.find((p: any) => p.isGK && p.active);
       const gkId = activeGoalkeeper ? activeGoalkeeper.id : undefined;
-      activeGoalkeeper?.shotsFaced.push({ type: type, position: position, outcome: outcome, shooter: number });
 
       // 4. Gestione Evento Live
       if (outcome === ShotOutcome.GOAL) currentTeam.score++;
-      
       
       // 3. Salviamo l'evento
       this.saveEvent({
@@ -274,49 +314,10 @@ export const useGameStore = defineStore("gameStore", {
 
       if (!player) return;
 
-      // 1. Individuiamo l'array corretto tramite mappa dinamica
-      const targetArray = {
-        [ShotCategory.EVEN]: player.shotsEven,
-        [ShotCategory.SUP]: player.shotsSup,
-        [ShotCategory.PENALTY]: player.shotsPenalty,
-        [ShotCategory.OUTCOME]: null
-      }[type];
-
-      // 2. Assicuriamoci che ci sia almeno un tiro da rimuovere
-      if (targetArray && targetArray.length > 0) {
-        
-        // Controlliamo se l'ultimo tiro registrato era un GOAL
-        const lastShot = targetArray[targetArray.length - 1];
-        if (lastShot.outcome === ShotOutcome.GOAL) {
-          this.removeGoal(team);
-        }
-        // Rimuoviamo effettivamente l'ultimo tiro dall'array
-        targetArray.pop();
-      }
-
-      // 3. Rimuoviamo il tiro subito dal portiere avversario
-      this.removeShotFaced(number, team, type);
       // 4. Rimuoviamo l'evento dalla cronaca
       this.removeShotEvent(player);
       // 5. Chiudiamo la modalità correzione
       this.setCorrectionMode(false);
-    },
-    removeShotFaced(number: number, team: number, type: ShotCategory) {
-      // Se ha tirato la squadra 'team', cerchiamo il portiere dell'altra squadra
-      const opposingTeam = team === 0 ? this.match.awayTeam : this.match.homeTeam;
-      const goalkeeper = opposingTeam.players.find((p: any) => p.isGK && p.active);
-
-      if (!goalkeeper || !goalkeeper.shotsFaced) return;
-
-      // Troviamo l'ultimo tiro affrontato da QUESTO tiratore in QUESTA categoria
-      const index = goalkeeper.shotsFaced.findLastIndex(
-        (shot: any) => shot.shooter === number && shot.type === type
-      );
-
-      // FIX: Controlliamo solo che sia diverso da -1. (0 è un indice validissimo!)
-      if (index !== -1) {
-        goalkeeper.shotsFaced.splice(index, 1);
-      }
     },
     removeGoal(teamIndex: number) {
       if (teamIndex === 0) {
@@ -331,8 +332,7 @@ export const useGameStore = defineStore("gameStore", {
     },
     async removeShotEvent(player: Player) {
       const index = this.events.findLastIndex( event =>
-          event.player.id === player.id && 
-          (event.eventType === MatchEventType.SHOT)
+          event.player.id === player.id && event.eventType === MatchEventType.SHOT
       );
       if (index !== -1) {
         // 1. Estrapoliamo l'ID dell'evento generato dal DB
@@ -340,6 +340,9 @@ export const useGameStore = defineStore("gameStore", {
 
         // 2. Optimistic UI: Rimuoviamo istantaneamente il tiro dalla UI
         this.events.splice(index, 1);
+
+        if(this.events[index].shotOutcome === ShotOutcome.GOAL)
+          this.removeGoal(this.match.homeTeam.players.some(pl => pl.id === player.id) ? 0 : 1);
 
         // 3. Chiamata al BE
         if (eventId) {
@@ -355,137 +358,111 @@ export const useGameStore = defineStore("gameStore", {
         }
       }
     },
-    addExclution(
-      number: number,
-      team: number,
-      type: FoulType,
-      position: FoulPosition,
-      ball: boolean,
-      earnedBy: number,
-      exclNumber: number,
-    ) {
-      // 1. Identificazione delle squadre e del giocatore autore del fallo
-      const currentTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
-      const opposingTeam = team === 0 ? this.match.awayTeam : this.match.homeTeam;
-      const player = currentTeam.players.find((p: any) => p.number === number);
-      // Uscita di sicurezza se il giocatore non viene trovato
-      if (!player) return;
+    /**
+     * Metodo per inserire o aggiornare falli
+     */
+    async processFoul(payload: {
+      number: number;
+      team: number;
+      type: FoulType;
+      exclNumber: number;
+      
+      // Campi opzionali: dipendono dal tipo di fallo
+      position?: FoulPosition;
+      ball?: boolean;
+      earnedBy?: number;
+      edcsType?: EDCSType;
+    }) {
+      // 1. Identificazione squadra e autore del fallo
+      const currentTeam = payload.team === 0 ? this.match.homeTeam : this.match.awayTeam;
+      const opposingTeam = payload.team === 0 ? this.match.awayTeam : this.match.homeTeam;
+      const player = currentTeam.players.find((p: any) => p.number === payload.number);
+      
+      if (!player || !player.id) {
+        useToast().error('Giocatore non trovato!');
+        return;
+      }
 
-      // 2. Recupero ID del giocatore che ha GUADAGNATO l'espulsione (Centro boa / attaccante)
-      // Se earnedBy è 0 (la nostra opzione "?" generica), earnedById rimarrà null
       let earnedById = undefined;
-      if (earnedBy && earnedBy !== 0) {
-        const victimPlayer = opposingTeam.players.find((p: any) => p.number === earnedBy);
-        if (victimPlayer && victimPlayer.id) {
-          earnedById = victimPlayer.id;
-        }
+      if (payload.earnedBy && payload.earnedBy !== 0) {
+        const victimPlayer = opposingTeam.players.find((p: any) => p.number === payload.earnedBy);
+        if (victimPlayer && victimPlayer.id) earnedById = victimPlayer.id;
       }
 
-      // 3. Aggiornamento dello statino locale del giocatore
-      const exclusionData = {
-        position: position,
-        type: type,
-        ball: ball,
-        quarter: useTimerStore().currentQuarter,
-        earnedBy: earnedBy,
-        time: useTimerStore().formattedTime,
-      };
+      // 3. RECUPERO FALLI DALLA TIMELINE (Single Source of Truth)
+      const playerFouls = this.getPlayerFouls(player.id);
+      const existingFoulEvent = playerFouls[payload.exclNumber];
 
-      // Logica sicura per inserimento/sovrascrittura (Correction Mode)
-      if (player.exclutions.length <= exclNumber) {
-        player.exclutions.push(exclusionData);
+      if (existingFoulEvent && existingFoulEvent.id) {
+        // --- CASO A: CORRECTION MODE (UPDATE) ---
+        
+        // Aggiorniamo dinamicamente tutte le proprietà (che siano definite o meno)
+        existingFoulEvent.foulType = payload.type;
+        existingFoulEvent.foulPosition = payload.position;
+        existingFoulEvent.foulWithBall = payload.ball;
+        existingFoulEvent.earnedByPlayerId = earnedById;
+        existingFoulEvent.edcsType = payload.edcsType;
+        
+        
+        const bePayload = refactorSaveEventPayload(useSessionStateStore().clientId, existingFoulEvent);
+        await this.updateEvent(existingFoulEvent.id, bePayload); 
+        
       } else {
-        player.exclutions[exclNumber] = exclusionData;
+        // --- CASO B: NUOVO FALLO (INSERT) ---
+        
+        this.saveEvent({
+          eventType: MatchEventType.FOUL,
+          currentTeam: currentTeam,
+          player: player,
+          details: {
+            foulType: payload.type,
+            foulPosition: payload.position,
+            foulWithBall: payload.ball,
+            earnedByPlayerId: earnedById,
+            edcsType: payload.edcsType,
+          }
+        });
       }
 
-      // 4. Salvataggio dell'evento con la nuova struttura DB!
-      this.saveEvent({
-        eventType: MatchEventType.FOUL,
-        currentTeam: currentTeam,
-        player: player,
-        details: {
-          foulType: type,
-          foulPosition: position,
-          foulWithBall: ball,
-          earnedByPlayerId: earnedById,
-        }
-      });
-
+      // 4. LOGICA DI ESPULSIONE DEFINITIVA
+      // Ricalcoliamo il numero totale di falli usando il getter
       if (this.isOut(player)) {
         player.active = false;
         player.actualTime = 0;
-      }
-    },
-    addEDCS(
-      number: number,
-      team: number,
-      type: FoulType,
-      edcsType: EDCSType,
-      exclNumber: number,
-    ) {
-      // 1. Identificazione delle squadre e del giocatore autore del fallo
-      const currentTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
-      const player = currentTeam.players.find((p: any) => p.number === number);
-      // Uscita di sicurezza se il giocatore non viene trovato
-      if (!player) return;
-
-      // 3. Aggiornamento dello statino locale del giocatore
-      const exclusionData = {
-        type: type,
-        edcsType: edcsType,
-        quarter: useTimerStore().currentQuarter,
-        time: useTimerStore().formattedTime,
-      };
-
-      // Logica sicura per inserimento/sovrascrittura (Correction Mode)
-      if (player.exclutions.length <= exclNumber) {
-        player.exclutions.push(exclusionData);
-      } else {
-        player.exclutions[exclNumber] = exclusionData;
-      }
-
-      // 4. Salvataggio dell'evento con la nuova struttura DB!
-      this.saveEvent({
-        eventType: MatchEventType.FOUL,
-        currentTeam: currentTeam,
-        player: player,
-        details: {
-          foulType: type,
-          edcsType: edcsType
-        }
-      });
-
-      if (this.isOut(player)) {
-        player.active = false;
-        player.actualTime = 0;
+        this.pendingSubstitutions.push({ playerId: player.id, isActive: player.active });
+        if (this.subsTimeoutId) clearTimeout(this.subsTimeoutId);
+        // Impostiamo un nuovo timer di 500ms
+        this.subsTimeoutId = setTimeout(() => {
+          this.flushSubstitutions();
+        }, 800);
       }
     },
     isOut(player: Player): boolean {
+      const fouls = player.id ? this.getPlayerFouls(player.id) : [];
       return (
-        player.exclutions.length === 3 ||
-        player.exclutions.some((excl) => excl.type === "EDCS")
+        fouls.length === 3 ||
+        fouls.some((excl) => excl.foulType === FoulType.EDCS)
       );
     },
     async removeExclution(number: number, team: number, exclNumber: number) {
-      // 1. Identificazione sicura
       const currentTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
       const player = currentTeam.players.find((p: any) => p.number === number);
-      if (!player) return;
-      const exclusionToRemove = player.exclutions[exclNumber];
+      if (!player || !player.id) {
+        useToast().error('Impossibile trovare il giocatore!')
+        return
+      }
+      const exclusionToRemove = this.getPlayerFouls(player.id)[exclNumber];
 
-      // 2. Verifichiamo che il fallo da rimuovere esista davvero
       if (exclusionToRemove) {
         // Rimuoviamo l'evento dalla cronaca
         await this.removeExclEvent(player, exclusionToRemove);
-        // Rimuoviamo il fallo dallo statino del giocatore
-        player.exclutions.splice(exclNumber, 1);
         // Riattiviamo il giocatore
         if (!this.isOut(player)) {
           player.active = true;
         }
       }
     },
-    async removeExclEvent(player: Player, excl: Exclution) {
+    async removeExclEvent(player: Player, excl: MatchEvent) {
       // Troviamo l'evento esatto nella cronaca
       const eventToRemove = this.events.find(
         (e: MatchEvent) => 
@@ -530,14 +507,11 @@ export const useGameStore = defineStore("gameStore", {
       }
     },
     getAllPlayerShots(player: Player) {
-      var totalShots = [];
-      totalShots.push(
-        ...player.shotsEven,
-        ...player.shotsSup,
-        ...player.shotsPenalty,
-      );
+      if (!player.id)
+        return { goals: 0, shots: 0}
+      var totalShots = this.getPlayerShots(player.id);
       var totalGoals = totalShots.filter(
-        (shot) => shot.outcome.toUpperCase() === "GOAL",
+        (shot) => shot.shotOutcome === ShotOutcome.GOAL,
       );
       return {
         goals: totalGoals.length,
@@ -549,21 +523,10 @@ export const useGameStore = defineStore("gameStore", {
       var actualTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
       actualTeam.players.forEach((player) => {
         totalShots.push(
-          ...player.shotsEven,
-          ...player.shotsSup,
-          ...player.shotsPenalty,
+          player.id? this.getPlayerShots(player.id) : null
         );
       });
-      return totalShots.length;
-    },
-    getAllSaves(player: Player) {
-      var totalShots = player.shotsFaced.filter(shot => shot.outcome === ShotOutcome.SAVED || shot.outcome === ShotOutcome.GOAL).length;
-      var totalSaves = player.shotsFaced.filter(shot => shot.outcome === ShotOutcome.SAVED).length;
-      return {
-        saves: totalSaves,
-        shots: totalShots
-      }
-      
+      return totalShots.length ?? 0;
     },
     async saveEvent(payload: {
       eventType: MatchEventType;
@@ -637,6 +600,13 @@ export const useGameStore = defineStore("gameStore", {
         if (index > -1) this.events.splice(index, 1);
       }
     },
+    async updateEvent(eventId: string, payload: any) {
+      try {
+        await updateMatchEvent(eventId, payload);
+      } catch (error) {        
+        useToast().error("Impossibile aggiornare l'evento sul server!");
+      }
+    },
     toggleCorrectionMode() {
       this.isCorrectionMode = !this.isCorrectionMode;
     },
@@ -649,32 +619,34 @@ export const useGameStore = defineStore("gameStore", {
     },
     getAllTeamShotsByType(team: Team, type: ShotCategory) {
       const settingsStore = useSettingsStore();
-      var totalShots: Shot[] = [];
+      var totalShots: MatchEvent[] = [];
       var players = (team.name === settingsStore.homeTeamName) ? this.match.homeTeam.players : this.match.awayTeam.players;
-      switch(type) {
-        case ShotCategory.EVEN:
-          players.forEach(pl => totalShots.push(...pl.shotsEven));
-          break;
-        case ShotCategory.SUP:
-          players.forEach(pl => totalShots.push(...pl.shotsSup));
-          break;
-        case ShotCategory.PENALTY:
-          players.forEach(pl => totalShots.push(...pl.shotsPenalty));
-          break;
-        case ShotCategory.OUTCOME:
-        default:
-          players.forEach(pl => totalShots.push(
-            ...pl.shotsEven,
-            ...pl.shotsSup,
-            ...pl.shotsPenalty,));
-          break
-
-    }
-    var totalGoals = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.GOAL.toUpperCase() );
-    var totalParati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.SAVED.toUpperCase() );
-    var totalFuori = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.MISSED.toUpperCase() );
-    var totalStoppati = totalShots.filter(shot => shot.outcome.toUpperCase() === ShotOutcome.BLOCKED.toUpperCase() );
-    return {
+      players.forEach(pl => {
+        if(pl.id) {
+          switch (type) {
+            case ShotCategory.EVEN:
+              totalShots.push(...this.getPlayerShotsByCategory(pl.id).even)
+              break;
+          
+            case ShotCategory.SUP:
+              totalShots.push(...this.getPlayerShotsByCategory(pl.id).sup)
+              break;
+          
+            case ShotCategory.PENALTY:
+              totalShots.push(...this.getPlayerShotsByCategory(pl.id).penalty)
+              break;
+          
+            default:
+              totalShots.push(...this.getPlayerShots(pl.id))
+              break;
+          }
+        }
+      });
+      var totalGoals = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.GOAL.toUpperCase() );
+      var totalParati = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.SAVED.toUpperCase() );
+      var totalFuori = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.MISSED.toUpperCase() );
+      var totalStoppati = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.BLOCKED.toUpperCase() );
+      return {
         goals: totalGoals,
         shots: totalShots,
         parati: totalParati,
@@ -682,27 +654,11 @@ export const useGameStore = defineStore("gameStore", {
         stoppati: totalStoppati
       }
     },
-    getAllExclutionsEarned(team: Team, player: Player) {
-      const settings = useSettingsStore()
-      const opponentTeam = team.name === settings.homeTeamName 
-        ? this.match.awayTeam 
-        : this.match.homeTeam;
-
-      const allOpponentExclutions = opponentTeam.players.flatMap(oppPlayer => 
-        oppPlayer.exclutions.map(excl => ({
-          ...excl, 
-          earnedOn: oppPlayer.name 
-        }))
-      );
-
-      return allOpponentExclutions.filter(excl => excl.earnedBy === player.number);
-    },
-    getOpponentsPlayerName(team: Team, number: number) {
-      const settings = useSettingsStore()
-      if(team.name == settings.homeTeamName)
-        return this.match.awayTeam.players.find(player => player.number === number)?.name
+    getOpponentsPlayerName(playerId: string, team: Team) {
+      if(team.name === useSettingsStore().homeTeamName)
+        return this.match.awayTeam.players.find(player => player.id === playerId)?.name
       else
-        this.match.homeTeam.players.find(player => player.number === number)?.name
+        return this.match.homeTeam.players.find(player => player.id === playerId)?.name
     },
     async getTeamsByName(teamName: string): Promise<TeamInfo[]> {
       const response = await getTeamsByName(teamName);
@@ -847,27 +803,6 @@ export const useGameStore = defineStore("gameStore", {
         }
       });
     },
-    enableAutoSave() {
-      // Il $subscribe "ascolta" ogni singola mutazione dello state
-      this.$subscribe((mutation, state) => {
-        
-        if (state.match) {
-            localStorage.setItem("match", JSON.stringify(state.match));
-        }
-
-        if (state.events) {
-            localStorage.setItem("events", JSON.stringify(state.events));
-        }
-        
-      }, { 
-        // L'opzione detached: true è FONDAMENTALE. 
-        // Dice a Pinia di mantenere in vita questo "watch" anche se 
-        // il componente che lo ha attivato viene distrutto (cambio pagina).
-        detached: true 
-      });
-
-      console.log("Auto-salvataggio locale attivato!");
-    },
     /**
      * Funzione chiamata dal Socket Listener quando arriva un broadcast
      */
@@ -892,14 +827,6 @@ export const useGameStore = defineStore("gameStore", {
           opposingTeam = this.match.homeTeam;
         }
 
-        if (playerTarget) {
-          applyStatsToPlayer(
-            playerTarget, 
-            payloadData.playerStats, 
-            opposingTeam, 
-            (p) => this.isOut(p) 
-          );
-        }
       }
       // Se l'azione è un "ADD" (nuovo evento)
       if (payloadData.action === 'ADD') {

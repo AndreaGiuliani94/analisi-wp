@@ -126,12 +126,7 @@ export const useSessionStateStore = defineStore('sessionState', {
                 // Funzione helper interna per pulire le stat dei giocatori
                 const clearTeamStats = (team: Team, isHome: boolean) => {
                     team.players.forEach((p: Player) => {
-                        p.shotsEven = [];
-                        p.shotsSup = [];
-                        p.shotsPenalty = [];
-                        p.exclutions = [];
                         p.active = p.active ? p.active : !isHome;
-                        p.shotsFaced = [];
                     });
                 };
                 clearTeamStats(gameStore.match.homeTeam, true);
@@ -184,51 +179,6 @@ export const useSessionStateStore = defineStore('sessionState', {
                     if (uiEvent) {
                         // unshift() mette i più recenti in cima (come la tua UI si aspetta)
                         gameStore.events.push(uiEvent);
-                    }
-
-                    // D. Popolamento Statistiche Giocatore
-                    if (player) {
-                        if (beEvent.event_category === MatchEventType.SHOT) {
-                            const targetArray = {
-                                [ShotCategory.EVEN]: player.shotsEven,
-                                [ShotCategory.SUP]: player.shotsSup,
-                                [ShotCategory.PENALTY]: player.shotsPenalty
-                            }[beEvent.shot_category as string];
-
-                            if (targetArray) {
-                                targetArray.push({ position: beEvent.shot_position, outcome: beEvent.shot_outcome });
-                            }
-                            if (beEvent.defending_goalkeeper_id) {
-                                const oppGK = isHome ? gameStore.match.awayTeam.players.find(pl => pl.id === beEvent.defending_goalkeeper_id) : null;
-                                if (oppGK)
-                                    oppGK.shotsFaced.push({
-                                        type: beEvent.shot_category || '', 
-                                        position: beEvent.shot_position || "", 
-                                        outcome: beEvent.shot_outcome || '', 
-                                        shooter: player.number
-                                    })
-                            }
-                        } 
-                        else if (beEvent.event_category === MatchEventType.FOUL) {
-                            let earnedByNumber = 0;
-                            if (beEvent.earned_by_player_id) {
-                                const victim = opposingTeam.players.find((p: any) => p.id === beEvent.earned_by_player_id);
-                                if (victim) earnedByNumber = victim.number;
-                            }
-
-                            player.exclutions.push({
-                                position: beEvent.foul_position,
-                                edcsType: beEvent.edcs_type,
-                                type: beEvent.foul_type,
-                                ball: beEvent.foul_with_ball,
-                                quarter: beEvent.quarter,
-                                earnedBy: earnedByNumber,
-                                time: beEvent.time
-                            });
-
-                            // Verifica se il giocatore deve essere espulso
-                            player.active = gameStore.isOut(player) ? false : player.active;
-                        }
                     }
                 }
 

@@ -19,7 +19,7 @@
             />
     
             <NavButton 
-              :to="`/session/join/${session.session_id}`" 
+              :to="`/match/${session.session_id}`" 
               :icon="ArrowRightIcon" 
               color="green"
             />

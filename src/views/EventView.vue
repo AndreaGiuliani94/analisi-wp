@@ -3,13 +3,13 @@
         
         <div class="grid grid-cols-3 items-center">
             <div class="justify-self-start">
-                <NavButton :label="'Live'" :icon="ArrowLeftIcon" to="/game/live" />
+                <NavButton :label="'Live'" :icon="ArrowLeftIcon" to="live" />
             </div>
             
             <div class="flex flex-col items-center">
                 <h1 class="text-lg font-bold text-blue-950 uppercase tracking-wide">Eventi</h1>
                 <div class="text-sm font-semibold text-slate-500">
-                    {{ store.match.homeTeam.name }} - {{ store.match.awayTeam.name }}
+                    {{ gameStore.match.homeTeam.name }} - {{ gameStore.match.awayTeam.name }}
                 </div>
             </div>
             
@@ -33,7 +33,7 @@
                 
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     <tr 
-                        v-for="(event, index) in store.events" 
+                        v-for="(event, index) in gameStore.events" 
                         :key="index" 
                         class="transition-colors duration-150"
                         :class="getRowStyle(event)"
@@ -70,7 +70,7 @@
                                         {{ event.homeScore }}
                                     </span>
                                     
-                                    <span class="p-1 text-[10px] text-blue-950">
+                                    <span class="p-1 text-[10px] bg-white text-blue-950">
                                         -
                                     </span>
                                     
@@ -87,7 +87,7 @@
                 </tbody>
             </table>
             
-            <div v-if="store.events.length === 0" class="p-8 text-center text-slate-400 italic">
+            <div v-if="gameStore.events.length === 0" class="p-8 text-center text-slate-400 italic">
                 Nessun evento registrato finora.
             </div>
         </div>
@@ -105,10 +105,10 @@ import type { MatchEvent } from '@/interfaces/MatchEvent';
 import { ShotOutcome } from '@/enum/ShotDescription';
 import { getEventDescription } from '@/utils/utils';
 
-const store = useGameStore();
+const gameStore = useGameStore();
 
 const downloadExcel = () => {
-    exportEventsToExcel(store.events, store.match);
+    exportEventsToExcel(gameStore.events, gameStore.match);
 }
 
 // Funzione helper per determinare se l'evento è un goal
@@ -119,7 +119,7 @@ const isGoal = (event: MatchEvent): boolean => {
 // Controlla se l'evento è della squadra di casa
 const isHomeEvent = (eventTeam: string): boolean => {
     // Adatta questo controllo se nel tuo 'event.team' salvi un ID invece del nome
-    return eventTeam === store.match.homeTeam.name;
+    return eventTeam === gameStore.match.homeTeam.name;
 }
 
 // Logica per colorare l'intera riga (Sfondo chiaro + Testo in tinta)

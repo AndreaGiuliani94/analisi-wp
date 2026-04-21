@@ -28,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, TransitionRoot } from '@headlessui/vue'
 import { ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';

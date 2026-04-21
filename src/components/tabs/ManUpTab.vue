@@ -71,7 +71,7 @@ const totals = computed(() => ({
 const menUps = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP))
 
 function getShotsByCategory(category: CategoryKey, positions: string[]): number {
-  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP)[category].filter(shot => positions.includes(shot.position)).length
+  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
 }
 
 function getZoneValue(category: CategoryKey, values: (MenUpShot | string)[]): number {

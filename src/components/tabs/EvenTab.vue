@@ -71,7 +71,7 @@ const totals = computed(() => ({
 const evens = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN))
 
 function getShotsByCategory(category: CategoryKey, positions: string[]): number {
-  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN)[category].filter(shot => positions.includes(shot.position)).length
+  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
 }
 
 function getZoneValue(category: CategoryKey, values: (EvenShot | string)[]): number {

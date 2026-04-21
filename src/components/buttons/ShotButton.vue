@@ -100,7 +100,6 @@ import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PlusIcon, MinusIcon } from '@heroicons/vue/24/outline';
 import { EvenShot, MenUpShot, ShotOutcome, ShotCategory } from '@/enum/ShotDescription';
 import { useGameStore } from '@/stores/gameStore';
-import ActionButton from './ActionButton.vue';
 import { getLabel } from '@/utils/utils';
 import { shotOutcomeLabels } from '@/const/consts';
 

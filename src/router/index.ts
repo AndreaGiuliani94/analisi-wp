@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ElementManager from '../views/ScoreboardView.vue';
-import NameManager from '../views/MatchSetupView.vue';
+import ScoreboardView from '../views/ScoreboardView.vue';
+import MatchSetupView from '../views/MatchSetupView.vue';
 import ReportView from '@/views/ReportView.vue';
 import EventView from '@/views/EventView.vue';
 import DashboardView from '@/views/DashboardView.vue';
@@ -22,15 +22,45 @@ const router = createRouter({
     { path: "/profile", component: ProfileView , meta: { requiresAuth: true }},
     { path: "/dashboard", component: DashboardView },
     { path: "/:pathMatch(.*)*", redirect: "/login" },
-    { path: '/game', component: NameManager, meta: { requiresAuth: true } },
-    { path: '/game/live', component: ElementManager, meta: { requiresAuth: true } },
-    { path: '/game/report', component: ReportView, meta: { requiresAuth: true } },
-    { path: '/game/events', component: EventView, meta: { requiresAuth: true } },
+    {
+      path: '/match/:id',
+      component: JoinSession,
+      meta: { requiresAuth: true },
+      children: [
+        { 
+          path: 'setup', 
+          name: 'MatchSetup',
+          component: MatchSetupView 
+        },
+        { 
+          path: 'live', 
+          name: 'MatchLive',
+          component: ScoreboardView 
+        },
+        { 
+          path: 'events', 
+          name: 'MatchEvents',
+          component: EventView 
+        },
+        { 
+          path: 'report', 
+          name: 'MatchReport',
+          component: ReportView 
+        },
+        { 
+          path: 'settings', 
+          name: 'MatchSettings',
+          component: SettingsView 
+        },
+        {
+          path: '',
+          redirect: { name: 'MatchLive' }
+        }
+      ]
+    },
     { path: '/analysis', component: AnalysisView, meta: { requiresAuth: true } },
-    { path: '/settings', component: SettingsView, meta: { requiresAuth: true } },
     { path: '/session', component: SessionCreate, meta: { requiresAuth: true } },
-    { path: '/session/:id', component: SessionDetail, meta: { requiresAuth: true } },
-    { path: '/session/join/:id', component: JoinSession, meta: { requiresAuth: true } }
+    { path: '/session/:id', component: SessionDetail, meta: { requiresAuth: true } }
   ]
 });
 
