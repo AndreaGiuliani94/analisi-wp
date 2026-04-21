@@ -68,7 +68,7 @@ const gameStore = useGameStore();
 const tabs = [gameStore.match.homeTeam.name, gameStore.match.awayTeam.name]
 
 const getAllShoots = (element: Player) => {
-    return gameStore.getAllPlayerShots(element).goals + '/' + gameStore.getAllPlayerShots(element).shots;
+    return gameStore.getAllPlayerShots(element, null).goals + '/' + gameStore.getAllPlayerShots(element, null).shots;
 }
 
 const getExclutions = (element: Player) => {

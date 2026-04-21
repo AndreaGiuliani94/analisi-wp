@@ -58,28 +58,32 @@ export const useGameStore = defineStore("gameStore", {
      * Restituisce tutti i tiri di un giocatore, filtrabili (opzionalmente) per quarto
      */
     getPlayerShots: (state) => {
-      return (playerId?: string, quarter?: number) => {
+      return (playerId?: string, quarter?: number | null) => {
         if (!playerId) return [];
-        let playerEvents: MatchEvent[] = state.events.filter(e => 
+        let allShots: MatchEvent[] = state.events.filter(e => 
           e.playerId === playerId && 
           (e.eventType === MatchEventType.SHOT)
         );
 
-        if (quarter) {
-          playerEvents = playerEvents.filter(e => e.quarter === quarter);
+        if (quarter !== null && quarter !== undefined) {
+            allShots = allShots.filter(s => s.quarter === quarter);
         }
 
-        return playerEvents;
+        return allShots;
       }
     },
     /**
-     * Separa automaticamente i tiri per categoria
+     * Separa automaticamente i tiri per categoria, filtrabili (opzionalmente) per quarto
      */
     getPlayerShotsByCategory: (state) => {
-      return (playerId: string) => {
-        const allShots = state.events.filter(e => 
+      return (playerId: string, quarter?: number | null) => {
+        let allShots = state.events.filter(e => 
           e.playerId === playerId && e.eventType === MatchEventType.SHOT
         );
+
+        if (quarter !== null && quarter !== undefined) {
+            allShots = allShots.filter(s => s.quarter === quarter);
+        }
 
         return {
           even: allShots.filter(s => s.shotCategory === ShotCategory.EVEN),
@@ -89,11 +93,15 @@ export const useGameStore = defineStore("gameStore", {
       }
     },
     /**
-     * Statistiche Portiere
+     * Statistiche Portiere, filtrabili (opzionalmente) per quarto
      */
     getGoalkeeperShotsFaced: (state) => {
-      return (goalkeeperId: string) => {
-        const totalShotsFaced = state.events.filter(e => e.defendingGoalkeeperId === goalkeeperId);
+      return (goalkeeperId: string, quarter?: number | null) => {
+        let totalShotsFaced = state.events.filter(e => e.defendingGoalkeeperId === goalkeeperId);
+
+        if (quarter !== null && quarter !== undefined) {
+          totalShotsFaced = totalShotsFaced.filter(e => e.quarter === quarter);
+        }
 
         return {
           saves: totalShotsFaced.filter(e => e.shotOutcome === ShotOutcome.SAVED),
@@ -105,30 +113,36 @@ export const useGameStore = defineStore("gameStore", {
      * Restituisce tutti i falli di un giocatore, filtrabili (opzionalmente) per quarto
      */
     getPlayerFouls: (state) => {
-      return (playerId?: string, quarter?: number) => {
+      return (playerId?: string, quarter?: number | null) => {
         if (!playerId) return [];
         let playerEvents: MatchEvent[] = state.events.filter(e => 
           e.playerId === playerId && 
           (e.eventType === MatchEventType.FOUL)
         );
 
-        if (quarter) {
+        if (quarter !== null && quarter !== undefined) {
           playerEvents = playerEvents.filter(e => e.quarter === quarter);
         }
 
-        return playerEvents ?? [];
+        return playerEvents;
       }
     },
     /**
-     * Restituisce tutti i falli GUADAGNATI da un giocatore specifico (es. Centro Boa)
+     * Restituisce tutti i falli GUADAGNATI da un giocatore specifico, filtrabili (opzionalmente) per quarto
      */
     getFoulsEarnedByPlayer: (state) => {
-      return (playerId?: string) => {
+      return (playerId?: string, quarter?: number | null) => {
         if (!playerId) return [];
-        return state.events.filter(e => 
+        let foulsEanred = state.events.filter(e => 
           (e.eventType === MatchEventType.FOUL) && 
           e.earnedByPlayerId === playerId
         );
+        
+        if (quarter !== null && quarter !== undefined) {
+          foulsEanred = foulsEanred.filter(e => e.quarter === quarter);
+        }
+
+        return foulsEanred;
       }
     }
   },
@@ -506,10 +520,10 @@ export const useGameStore = defineStore("gameStore", {
           : (this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2);
       }
     },
-    getAllPlayerShots(player: Player) {
+    getAllPlayerShots(player: Player, quarter: number | null) {
       if (!player.id)
         return { goals: 0, shots: 0}
-      var totalShots = this.getPlayerShots(player.id);
+      var totalShots = this.getPlayerShots(player.id, quarter);
       var totalGoals = totalShots.filter(
         (shot) => shot.shotOutcome === ShotOutcome.GOAL,
       );
@@ -617,7 +631,7 @@ export const useGameStore = defineStore("gameStore", {
       useTimerStore().removeQuarter()
       this.toggleCorrectionMode()
     },
-    getAllTeamShotsByType(team: Team, type: ShotCategory) {
+    getAllTeamShotsByType(team: Team, type: ShotCategory, quarter: number | null = null) {
       const settingsStore = useSettingsStore();
       var totalShots: MatchEvent[] = [];
       var players = (team.name === settingsStore.homeTeamName) ? this.match.homeTeam.players : this.match.awayTeam.players;
@@ -625,19 +639,19 @@ export const useGameStore = defineStore("gameStore", {
         if(pl.id) {
           switch (type) {
             case ShotCategory.EVEN:
-              totalShots.push(...this.getPlayerShotsByCategory(pl.id).even)
+              totalShots.push(...this.getPlayerShotsByCategory(pl.id, quarter).even)
               break;
           
             case ShotCategory.SUP:
-              totalShots.push(...this.getPlayerShotsByCategory(pl.id).sup)
+              totalShots.push(...this.getPlayerShotsByCategory(pl.id, quarter).sup)
               break;
           
             case ShotCategory.PENALTY:
-              totalShots.push(...this.getPlayerShotsByCategory(pl.id).penalty)
+              totalShots.push(...this.getPlayerShotsByCategory(pl.id, quarter).penalty)
               break;
           
             default:
-              totalShots.push(...this.getPlayerShots(pl.id))
+              totalShots.push(...this.getPlayerShots(pl.id, quarter))
               break;
           }
         }

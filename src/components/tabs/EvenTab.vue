@@ -1,14 +1,20 @@
 <template>
     <div class="p-2 w-full">
         
-        <div class="flex items-center justify-between mb-2 border-b border-slate-200 pb-2">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
-            
+        <div class="flex justify-between mb-2 border-b border-slate-200 pb-2">
             <div class="flex items-center gap-2">
-                <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
-                    {{ totals.goals }}/{{ totals.shots }}
-                </span>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
+                
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
+                        {{ totals.goals }}/{{ totals.shots }}
+                    </span>
+                </div>
             </div>
+            <QuarterFilter
+                v-model="selectedQuarter"
+                :is-modal="true"
+            />
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
@@ -44,13 +50,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type PropType } from 'vue';
+import { computed, ref, type PropType } from 'vue';
 import type { Team } from '../../interfaces/Team';
 import { EvenShot, ShotCategory } from '@/enum/ShotDescription';
 import type { CategoryKey } from '../../interfaces/shot/Category';
 import { shotCategories } from '@/const/consts';
 import { evenZones } from '../../interfaces/shot/Zone';
 import { useGameStore } from '@/stores/gameStore';
+import QuarterFilter from '../filters/QuarterFilter.vue';
 
 const gameStore = useGameStore()
 const props = defineProps({
@@ -60,6 +67,8 @@ const props = defineProps({
     }
 });
 
+const selectedQuarter = ref<number | null>(null);
+
 const totals = computed(() => ({
   goals: evens.value.goals.length,
   shots: evens.value.shots.length,
@@ -68,15 +77,11 @@ const totals = computed(() => ({
   stoppati: evens.value.stoppati.length
 }))
 
-const evens = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN))
-
-function getShotsByCategory(category: CategoryKey, positions: string[]): number {
-  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
-}
+const evens = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN, selectedQuarter.value))
 
 function getZoneValue(category: CategoryKey, values: (EvenShot | string)[]): number {
-  const stringPositions = values.map(v => v.toString())
-  return getShotsByCategory(category, stringPositions)
+  const positions = values.map(v => v.toString())
+  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN, selectedQuarter.value)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
 }
 
 </script>

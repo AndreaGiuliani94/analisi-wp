@@ -8,7 +8,7 @@
         <div :class="['bg-white p-6 rounded-lg shadow-xl w-full transform transition-all z-20', maxWidth]">
           
           <slot name="header">
-            <DialogTitle v-if="title" class="text-xl font-semibold mb-4">
+            <DialogTitle v-if="title" class="text-xl font-semibold">
               {{ title }}
             </DialogTitle>
           </slot>

@@ -1,5 +1,20 @@
 <template>
-    <div class=" rounded-b-xl p-2 pt-4 w-full">
+    <div class=" rounded-b-xl p-2 w-full">
+        <div class="flex justify-between mb-2 border-b border-slate-200 pb-2">
+            <div class="flex items-center gap-2">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
+                
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
+                        {{ getAllFouls().length }}
+                    </span>
+                </div>
+            </div>
+            <QuarterFilter
+                v-model="selectedQuarter"
+                :is-modal="true"
+            />
+        </div>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             
             <div 
@@ -52,11 +67,12 @@
 
 <script setup lang="ts">
 import type { Team } from '../../interfaces/Team';
-import { computed, type PropType } from 'vue';
+import { computed, ref, type PropType } from 'vue';
 import { ArrowTurnDownRightIcon } from '@heroicons/vue/24/outline';
 import { FoulPosition, FoulType } from '@/enum/ExclutionDescription';
 import { useGameStore } from '@/stores/gameStore';
 import type { MatchEvent } from '@/interfaces/MatchEvent';
+import QuarterFilter from '../filters/QuarterFilter.vue';
 
 const props = defineProps({
     team: {
@@ -64,6 +80,8 @@ const props = defineProps({
         required: true,
     }
 });
+
+const selectedQuarter = ref<number | null>(null);
 
 const foulStats = computed(() => {
   // Definiamo le zone per ciclare facilmente i calcoli
@@ -134,7 +152,7 @@ const foulStats = computed(() => {
 const getAllFouls = () => {
     var allFouls: MatchEvent[] = [];
     props.team.players.forEach(pl => {
-        if(pl.id) allFouls.push(...useGameStore().getPlayerFouls(pl.id))
+        if(pl.id) allFouls.push(...useGameStore().getPlayerFouls(pl.id, selectedQuarter.value))
     });
     return allFouls;
 }

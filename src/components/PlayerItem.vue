@@ -109,7 +109,7 @@
           {{ playerShotsFaced?.saves.length + '/' + playerShotsFaced?.shots.length }}
         </span>
         <span v-else>
-          {{ gameStore.getAllPlayerShots(player).goals + '/' + gameStore.getAllPlayerShots(player).shots }}
+          {{ gameStore.getAllPlayerShots(player, null).goals + '/' + gameStore.getAllPlayerShots(player, null).shots }}
         </span>
       </div>
     </div>

@@ -2,7 +2,6 @@
   <BaseModal
     :is-open="isOpen"
     @close="closeModal"
-    :title="player.number + '. ' + player.name"
     max-width="max-w-xl lg:max-w-3xl"
   >
 
