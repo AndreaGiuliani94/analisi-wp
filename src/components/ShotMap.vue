@@ -45,7 +45,7 @@
                     <ZoneBadge name="Centroboa" v-bind="getEvenZoneStats('Centroboa')" />
                 </div>
     
-                <div class="absolute top-[60%] inset-x-0">
+                <div class="absolute top-[55%] inset-x-0">
                     <ZoneBadge name="3" v-bind="getEvenZoneStats('3')" />
                 </div>
     
@@ -67,6 +67,10 @@
     
                 <div class="absolute bottom-2 left-2 ">
                     <ZoneBadge name="Controfuga" v-bind="getEvenZoneStats('Controfuga')" />
+                </div>
+    
+                <div class="absolute bottom-2 left-[25%] ">
+                    <ZoneBadge name="Rigori" v-bind="getPenaltiesStats()" />
                 </div>
             </div>
             <div v-else-if="viewMode=='sup'" class="absolute inset-0 z-10">
@@ -110,8 +114,8 @@ interface ShotStats {
   shots: MatchEvent[];
   parati: MatchEvent[];
   fuori: MatchEvent[];
-  stoppati: MatchEvent[];
-  // parati, fuori, stoppati ci sono, ma per la mappa ci bastano goals e shots
+  stoppati?: MatchEvent[];
+  nulli?: MatchEvent[] 
 }
 
 const props = defineProps<{
@@ -192,6 +196,19 @@ const getSupZoneStats = (zoneName: string) => {
 
     // Restituiamo l'oggetto che fa match esatto con le props di ZoneBadge!
     return { goals, saved, missed, blocked };
+};
+
+const getPenaltiesStats = () => {
+    let goals = 0, saved = 0, missed = 0, nulled = 0;
+
+    if (props.stats) {
+        goals = props.stats.penalties?.goals.length ?? 0,
+        saved = props.stats.penalties?.parati.length ?? 0,
+        missed = props.stats.penalties?.fuori.length ?? 0,
+        nulled = props.stats.penalties?.nulli?.length ?? 0
+    }
+
+    return { goals, saved, missed, nulled };
 };
 
 </script>

@@ -9,6 +9,13 @@ export const shotCategories: Category[] = [
   { key: 'stoppati', label: 'Stoppati' }
 ]
 
+export const penaltyCategories: Category[] = [
+  { key: 'goals', label: 'Goal' },
+  { key: 'parati', label: 'Parati' },
+  { key: 'fuori', label: 'Fuori' },
+  { key: 'annullati', label: 'Annullati' }
+]
+
 export const shotFacedCategories: Category[] = [
   { key: 'goals', label: 'Goal' },
   { key: 'parati', label: 'Parati' }

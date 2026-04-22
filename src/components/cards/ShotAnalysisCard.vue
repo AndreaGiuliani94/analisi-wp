@@ -41,7 +41,7 @@ const props = defineProps<{
   shotType: 'evens' | 'sup' | 'penalties';
   successCount: number; 
   totalCount: number;
-  zones: Zone[];
+  zones?: Zone[];
   categories: Category[];
   // Passiamo le funzioni dal parent per non dover importare e ricostruire tutta la logica dello store qui
   getShotsLengthByType: (type: ShotKey, categoryKey: CategoryKey) => number;

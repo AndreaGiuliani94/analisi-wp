@@ -65,8 +65,11 @@
                     <div class="flex justify-between items-center" :class="missed > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
                         <span>Fuori / Pali</span> <span class="font-mono">{{ missed }}</span>
                     </div>
-                    <div class="flex justify-between items-center" :class="blocked > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
+                    <div v-if="blocked != undefined" class="flex justify-between items-center" :class=" blocked > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
                         <span>Stoppati</span> <span class="font-mono">{{ blocked }}</span>
+                    </div>
+                    <div v-if="nulled != undefined" class="flex justify-between items-center" :class="nulled > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
+                        <span>Annullati</span> <span class="font-mono">{{ nulled }}</span>
                     </div>
                 </div>
 
@@ -84,7 +87,8 @@ const props = defineProps<{
     goals: number;
     saved: number;
     missed: number;
-    blocked: number;
+    blocked?: number;
+    nulled?: number;
     highlight?: boolean; // Es. per evidenziare le Ripartenze
 }>();
 
@@ -92,7 +96,7 @@ const props = defineProps<{
 const isPopoverOpen = ref(false);
 
 // Il totale si calcola in automatico dalla somma delle props!
-const total = computed(() => props.goals + props.saved + props.missed + props.blocked);
+const total = computed(() => props.goals + props.saved + props.missed + (props.blocked ? props.blocked : 0) + (props.nulled ? props.nulled : 0));
 
 // Calcolo della Percentuale e dell'Offset per l'SVG
 const strokeOffset = computed(() => {

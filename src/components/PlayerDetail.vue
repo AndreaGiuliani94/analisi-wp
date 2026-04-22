@@ -19,30 +19,12 @@
                 :is-modal="isModal" 
             />
     
-            <!-- <div class="flex bg-gray-100 rounded-lg space-x-1"
-                :class="isModal ? 'mb-2' : 'my-2 p-1 bg-slate-200'">
-                <button 
-                    @click="selectedQuarter = null"
-                    class="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
-                    :class="selectedQuarter === null ? 'bg-blue-950 text-white shadow' : 'text-gray-600 hover:bg-gray-200'"
-                >
-                    Tutti
-                </button>
-                
-                <button 
-                    v-for="q in 4" :key="q"
-                    @click="selectedQuarter = q"
-                    class="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
-                    :class="selectedQuarter === q ? 'bg-blue-950 text-white shadow' : 'text-gray-600 hover:bg-gray-200'"
-                >
-                    {{ q }}° Q
-                </button>
-            </div> -->
-    
         </div>
         
-        <div class="flex flex-col lg:flex-row gap-4 w-full"
-            :class="isModal? '': 'p-2'">
+        <div class="flex gap-4 w-full"
+            :class="[isModal? '': 'p-2', 
+                (viewMode === 'stats' && isModal ) ? 'flex-col' : 'flex-row'
+            ]">
     
             <div class="flex-1">
     
@@ -57,7 +39,7 @@
                         </div>
                     </div>
     
-                    <div class="grid grid-cols-2 md:grid-cols-2 gap-4">                    
+                    <div class="grid grid-cols-3 gap-4">                    
                         <ShotAnalysisCard 
                             title="Pari"
                             shotType="evens"
@@ -79,6 +61,16 @@
                             :getShotsLengthByType="getShotsFacedLengthByType"
                             :getZoneValue="getFacedZoneValue"
                             />
+
+                        <ShotAnalysisCard 
+                            title="Rigori"
+                            shotType="penalties"
+                            :successCount="totalShotsFaced.penalties.goals.length"
+                            :totalCount="totalShotsFaced.penalties.shots.length"
+                            :categories="penaltyCategories"
+                            :getShotsLengthByType="getShotsFacedLengthByType"
+                            :getZoneValue="getFacedZoneValue"
+                            />
                     </div>
                 </div>
     
@@ -95,7 +87,7 @@
                             </div>
                         </div>
     
-                        <div class="flex bg-slate-200 p-0.5 rounded-lg">
+                        <div v-if="!player.isGK" class="flex bg-slate-200 p-0.5 rounded-lg">
                             <button 
                                 @click="viewMode = 'map'"
                                 class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
@@ -114,7 +106,7 @@
                     </div>
                     
                     <Transition name="fade" mode="out-in">
-                        <div v-if="viewMode === 'stats'" class="grid grid-cols-2 md:grid-cols-2 gap-4">
+                        <div v-if="viewMode === 'stats'" class="grid grid-cols-3 gap-4">
     
                             <ShotAnalysisCard 
                                 title="Pari"
@@ -137,6 +129,16 @@
                                 :getShotsLengthByType="getShotsLengthByType"
                                 :getZoneValue="getZoneValue"
                                 />
+
+                            <ShotAnalysisCard 
+                                title="Rigori"
+                                shotType="penalties"
+                                :successCount="totalShots.penalties.goals.length"
+                                :totalCount="totalShots.penalties.shots.length"
+                                :categories="penaltyCategories"
+                                :getShotsLengthByType="getShotsLengthByType"
+                                :getZoneValue="getZoneValue"
+                                />
                             
                         </div>
     
@@ -150,7 +152,11 @@
     
             <div class="border-slate-200"
                     :class="[isModal? 'border rounded-lg p-2 shadow-sm lg:p-4 w-full ': 'lg:px-4 pt-2 lg:border-l border-t lg:border-t-0',
-                    (viewMode === 'map' && !isModal) ? 'lg:w-1/2' : 'lg:w-1/3']" >
+                    (viewMode === 'map' && !isModal) ? 'lg:w-1/2' : '', 
+                    (viewMode === 'map' && isModal) ? 'lg:w-1/3' : '', 
+                    (viewMode === 'stats' && isModal ) ? 'w-full' : '',
+                    (viewMode === 'stats' && !isModal ) ? 'lg:w-1/3' : '',
+                    ]" >
                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Disciplina</h4>
                 
                 <div v-if="mappedCommessi.length + mappedGuadagnati.length > 0" class="flex flex-col gap-4">
@@ -178,7 +184,7 @@
 
 <script setup lang="ts">
 import type { Player } from '../interfaces/Player';
-import { shotCategories,shotFacedCategories } from '@/const/consts';
+import { penaltyCategories, shotCategories,shotFacedCategories } from '@/const/consts';
 import { evenZones, supZones } from '../interfaces/shot/Zone';
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { computed, ref } from 'vue';
@@ -206,7 +212,16 @@ const props = defineProps<{
 
 const selectedQuarter = ref<number | null>(null);
 
-const viewMode = ref('map');
+const userSelectedViewMode = ref('map');
+const viewMode = computed({
+  get() {
+    return props.player.isGK ? 'stats' : userSelectedViewMode.value;
+  },
+  set(newValue) {
+    userSelectedViewMode.value = newValue;
+  }
+});
+
 const exclEarned = computed(() => props.player.id ? gameStore.getFoulsEarnedByPlayer(props.player.id, selectedQuarter.value) : []);
 
 const playerShots = computed(() => {
@@ -229,7 +244,8 @@ const playerShotsFaced = computed(() => {
 
 const totalShots = computed(() => ({
   evens: getShotsByType(playerShots.value.even),
-  sup: getShotsByType(playerShots.value.sup)
+  sup: getShotsByType(playerShots.value.sup),
+  penalties: getShotsByType(playerShots.value.penalty)
 }))
 
 const totalShotsFaced = computed(() => ({
@@ -239,6 +255,7 @@ const totalShotsFaced = computed(() => ({
     parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
+    annullati: [],
   },
   sup: {
     shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
@@ -246,6 +263,7 @@ const totalShotsFaced = computed(() => ({
     parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
+    annullati: [],
   },
   penalties: {
     shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
@@ -253,6 +271,7 @@ const totalShotsFaced = computed(() => ({
     parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
+    annullati: [],
   }
 }))
 
@@ -262,6 +281,7 @@ function getShotsByType(shots: MatchEvent[]): {
   parati: MatchEvent[]
   fuori: MatchEvent[]
   stoppati: MatchEvent[]
+  annullati: MatchEvent[]
   shots: MatchEvent[]
 } {
   return {
@@ -269,6 +289,7 @@ function getShotsByType(shots: MatchEvent[]): {
     parati: shots.filter(shot => shot.shotOutcome === ShotOutcome.SAVED),
     fuori: shots.filter(shot => shot.shotOutcome === ShotOutcome.MISSED),
     stoppati: shots.filter(shot => shot.shotOutcome === ShotOutcome.BLOCKED),
+    annullati: shots.filter(shot => shot.shotOutcome === ShotOutcome.NULL),
     shots
   }
 }
@@ -295,6 +316,8 @@ function getShotsLengthByType(type: ShotKey, category: CategoryKey): number {
             return totalShots.value.evens[category].length;
         case 'sup':
             return totalShots.value.sup[category].length;
+        case 'penalties':
+            return totalShots.value.penalties[category].length;
         default:
             return 0;
     }
