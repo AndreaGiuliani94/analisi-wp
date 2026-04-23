@@ -42,7 +42,7 @@
   </div>
 
   <div class="flex flex-col h-min-screen">
-    <div v-if="userRole && userRole !== 'viewer'" class="sticky bg-white/90 backdrop-blur-md pb-2 rounded-lg border transition-all duration-300"
+    <div v-if="userRole && userRole !== 'viewer'" class="sticky bg-white/90 backdrop-blur-md pb-2 rounded-lg border mb-0.5 transition-all duration-300"
       :class="[isShrinked ? 'shadow-lg border-gray-300 top-1 z-10' : 'border-white top-0']">
       <div class="grid grid-cols-3">
         <div class="inline-flex items-end transition-all duration-300" :class="isShrinked ? 'm-2' : ''">
@@ -98,7 +98,7 @@
 import { useGameStore } from '@/stores/gameStore';
 import ClockManager from '@/components/ClockManager.vue';
 import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
-import { onBeforeUnmount, onMounted, onUnmounted, ref, toRef } from 'vue';
+import { onBeforeUnmount, onMounted, ref, toRef } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/interfaces/Team';
 import NavButton from '@/components/buttons/NavButton.vue';

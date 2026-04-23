@@ -10,10 +10,6 @@
                     </span>
                 </div>
             </div>
-            <QuarterFilter
-                v-model="selectedQuarter"
-                :is-modal="true"
-            />
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             
@@ -67,12 +63,11 @@
 
 <script setup lang="ts">
 import type { Team } from '../../interfaces/Team';
-import { computed, ref, type PropType } from 'vue';
+import { computed, inject, ref, type PropType, type Ref } from 'vue';
 import { ArrowTurnDownRightIcon } from '@heroicons/vue/24/outline';
 import { FoulPosition, FoulType } from '@/enum/ExclutionDescription';
 import { useGameStore } from '@/stores/gameStore';
 import type { MatchEvent } from '@/interfaces/MatchEvent';
-import QuarterFilter from '../filters/QuarterFilter.vue';
 
 const props = defineProps({
     team: {
@@ -81,7 +76,7 @@ const props = defineProps({
     }
 });
 
-const selectedQuarter = ref<number | null>(null);
+const reportQuarter = inject<Ref<number | null>>('reportQuarter', ref(null));
 
 const foulStats = computed(() => {
   // Definiamo le zone per ciclare facilmente i calcoli
@@ -152,7 +147,7 @@ const foulStats = computed(() => {
 const getAllFouls = () => {
     var allFouls: MatchEvent[] = [];
     props.team.players.forEach(pl => {
-        if(pl.id) allFouls.push(...useGameStore().getPlayerFouls(pl.id, selectedQuarter.value))
+        if(pl.id) allFouls.push(...useGameStore().getPlayerFouls(pl.id, reportQuarter.value))
     });
     return allFouls;
 }

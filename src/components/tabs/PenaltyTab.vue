@@ -1,5 +1,6 @@
 <template>
-    <div class="rounded-b-xl p-2 w-full">
+    <div class="p-2 w-full">
+        
         <div class="flex justify-between mb-2 border-b border-slate-200 pb-2">
             <div class="flex items-center gap-2">
                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
@@ -15,7 +16,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
             
             <div 
-                v-for="(category, index) in shotCategories" 
+                v-for="(category, index) in penaltyCategories" 
                 :key="index"
                 class="bg-white rounded-lg p-2 border border-slate-200 shadow-sm transition-shadow hover:shadow-md"
             >
@@ -24,18 +25,6 @@
                     <span class="bg-blue-100 text-blue-900 text-xs font-black px-2 py-1 rounded-full font-mono">
                         {{ totals[category.key] }}
                     </span>
-                </div>
-
-                <div class="flex flex-col gap-y-1 mt-2 text-[12px]">
-                    <div 
-                        v-for="(zone, zIndex) in supZones" 
-                        :key="zIndex"
-                        class="flex justify-between items-center"
-                        :class="getZoneValue(category.key, zone.values) == 0 ? 'text-slate-300' : 'font-semibold text-blue-900'"
-                    >
-                        <span>{{ zone.label }}</span>
-                        <span class="font-mono text-[13px]">{{ getZoneValue(category.key, zone.values) }}</span>
-                    </div>
                 </div>
                 
             </div>
@@ -47,10 +36,9 @@
 <script setup lang="ts">
 import { computed, inject, ref, type PropType, type Ref } from 'vue';
 import type { Team } from '../../interfaces/Team';
-import { MenUpShot, ShotCategory } from '@/enum/ShotDescription';
-import { shotCategories } from '@/const/consts';
+import { EvenShot, ShotCategory } from '@/enum/ShotDescription';
 import type { CategoryKey } from '../../interfaces/shot/Category';
-import { supZones } from '../../interfaces/shot/Zone';
+import { penaltyCategories } from '@/const/consts';
 import { useGameStore } from '@/stores/gameStore';
 
 const gameStore = useGameStore()
@@ -64,19 +52,14 @@ const props = defineProps({
 const reportQuarter = inject<Ref<number | null>>('reportQuarter', ref(null));
 
 const totals = computed(() => ({
-  goals: menUps.value.goals.length,
-  shots: menUps.value.shots.length,
-  parati: menUps.value.parati.length,
-  fuori: menUps.value.fuori.length,
-  stoppati: menUps.value.stoppati.length,
-  annullati: menUps.value.annullati.length
+  goals: penalties.value.goals.length,
+  shots: penalties.value.shots.length,
+  parati: penalties.value.parati.length,
+  fuori: penalties.value.fuori.length,
+  stoppati: penalties.value.stoppati.length,
+  annullati: penalties.value.stoppati.length
 }))
 
-const menUps = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP, reportQuarter.value))
-
-function getZoneValue(category: CategoryKey, values: (MenUpShot | string)[]): number {
-  const positions = values.map(v => v.toString())
-  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP, reportQuarter.value)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
-}
+const penalties = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.PENALTY, reportQuarter.value))
 
 </script>

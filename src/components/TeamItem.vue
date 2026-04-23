@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import PlayerItem from './PlayerItem.vue';
-import { ArrowRightIcon } from '@heroicons/vue/20/solid';
 import type { Team } from '../interfaces/Team';
 import TimeOutButton from './buttons/TimeOutButton.vue';
 import type { Player } from '../interfaces/Player';
@@ -49,10 +48,11 @@ const handleOpenModal = () => {
     <div class="ms-2.5 mb-1.5 grid grid-cols-[max-content_auto_max-content] items-center">
       <div
         class="text-red-800 flex justify-start items-center cursor-pointer"
+        @click="handleOpenModal"
       >
         <span class="font-semibold">{{ team.name }}</span>
         <div class="h-6 w-6 flex justify-center items-center ms-2">
-          <InformationCircleIcon class="size-6 text-red-800" @click="handleOpenModal"/>
+          <InformationCircleIcon class="size-6 text-red-800"/>
         </div>
       </div>
       <div class="flex justify-center gap-5 text-base text-blue-950">

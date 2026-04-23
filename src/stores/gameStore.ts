@@ -660,12 +660,14 @@ export const useGameStore = defineStore("gameStore", {
       var totalParati = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.SAVED.toUpperCase() );
       var totalFuori = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.MISSED.toUpperCase() );
       var totalStoppati = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.BLOCKED.toUpperCase() );
+      var totalNulled = totalShots.filter(shot => shot.shotOutcome === ShotOutcome.NULL.toUpperCase() );
       return {
         goals: totalGoals,
         shots: totalShots,
         parati: totalParati,
         fuori: totalFuori,
-        stoppati: totalStoppati
+        stoppati: totalStoppati,
+        annullati: totalNulled
       }
     },
     getOpponentsPlayerName(playerId: string, team: Team) {

@@ -1,11 +1,10 @@
 <template>
   <BaseModal
     :is-open="isOpen" 
-    :title="team.name" 
     @close="closeModal"
     max-width="max-w-3xl"
   >
-    <div class="mt-1">
+    <div>
         <TeamStatistics :team="team" :is-modal="true"/>
     </div>
   </BaseModal>

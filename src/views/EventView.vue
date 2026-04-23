@@ -18,6 +18,28 @@
             </div>
         </div>
 
+        <div>
+            <div class="grid grid-cols-3 gap-2 items-center justify-center">
+                <QuarterFilter class="max-w-fit"
+                    v-model="selectedQuarter"
+                    :isModal="true"
+                />
+                
+                <div class="flex justify-center gap-1 font-medium mb-1">
+                    <template v-for="(p, i) in gameStore.partials" :key="i">
+                        <span class="flex items-center">
+                            <span class="text-xs mr-0.5 text-gray-400" v-if="i > 0">|</span>
+                            <span :class="[
+                                i + 1 == selectedQuarter ? 'bg-blue-950 text-white px-1 rounded-2xl' : '']">
+                                {{ p.home }}-{{ p.away }}
+                            </span>
+                        </span>
+                    </template>
+                </div>
+
+            </div>
+        </div>
+
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <table class="w-full text-sm text-left">
                 
@@ -33,7 +55,7 @@
                 
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     <tr 
-                        v-for="(event, index) in gameStore.events" 
+                        v-for="(event, index) in filteredEvents" 
                         :key="index" 
                         class="transition-colors duration-150"
                         :class="getRowStyle(event)"
@@ -104,8 +126,19 @@ import { MatchEventType } from '@/enum/MatchEventDescription';
 import type { MatchEvent } from '@/interfaces/MatchEvent';
 import { ShotOutcome } from '@/enum/ShotDescription';
 import { getEventDescription } from '@/utils/utils';
+import QuarterFilter from '@/components/filters/QuarterFilter.vue';
+import { computed, ref } from 'vue';
 
 const gameStore = useGameStore();
+
+const selectedQuarter = ref<number | null>(null);
+
+const filteredEvents = computed(() => {
+    if(selectedQuarter.value != null)
+        return gameStore.events.filter(ev => ev.quarter === selectedQuarter.value);
+    else
+        return gameStore.events
+} )
 
 const downloadExcel = () => {
     exportEventsToExcel(gameStore.events, gameStore.match);

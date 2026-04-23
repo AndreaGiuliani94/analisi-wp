@@ -9,8 +9,8 @@
                 </div>
                 <div class="font-bold">{{ player.name }}</div>
                 <div class="text-sm text-gray-600 flex gap-3 ml-2 border-l border-blue-200 pl-3">
-                    <span>Dentro: <strong class="font-mono text-blue-950">{{ formatTime(player.activeTime) }}</strong></span>
-                    <span>Fuori: <strong class="font-mono text-blue-950">{{ formatTime(player.benchTime) }}</strong></span>
+                    <span>{{isModal ? 'In: ' : 'Dentro: '}}<strong class="font-mono text-blue-950">{{ formatTime(player.activeTime) }}</strong></span>
+                    <span>{{isModal ? 'Out: ' : 'Fouri: '}}<strong class="font-mono text-blue-950">{{ formatTime(player.benchTime) }}</strong></span>
                 </div>
             </div>
 
@@ -23,7 +23,7 @@
         
         <div class="flex gap-4 w-full"
             :class="[isModal? '': 'p-2', 
-                (viewMode === 'stats' && isModal ) ? 'flex-col' : 'flex-row'
+                (isModal ) ? 'flex-col lg:flex-row' : 'flex-row'
             ]">
     
             <div class="flex-1">

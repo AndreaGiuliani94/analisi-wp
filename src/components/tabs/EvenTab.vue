@@ -11,10 +11,6 @@
                     </span>
                 </div>
             </div>
-            <QuarterFilter
-                v-model="selectedQuarter"
-                :is-modal="true"
-            />
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
@@ -50,14 +46,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, type PropType } from 'vue';
+import { computed, inject, ref, type PropType, type Ref } from 'vue';
 import type { Team } from '../../interfaces/Team';
 import { EvenShot, ShotCategory } from '@/enum/ShotDescription';
 import type { CategoryKey } from '../../interfaces/shot/Category';
 import { shotCategories } from '@/const/consts';
 import { evenZones } from '../../interfaces/shot/Zone';
 import { useGameStore } from '@/stores/gameStore';
-import QuarterFilter from '../filters/QuarterFilter.vue';
 
 const gameStore = useGameStore()
 const props = defineProps({
@@ -67,21 +62,22 @@ const props = defineProps({
     }
 });
 
-const selectedQuarter = ref<number | null>(null);
+const reportQuarter = inject<Ref<number | null>>('reportQuarter', ref(null));
 
 const totals = computed(() => ({
   goals: evens.value.goals.length,
   shots: evens.value.shots.length,
   parati: evens.value.parati.length,
   fuori: evens.value.fuori.length,
-  stoppati: evens.value.stoppati.length
+  stoppati: evens.value.stoppati.length,
+  annullati: evens.value.annullati.length
 }))
 
-const evens = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN, selectedQuarter.value))
+const evens = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN, reportQuarter.value))
 
 function getZoneValue(category: CategoryKey, values: (EvenShot | string)[]): number {
   const positions = values.map(v => v.toString())
-  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN, selectedQuarter.value)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
+  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.EVEN, reportQuarter.value)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
 }
 
 </script>

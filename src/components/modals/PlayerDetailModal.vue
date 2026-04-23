@@ -5,7 +5,7 @@
     max-width="max-w-xl lg:max-w-3xl"
   >
 
-    <div class="px-2 py-2">
+    <div>
         <PlayerDetail :player="player" :get-exclution="getExclution" :align="'col'" :show-g-k-shots="false" :team="team" :is-modal="true"></PlayerDetail>
     </div>
     

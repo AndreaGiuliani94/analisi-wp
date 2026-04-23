@@ -5,8 +5,10 @@
   >
     <button 
       @click="selectQuarter(null)"
-      class="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
-      :class="modelValue === null ? 'bg-blue-950 text-white shadow' : 'text-gray-600 hover:bg-gray-200'"
+      class=" py-1 text-xs font-semibold rounded-md transition-colors"
+      :class="[modelValue === null ? 'bg-blue-950 text-white shadow ' : ' text-gray-600 hover:bg-gray-200',
+        isModal ? 'px-2' : 'px-3'
+      ]"
     >
       Tutti
     </button>
@@ -15,9 +17,9 @@
       v-for="q in 4" :key="q"
       @click="selectQuarter(q)"
       class="px-3 py-1 text-xs font-semibold rounded-md transition-colors"
-      :class="modelValue === q ? 'bg-blue-950 text-white shadow' : 'text-gray-600 hover:bg-gray-200'"
+      :class="modelValue === q ? 'bg-blue-950 text-white shadow px-2' : 'px-3 text-gray-600 hover:bg-gray-200'"
     >
-      {{ q }}° Q
+      {{ q }}°
     </button>
   </div>
 </template>
