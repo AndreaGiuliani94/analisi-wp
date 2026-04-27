@@ -2,138 +2,141 @@
   <div class="">
     <Menu as="div">
       <MenuButton
+        ref="buttonRef"
+        @click="calculatePosition"
         :as="'button'"
         class="flex items-center justify-center min-w-6 h-6 border rounded-full text-xs font-bold
-               transition cursor-pointer
-               "
+                transition cursor-pointer"
         :class=" (props.exclutionState) ?
           'bg-red-800 text-white border-red-800 disabled:text-gray-200 disabled:border-red-800 disabled:bg-red-800 disabled:cursor-not-allowed': 
           'bg-white text-red-800 border-red-800 disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200 disabled:cursor-not-allowed'
         "
         :disabled="props.disabled"
       >
-      {{ props.exclutionState ? props.exclutionState : '' }}
-
+        {{ props.exclutionState ? props.exclutionState : '' }}
       </MenuButton>
 
-      <transition
-        enter="transition ease-out duration-100"
-        enter-from="transform opacity-0 scale-95"
-        enter-to="transform opacity-100 scale-100"
-        leave="transition ease-in duration-75"
-        leave-from="transform opacity-100 scale-100"
-        leave-to="transform opacity-0 scale-95"
-      >
-        <MenuItems
-          v-if="!props.disabled"
-          class="mt-1 absolute bg-white border border-red-800 
-          rounded-md shadow-lg z-50 flex flex-col"
+      <Portal>
+        <transition
+          enter="transition ease-out duration-100"
+          enter-from="transform opacity-0 scale-95"
+          enter-to="transform opacity-100 scale-100"
+          leave="transition ease-in duration-75"
+          leave-from="transform opacity-100 scale-100"
+          leave-to="transform opacity-0 scale-95"
         >
-          <div class="grid p-1 gap-x-1"
-              :style="{ 
-                // Definiamo quante colonne avere. Ogni colonna si adatta al contenuto (max-content)
-                gridTemplateColumns: `repeat(${currentColumns}, max-content)`,
-                // Opzionale: se vuoi che le righe siano distribuite uniformemente
-                gridAutoRows: 'minmax(0, 1fr)'
-              }"
-            >
-
-            <template v-if="activeStep === 'first'">
-              <MenuItem
-                v-for="item in foulKeys"
-                :key="item"
-                v-slot="{ active }"
+          <MenuItems
+            v-if="!props.disabled"
+            class="absolute right-0 bg-white border border-red-800 
+            rounded-md shadow-lg z-50 flex flex-col max-w-fit font-semibold"
+            :style="dropdownStyle"
+          >
+            <div class="grid p-1 gap-x-1"
+                :style="{ 
+                  // Definiamo quante colonne avere. Ogni colonna si adatta al contenuto (max-content)
+                  gridTemplateColumns: `repeat(${currentColumns}, max-content)`,
+                  // Opzionale: se vuoi che le righe siano distribuite uniformemente
+                  gridAutoRows: 'minmax(0, 1fr)'
+                }"
               >
-                <button
-                  @click.stop.prevent="handleFirstSelect(item)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
-                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
+  
+              <template v-if="activeStep === 'first'">
+                <MenuItem
+                  v-for="item in foulKeys"
+                  :key="item"
+                  v-slot="{ active }"
                 >
-                  {{ getLabel(item, foulCategoryLabels) }}
-                </button>
-              </MenuItem>
-              <template v-if="props.exclutionState">
-                <MenuItem v-slot="{ active, close }">
                   <button
-                    @click="removeExclusion(close)"
-                    class="group flex w-full items-center justify-center rounded-md p-1 text-sm whitespace-nowrap"
-                    :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
+                    @click.stop.prevent="handleFirstSelect(item)"
+                    class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
+                    :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
                   >
-                    <XCircleIcon 
-                    class="size-5 pe-1"/> Rimuovi 
+                    {{ getLabel(item, foulCategoryLabels) }}
+                  </button>
+                </MenuItem>
+                <template v-if="props.exclutionState">
+                  <MenuItem v-slot="{ active, close }">
+                    <button
+                      @click="removeExclusion(close)"
+                      class="group flex w-full items-center justify-center rounded-md p-1 text-sm whitespace-nowrap"
+                      :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-600'"
+                    >
+                      <XCircleIcon 
+                      class="size-5 pe-1"/> Rimuovi 
+                    </button>
+                  </MenuItem>
+                </template>
+              </template>
+  
+              <template v-else-if="activeStep === 'second'">
+                <MenuItem
+                  v-for="sub in availableSecondOptions"
+                  :key="sub"
+                  v-slot="{ active, close }"
+                >
+                  <button
+                    @click.stop.prevent="handleSecondSelect(sub, close)"
+                    class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
+                    :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
+                  >
+                    {{ firstSelection === FoulType.EDCS ? getLabel(sub, edcsCategoryLabels) : getLabel(sub, foulPositionLabels) }}
                   </button>
                 </MenuItem>
               </template>
-            </template>
-
-            <template v-else-if="activeStep === 'second'">
-              <MenuItem
-                v-for="sub in availableSecondOptions"
-                :key="sub"
-                v-slot="{ active, close }"
-              >
-                <button
-                  @click.stop.prevent="handleSecondSelect(sub, close)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
-                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
+  
+              <template v-else-if="activeStep === 'third'">
+                <MenuItem
+                  v-for="sub in thirdLevelOptions"
+                  :key="sub"
+                  v-slot="{ active, close }"
                 >
-                  {{ firstSelection === FoulType.EDCS ? getLabel(sub, edcsCategoryLabels) : getLabel(sub, foulPositionLabels) }}
+                  <button
+                    @click.stop.prevent="handleThirdSelect(sub, close)"
+                    class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
+                    :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
+                  >
+                    {{ sub }}
+                  </button>
+                </MenuItem>
+              </template>
+  
+              <template v-else-if="activeStep === 'fourth'">
+                <MenuItem
+                  v-for="sub in fourthLevelOptions"
+                  :key="sub"
+                  v-slot="{ active, close }"
+                >
+                  <button
+                    @click="handleFourthSelect(sub, close)"
+                    class="group flex w-full items-center justify-center rounded-md px-2 py-1 min-w-8 text-sm whitespace-nowrap"
+                    :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
+                  >
+                    {{ sub === 0 ? 'ND' : sub }}
+                  </button>
+                </MenuItem>
+              </template>
+            </div>
+            <div v-if="activeStep !== 'first'" class="p-1 border-t border-gray-100">
+              <MenuItem v-slot="{ active }">
+                <button
+                  @click.stop.prevent="handleBack"
+                  class="group flex w-full items-center justify-center rounded-md p-1 text-sm whitespace-nowrap font-semibold"
+                  :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-500'"
+                >
+                  ← Indietro
                 </button>
               </MenuItem>
-            </template>
-
-            <template v-else-if="activeStep === 'third'">
-              <MenuItem
-                v-for="sub in thirdLevelOptions"
-                :key="sub"
-                v-slot="{ active, close }"
-              >
-                <button
-                  @click.stop.prevent="handleThirdSelect(sub, close)"
-                  class="group flex w-full items-center rounded-md p-1 text-sm whitespace-nowrap"
-                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
-                >
-                  {{ sub }}
-                </button>
-              </MenuItem>
-            </template>
-
-            <template v-else-if="activeStep === 'fourth'">
-              <MenuItem
-                v-for="sub in fourthLevelOptions"
-                :key="sub"
-                v-slot="{ active, close }"
-              >
-                <button
-                  @click="handleFourthSelect(sub, close)"
-                  class="group flex w-full items-center justify-center rounded-md px-2 py-1 min-w-8 text-sm whitespace-nowrap"
-                  :class="active ? 'bg-red-800 text-white' : 'text-blue-950'"
-                >
-                  {{ sub === 0 ? 'ND' : sub }}
-                </button>
-              </MenuItem>
-            </template>
-          </div>
-          <div v-if="activeStep !== 'first'" class="p-1 border-t border-gray-100">
-            <MenuItem v-slot="{ active }">
-              <button
-                @click.stop.prevent="handleBack"
-                class="group flex w-full items-center justify-center rounded-md p-1 text-sm whitespace-nowrap font-semibold"
-                :class="active ? 'bg-gray-200 text-blue-950' : 'text-gray-500'"
-              >
-                ← Indietro
-              </button>
-            </MenuItem>
-          </div>
-        </MenuItems>
-      </transition>
+            </div>
+          </MenuItems>
+        </transition>
+      </Portal>
     </Menu>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { Menu, MenuButton, MenuItems, MenuItem, Portal } from '@headlessui/vue'
 import { XCircleIcon } from "@heroicons/vue/24/outline";
 import { EDCSType, FoulDescription, FoulPosition, FoulType } from '@/enum/ExclutionDescription';
 import { useGameStore } from '@/stores/gameStore';
@@ -289,5 +292,53 @@ const removeExclusion = (close: () => void) => {
   emit('remove');
   close();
 }
+
+// --- NUOVA LOGICA SMART DROPDOWN ---
+const buttonRef = ref<any>(null);
+const dropdownStyle = ref({});
+const MENU_ESTIMATED_HEIGHT = 170; // Altezza stimata del menu aperto
+
+const calculatePosition = async () => {
+  // Aspettiamo che Vue sia pronto
+  await nextTick();
+  
+  const el = buttonRef.value?.$el || buttonRef.value;
+  if (!el) return;
+
+  // getBoundingClientRect ci dà le coordinate ESATTE del bottone rispetto allo schermo
+  const rect = el.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const scrollY = window.scrollY;
+  const scrollX = window.scrollX;
+  
+  // Usiamo 'absolute' con scrollY/X per rimanere ancorati al documento
+  if (spaceBelow < MENU_ESTIMATED_HEIGHT) {
+    // Non c'è spazio: APRI VERSO L'ALTO
+    dropdownStyle.value = {
+      position: 'absolute',
+      top: `${scrollY + rect.top - 4}px`,
+      left: `${scrollX + rect.left}px`,
+      transform: 'translateY(-100%)',
+      transformOrigin: 'bottom left',
+    };
+  } else {
+    // C'è spazio: APRI VERSO IL BASSO
+    dropdownStyle.value = {
+      position: 'absolute',
+      top: `${scrollY + rect.bottom + 4}px`,
+      left: `${scrollX + rect.left}px`,
+      transformOrigin: 'top left',
+    };
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('resize', calculatePosition);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', calculatePosition);
+});
+// -----------------------------------
 
 </script>

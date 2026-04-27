@@ -1,13 +1,9 @@
 <template>
   <div class="w-full" :class="{'mb-5': userRole && userRole ==='viewer'}">
     <div class="grid grid-cols-3">
-      <div class="justify-self-start">
-        <NavButton
-        :label="'Distinta'"
-        :icon="ArrowLeftIcon"
-          to="setup">
-        </NavButton>
-      </div>
+      <h1 class="justify-self-end font-bold text-3xl text-blue-950">
+        {{ gameStore.match.homeTeam.name }}
+      </h1>
       <div class="flex flex-col items-center">
         <div class="flex items-center gap-3">
           <div class="text-3xl font-bold text-center text-blue-950">
@@ -29,14 +25,9 @@
         </div>
       </div>
 
-      <div class="justify-self-end">
-        <NavButton
-          v-if="userRole && userRole !== 'viewer'"
-          :label="'Restart'"
-          :icon="ArrowPathIcon"
-          :onClick="restartMatch">
-        </NavButton>
-      </div>
+      <h1 class="justify-self-start font-bold text-3xl text-blue-950">
+        {{ gameStore.match.awayTeam.name }}
+      </h1>
     </div>
   
   </div>
@@ -44,13 +35,17 @@
   <div class="flex flex-col h-min-screen">
     <div v-if="userRole && userRole !== 'viewer'" class="sticky bg-white/90 backdrop-blur-md pb-2 rounded-lg border mb-0.5 transition-all duration-300"
       :class="[isShrinked ? 'shadow-lg border-gray-300 top-1 z-10' : 'border-white top-0']">
-      <div class="grid grid-cols-3">
+
+      <div class="grid grid-cols-3 items-center">
+
         <div class="inline-flex items-end transition-all duration-300" :class="isShrinked ? 'm-2' : ''">
           <ModeToggleItem :hide-labels="isShrinked" class="transition-all duration-300" />
         </div>
+
         <div class="font-bold flex justify-center text-end m-2 text-blue-950 text-4xl">
           {{ timerStore.formattedTime }}
         </div>
+
         <div v-if="isShrinked" class="flex justify-end items-center mr-2 text-xl font-bold text-center text-blue-950 transition-all duration-300">
           <div class="grid grid-rows-2 transition-all duration-300">
             <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
@@ -64,6 +59,14 @@
               <div :class="isCorrectionMode ? 'ml-2' : ''">{{ timerStore.currentQuarter }} T</div>
             </div>
           </div>
+        </div>
+        <div v-else class="justify-self-end">
+          <NavButton
+            :color="'red'"
+            :label="'Restart'"
+            :icon="ArrowPathIcon"
+            :onClick="restartMatch">
+          </NavButton>
         </div>
       </div>
       
@@ -83,10 +86,10 @@
   
     </div>
   
-    <div class="flex justify-center items-center gap-10" role="group">
+    <!-- <div class="flex justify-center items-center gap-10" role="group">
       <ActionButton :icon="TableCellsIcon" label="Report" to="report" color="green" position="center"/>
       <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="events" color="green" position="center" :disabled="gameStore.events.length == 0"/>
-    </div>
+    </div> -->
     <!-- Modale con statistiche -->
     <QuickReportModal v-if="team" :isOpen="showConfirmModal" :team="team"
           @confirm="confirmCleanup" @close="showConfirmModal = false" />

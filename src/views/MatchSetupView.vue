@@ -1,7 +1,10 @@
 <template>
-    <div class="w-full">
-        <div v-if="userRole !== 'viewer'" class="flex justify-between items-center">
+    <div class="w-full grid grid-cols-3 items-center mb-4">
+        <div></div>
+        <h1 class="text-3xl text-center font-bold text-blue-950">Distinta</h1>
+        <div v-if="userRole !== 'viewer'" class="flex justify-between items-center justify-self-end">
             <NavButton
+                :color="'red'"
                 :label="'Pulisci'"
                 :icon="TrashIcon"
                 :onClick="resetAll">
@@ -9,7 +12,6 @@
         </div>
     </div>
   
-    <h1 class="text-3xl text-center font-bold mb-4 text-blue-950">Distinta</h1>
 
     <div class="mb-2.5 flex flex-col md:flex-row justify-between gap-3">
 

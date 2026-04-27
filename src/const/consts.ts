@@ -1,4 +1,5 @@
 import { FoulType, FoulPosition, EDCSType } from "@/enum/ExclutionDescription";
+import { PlanType } from "@/enum/PlanType";
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import type { Category } from "@/interfaces/shot/Category";
 
@@ -66,3 +67,10 @@ export const edcsCategoryLabels: Record<string, string> = {
   [EDCSType.GIOCO_VIOLENTO ]: 'Gioco violento',
   [EDCSType.PROTESTE ]: 'Proteste'
 }
+
+export const planOptions = [
+  { label: 'Trial (Prova Gratuita)', value: PlanType.FREE },
+  { label: 'Basic', value: PlanType.BASIC },
+  { label: 'Pro', value: PlanType.PRO },
+  {label: 'Elitè', value: PlanType.ELITE}
+];

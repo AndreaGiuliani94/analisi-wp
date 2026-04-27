@@ -1,12 +1,8 @@
 <template>
     <div class="w-full">
-        <div class="grid grid-cols-3">
+        <div class="grid grid-cols-3 items-center">
             <!-- Colonna sinistra: bottone -->
             <div class="justify-self-start">
-            <NavButton
-                :label="'Live'"
-                :icon="ArrowLeftIcon"
-                to="live" />
             </div>
             <!-- Colonna centrale: titolo -->
             <h1 class="text-lg font-bold text-blue-950 text-center">

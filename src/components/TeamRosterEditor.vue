@@ -33,6 +33,7 @@
             option-label="label"
             option-value="category"
             placeholder="Seleziona categoria..."
+            size="sm"
             :theme="theme"
             :loading="isLoading"
             :disabled="isLocked || userRole === 'viewer' || team.name === ''"
@@ -48,6 +49,7 @@
             :disabled="!team.name || !team.category"
             :title="isLocked ? 'Modifica squadra' : 'Conferma e abilita giocatori'"
             :icon="isLocked ? PencilIcon : CheckIcon"
+            icon-size="size-4"
           />
 
           <ActionButton 
@@ -57,6 +59,7 @@
             size="sm"
             title="Ricarica ultima distinta"
             :icon="ArrowPathIcon"
+            icon-size="size-4"
           />
           
       </div>

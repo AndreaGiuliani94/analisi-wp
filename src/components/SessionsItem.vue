@@ -1,21 +1,20 @@
 <template>
   <div class="w-full">
-    <div v-if="sessionStore.sessions?.length > 0" class="mb-2 text-lg">Partite aperte:
-      <div v-for="(session, index) in sessionStore.sessions" class="text-sm bg-gray-200 px-2 py-1.5 my-1 flex justify-between items-center gap-2 rounded">
-        <RouterLink :to="`/session/${session.session_id}`" 
+    <div v-if="sessionStore.sessions?.length > 0" class="mb-2 text-lg">
+      <div v-for="(session, index) in filteredSessions" class="text-sm bg-gray-200 px-2 py-1.5 my-1 flex justify-between items-center gap-2 rounded">
+        <RouterLink :to="`/workspace/session/${session.session_id}`" 
           class="text-blue-600 hover:underline active:underline flex-1 truncate"
           :class="{'font-bold text-base': session.session_id == (sessionStore.currentSession.session_id || sessionIdLS)}">
-          {{ session.sessions.title }}
+          {{ session.session.title }} {{ getMatchLabel(session.session) }}
         </RouterLink>
         
         <div class="flex gap-2">
           <RoleBadge :role="session.role" />
         
-
           <div class="flex gap-2">
             <NavButton 
               :icon="MagnifyingGlassIcon"
-              :to="`/session/${session.session_id}`"
+              :to="`/workspace/session/${session.session_id}`"
             />
     
             <NavButton 
@@ -44,12 +43,16 @@
 <script setup lang="ts">
 import type { Session } from '@/interfaces/session/Session'
 import { useSessionStore } from '@/stores/sessionStore'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, type PropType } from 'vue'
 import RoleBadge from './badges/RoleBadge.vue'
 import NavButton from './buttons/NavButton.vue'
 import { ArrowRightIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import { deleteSession } from '@/services/sessionService'
 import ConfirmModal from './modals/ConfirmModal.vue'
+
+const props = defineProps<{
+  limit?: number
+}>()
 
 const showRemoveConfirmModal = ref(false);
 const confirmRemoveMessage = ref('');
@@ -58,6 +61,14 @@ const sessionIdLS = localStorage.getItem("session_id");
 const loading = ref(false)
 
 const sessionStore = useSessionStore()
+
+const filteredSessions = computed(() => { return sessionStore.sessions.slice(0, props.limit)})
+
+const getMatchLabel = (session: any) => { 
+  if(!session.match) return ''
+  if(!session.match.home_team || !session.match.away_team) return ''
+  return '(' + session.match.home_team.club_name + ' - ' + session.match.away_team.club_name + ')'
+}
 
 const openConfirmDelete = async (session: Session) => {
   confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + session.sessions.title + '. Sicuro di voler procedere?'

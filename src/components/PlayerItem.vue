@@ -74,36 +74,36 @@
   </div>
 
   <template v-if="settings.enableShoot">
-    <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+    <div class="inline-flex items-center ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">PARI</div>
-      <ShotButton 
-        :disabled="!player.active || userRole === 'viewer'" 
+      <ShotButton v-if="userRole !== 'viewer'"
+        :disabled="!player.active" 
         :type="ShotCategory.EVEN" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
       <div class="h-6 w-8 flex items-center"> {{ playerShots?.even.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.even.length }}</div>
     </div>
-    <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
-      <div class="h-6 w-8 flex items-center justify-end">SUP</div>
-      <ShotButton 
-        :disabled="!player.active || userRole === 'viewer'" 
+    <div class="inline-flex items-center justify-center ml-2 gap-1 text-blue-950" role="group">
+      <div class="h-6 w-8 inline-flex items-center justify-end" >SUP</div>
+      <ShotButton v-if="userRole !== 'viewer'"
+        :disabled="!player.active" 
         :type="ShotCategory.SUP" 
         :is-goal="false" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
-      <div class="h-6 w-8 flex items-center"> {{ playerShots?.sup.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.sup.length }}</div>
+      <div class="h-6 w-8 inline-flex items-center tabular-nums"> {{ playerShots?.sup.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.sup.length }}</div>
     </div>
-    <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
+    <div class="inline-flex items-center ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">RIG</div>
-      <ShotButton 
-        :disabled="!player.active || userRole === 'viewer'"
+      <ShotButton v-if="userRole !== 'viewer'"
+        :disabled="!player.active" 
         :type="ShotCategory.PENALTY" 
         :is-goal="false" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
       <div class="h-6 w-8 flex items-center"> {{ playerShots?.penalty.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.penalty.length }}</div>
     </div>
-    <div class="inline-flex ml-2 text-blue-950" role="group">
+    <div class="inline-flex items-center ml-2 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center font-bold text-base"> 
         <span v-if="player.isGK">
           {{ playerShotsFaced?.saves.length + '/' + playerShotsFaced?.shots.length }}

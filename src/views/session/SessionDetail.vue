@@ -40,7 +40,7 @@
           <ActionButton
             label="Entra"
             :icon="PlayIcon"
-            :to="`/session/join/${sessionId}`"
+            :to="`/match/${sessionId}`"
             ></ActionButton>
 
           <ShareButton

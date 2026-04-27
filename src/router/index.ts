@@ -13,15 +13,73 @@ import SettingsView from '@/views/SettingsView.vue';
 import SessionCreate from '@/components/SessionsItem.vue';
 import JoinSession from '@/views/session/JoinSession.vue';
 import SessionDetail from '@/views/session/SessionDetail.vue';
+import AppLayout from '@/views/AppLayout.vue';
+import LandingView from '@/views/LandingView.vue';
+import OnboardView from '@/views/backoffice/OnboardView.vue';
+import BackofficeVIew from '@/views/backoffice/BackofficeVIew.vue';
+import OrganizationDetailView from '@/views/backoffice/OrganizationDetailView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/login", name: 'Login', component: LoginView },
+    { 
+      path: "/", 
+      name: "Landing", 
+      component: LandingView
+    },
+    { 
+      path: "/login", 
+      name: "Login", 
+      component: LoginView 
+    },
     { path: "/auth/callback", component: CallbackView },
-    { path: "/profile", component: ProfileView , meta: { requiresAuth: true }},
-    { path: "/dashboard", component: DashboardView },
-    { path: "/:pathMatch(.*)*", redirect: "/login" },
+    { 
+      path: "/workspace", 
+      component: AppLayout,
+      meta: { requiresAuth: true },
+      children: [
+        { 
+          path: '', 
+          redirect: '/workspace/dashboard' 
+        },
+        { 
+          path: 'backoffice', 
+          name: 'Backoffice',
+          component: BackofficeVIew,
+        },
+        {
+          path:'backoffice/onboard',
+          name:'Registrazione società',
+          component: OnboardView
+        },
+        {
+          path:'backoffice/organization/:id',
+          component: OrganizationDetailView
+        },
+        {
+          path: 'profile', 
+          name: 'Profilo',
+          component: ProfileView
+        },
+        { 
+          path: 'dashboard', 
+          name: 'Dashboard',
+          component: DashboardView
+        },
+        { path: 'analysis', 
+          name: 'Analisi video',
+          component: AnalysisView
+        },
+        { 
+          path: 'session', 
+          component: SessionCreate
+        },
+        { 
+          path: 'session/:id', 
+          component: SessionDetail
+        }
+      ]
+    },
     {
       path: '/match/:id',
       component: JoinSession,
@@ -57,10 +115,7 @@ const router = createRouter({
           redirect: { name: 'MatchLive' }
         }
       ]
-    },
-    { path: '/analysis', component: AnalysisView, meta: { requiresAuth: true } },
-    { path: '/session', component: SessionCreate, meta: { requiresAuth: true } },
-    { path: '/session/:id', component: SessionDetail, meta: { requiresAuth: true } }
+    }    
   ]
 });
 

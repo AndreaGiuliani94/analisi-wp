@@ -91,8 +91,8 @@ const login = async () => {
     }
 
     const data = await res.json()
-    auth.setAuth(data.access_token, { email: data.email, name: data.name })
-    router.push('/profile')
+    auth.setAuth(data.access_token, data.user)
+    router.push('/workspace/dashboard')
   } catch (e: any) {
     error.value = e.message || 'Errore di autenticazione'
   } finally {

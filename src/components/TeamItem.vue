@@ -56,7 +56,7 @@ const handleOpenModal = () => {
         </div>
       </div>
       <div class="flex justify-center gap-5 text-base text-blue-950">
-        <div class="inline-flex items-center gap-1" role="group">
+        <div class="inline-flex items-baseline gap-1" role="group">
           <div class="text-sm font-semibold">PARI</div>
           <span class="tabular-nums font-bold">{{ stats.even.goals.length }}/{{ stats.even.shots.length }}</span>
         </div>

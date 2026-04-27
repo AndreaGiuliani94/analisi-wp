@@ -8,7 +8,7 @@ export const useSessionStore = defineStore('session', {
         const savedSessions = localStorage.getItem("sessions");
         const savedSession = localStorage.getItem("currentSession");
         return {
-            sessions: savedSessions ? JSON.parse(savedSessions) as Session[] : {} as Session[],
+            sessions: savedSessions ? JSON.parse(savedSessions) as any[] : {} as any[],
             currentSession: savedSession ? JSON.parse(savedSession) as SessionDetails : {} as SessionDetails
         }
     },

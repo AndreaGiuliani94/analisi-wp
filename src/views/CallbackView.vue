@@ -25,7 +25,7 @@ onMounted(async () => {
 
   if (res.ok) {
     const data = await res.json();
-    auth.setAuth(data.access_token, { email: data.email, name: data.name });
+    auth.setAuth(data.access_token, data.user);
     router.push("/profile");
   } else {
     alert("Login fallito");

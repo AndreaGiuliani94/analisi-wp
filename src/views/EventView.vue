@@ -1,30 +1,18 @@
 <template>
-    <div class="w-full flex flex-col gap-4">
+    <div class="w-full flex flex-col gap-2">
         
         <div class="grid grid-cols-3 items-center">
             <div class="justify-self-start">
-                <NavButton :label="'Live'" :icon="ArrowLeftIcon" to="live" />
-            </div>
-            
-            <div class="flex flex-col items-center">
-                <h1 class="text-lg font-bold text-blue-950 uppercase tracking-wide">Eventi</h1>
-                <div class="text-sm font-semibold text-slate-500">
-                    {{ gameStore.match.homeTeam.name }} - {{ gameStore.match.awayTeam.name }}
-                </div>
-            </div>
-            
-            <div class="justify-self-end">
-                <ExportButton @exportToExcel="downloadExcel" />
-            </div>
-        </div>
-
-        <div>
-            <div class="grid grid-cols-3 gap-2 items-center justify-center">
                 <QuarterFilter class="max-w-fit"
                     v-model="selectedQuarter"
                     :isModal="true"
                 />
-                
+            </div>
+            
+            <div class="flex flex-col items-center">
+                <div class="text-lg font-bold text-red-800">
+                    {{ gameStore.match.homeTeam.name }} - {{ gameStore.match.awayTeam.name }}: {{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score }}
+                </div>
                 <div class="flex justify-center gap-1 font-medium mb-1">
                     <template v-for="(p, i) in gameStore.partials" :key="i">
                         <span class="flex items-center">
@@ -36,6 +24,18 @@
                         </span>
                     </template>
                 </div>
+            </div>
+            
+            <div class="justify-self-end">
+                <ExportButton @exportToExcel="downloadExcel" />
+            </div>
+        </div>
+
+        <div>
+            <div class="grid grid-cols-3 gap-2 items-center justify-center">
+                
+                
+                
 
             </div>
         </div>
