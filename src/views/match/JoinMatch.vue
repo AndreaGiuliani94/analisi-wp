@@ -84,7 +84,6 @@ import NavbarItem from '@/components/NavbarItem.vue'
 import { joinSession } from '@/services/sessionService'
 import { useRealtimeStore } from '@/stores/realtimeStore'
 import { useSessionStateStore } from '@/stores/sessionStateStore'
-import { WrenchScrewdriverIcon } from '@heroicons/vue/24/outline'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 

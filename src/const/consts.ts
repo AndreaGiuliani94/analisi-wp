@@ -72,5 +72,5 @@ export const planOptions = [
   { label: 'Trial (Prova Gratuita)', value: PlanType.FREE },
   { label: 'Basic', value: PlanType.BASIC },
   { label: 'Pro', value: PlanType.PRO },
-  {label: 'Elitè', value: PlanType.ELITE}
+  { label: 'Elite', value: PlanType.ELITE}
 ];

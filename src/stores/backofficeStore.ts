@@ -1,4 +1,4 @@
-import { getAdminDshboard } from "@/services/adminService";
+import { getAdminDshboard, getOrganizationDetail, removeUserFromOrg } from "@/services/adminService";
 import { defineStore } from "pinia";
 
 export const useBackofficeStore = defineStore('backoffice', {
@@ -12,12 +12,20 @@ export const useBackofficeStore = defineStore('backoffice', {
   },
 
   actions: {
-    async getAdminDshboard() {
+    async getAdminDashboard() {
       const res = await getAdminDshboard();
-      console.log(res);
       this.organizations = res.organizations 
       this.users = res.users
     },
-    
+    async removeUser(userId: string, orgId: string) {
+      const res = await removeUserFromOrg(userId, orgId);
+      this.users = this.users.filter(u => u.id !== res.user_id);
+    },
+    async getOrganization(orgId: string) {
+      const res = await getOrganizationDetail(orgId);
+      this.organizations = res.organizations 
+      this.users = res.users
+    }
+  
   },
 });

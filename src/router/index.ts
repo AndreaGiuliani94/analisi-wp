@@ -1,23 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ScoreboardView from '../views/ScoreboardView.vue';
-import MatchSetupView from '../views/MatchSetupView.vue';
-import ReportView from '@/views/ReportView.vue';
-import EventView from '@/views/EventView.vue';
+import ScoreboardView from '../views/match/ScoreboardView.vue';
 import DashboardView from '@/views/DashboardView.vue';
 import AnalysisView from '@/views/AnalysisView.vue';
-import LoginView from '@/views/LoginView.vue';
+import LoginView from '@/views/login/LoginView.vue';
 import ProfileView from '@/views/ProfileView.vue';
-import CallbackView from '@/views/CallbackView.vue';
+import CallbackView from '@/views/login/CallbackView.vue';
 import { useAuthStore } from '@/stores/authStore';
-import SettingsView from '@/views/SettingsView.vue';
+import SettingsView from '@/views/match/SettingsView.vue';
 import SessionCreate from '@/components/SessionsItem.vue';
-import JoinSession from '@/views/session/JoinSession.vue';
-import SessionDetail from '@/views/session/SessionDetail.vue';
 import AppLayout from '@/views/AppLayout.vue';
 import LandingView from '@/views/LandingView.vue';
 import OnboardView from '@/views/backoffice/OnboardView.vue';
-import BackofficeVIew from '@/views/backoffice/BackofficeVIew.vue';
+import BackofficeView from '@/views/backoffice/BackofficeView.vue';
 import OrganizationDetailView from '@/views/backoffice/OrganizationDetailView.vue';
+import RostersView from '@/views/RostersView.vue';
+import MatchDetail from '@/views/match/MatchDetail.vue';
+import JoinMatch from '@/views/match/JoinMatch.vue';
+import MatchSetupView from '@/views/match/MatchSetupView.vue';
+import EventView from '@/views/match/EventView.vue';
+import ReportView from '@/views/match/ReportView.vue';
+import StatsView from '@/views/StatsView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -45,7 +47,7 @@ const router = createRouter({
         { 
           path: 'backoffice', 
           name: 'Backoffice',
-          component: BackofficeVIew,
+          component: BackofficeView,
         },
         {
           path:'backoffice/onboard',
@@ -54,6 +56,7 @@ const router = createRouter({
         },
         {
           path:'backoffice/organization/:id',
+          name: 'Società',
           component: OrganizationDetailView
         },
         {
@@ -70,25 +73,33 @@ const router = createRouter({
           name: 'Analisi video',
           component: AnalysisView
         },
+        { path: 'rosters', 
+          name: 'Roster',
+          component: RostersView
+        },
+        { path: 'stats', 
+          name: 'Statistiche',
+          component: StatsView
+        },
         { 
           path: 'session', 
           component: SessionCreate
         },
         { 
           path: 'session/:id', 
-          component: SessionDetail
+          component: MatchDetail
         }
       ]
     },
     {
       path: '/match/:id',
-      component: JoinSession,
+      component: JoinMatch,
       meta: { requiresAuth: true },
       children: [
         { 
           path: 'setup', 
           name: 'MatchSetup',
-          component: MatchSetupView 
+          component: MatchSetupView
         },
         { 
           path: 'live', 
@@ -98,12 +109,12 @@ const router = createRouter({
         { 
           path: 'events', 
           name: 'MatchEvents',
-          component: EventView 
+          component: EventView
         },
         { 
           path: 'report', 
           name: 'MatchReport',
-          component: ReportView 
+          component: ReportView
         },
         { 
           path: 'settings', 

@@ -68,9 +68,6 @@
 
 <script setup lang="ts">
 import ExportButton from '@/components/buttons/ExportButton.vue';
-import { useGameStore } from '../stores/gameStore';
-import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
-import NavButton from '@/components/buttons/NavButton.vue';
 import type { Player } from '@/interfaces/Player';
 import { exportTeamsToExcel } from '@/utils/export';
 import { Tab, TabGroup,
@@ -81,6 +78,7 @@ import TeamPanel from '@/components/TeamPanel.vue';
 import { formatTime, getExclution } from '@/utils/utils';
 import QuarterFilter from '@/components/filters/QuarterFilter.vue';
 import { provide, ref } from 'vue';
+import { useGameStore } from '@/stores/gameStore';
 
 const gameStore = useGameStore();
 

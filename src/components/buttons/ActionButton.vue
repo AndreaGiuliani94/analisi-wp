@@ -28,7 +28,7 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     icon?: any
     iconSize?: string
     label?: string
@@ -41,7 +41,10 @@ const props = defineProps<{
     width?: 'full' | 'fit' | 'half'
     justify?: 'start' | 'center' | 'end'
     size?: 'sm' | 'md' | 'lg'
-}>()
+    solid?: boolean
+}>(), {
+    solid: true
+})
 
 const emit = defineEmits<{
     (e: 'click'): void
@@ -58,12 +61,19 @@ const handleClick = () => {
     }
 }
 
-const colorClass = {
-    green: 'bg-green-600 text-white hover:bg-green-500 active:bg-green-500 active:ring-green-300',
-    blue: 'bg-blue-950 text-white hover:bg-blue-800 active:bg-blue-800 active:ring-blue-300',
-    red: 'bg-red-800 text-white hover:bg-red-900 active:bg-red-900 active:ring-red-300',
-    gray: 'bg-gray-300 text-white hover:bg-gray-400 active:bg-gray-500 active:ring-gray-200'
-}[props.color || 'green']
+const colorClass = props.solid 
+    ? {
+        green: 'bg-green-600 text-white hover:bg-green-500 active:bg-green-500 active:ring-green-300',
+        blue: 'bg-blue-950 text-white hover:bg-blue-800 active:bg-blue-800 active:ring-blue-300',
+        red: 'bg-red-800 text-white hover:bg-red-900 active:bg-red-900 active:ring-red-300',
+        gray: 'bg-gray-300 text-white hover:bg-gray-400 active:bg-gray-500 active:ring-gray-200'
+    }[props.color || 'green']
+    : {
+        green: 'bg-white text-green-600 border border-green-600 hover:bg-green-50 active:ring-green-300',
+        blue: 'bg-white text-blue-950 border border-blue-950 hover:bg-blue-50 active:ring-blue-300',
+        red: 'bg-white text-red-800 border border-red-800 hover:bg-red-50 active:ring-red-300',
+        gray: 'bg-white text-gray-500 border border-gray-300 hover:bg-gray-100 active:ring-gray-200'
+    }[props.color || 'green']
 
 const alignmentClass = {
   center: 'justify-center',

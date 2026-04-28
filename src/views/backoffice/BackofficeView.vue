@@ -103,6 +103,6 @@ const router = useRouter()
 const imageLoadError = ref(false);
 
 onMounted(async () => {
-    await backofficeStore.getAdminDshboard();
+    await backofficeStore.getAdminDashboard();
 })
 </script>

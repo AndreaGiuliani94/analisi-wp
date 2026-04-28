@@ -118,9 +118,7 @@
 
 <script setup lang="ts">
 import ExportButton from '@/components/buttons/ExportButton.vue';
-import { useGameStore } from '../stores/gameStore';
-import { ArrowLeftIcon } from '@heroicons/vue/20/solid';
-import NavButton from '@/components/buttons/NavButton.vue';
+import { useGameStore } from '@/stores/gameStore';
 import { exportEventsToExcel } from '@/utils/export';
 import { MatchEventType } from '@/enum/MatchEventDescription';
 import type { MatchEvent } from '@/interfaces/MatchEvent';

@@ -5,13 +5,14 @@
 
     <template #footer>
       <ActionButton label="Annulla" color="gray" @click="closeModal" />
-      <ActionButton label="Conferma" color="red" @click="confirmAction" />
+      <ActionButton label="Conferma" :color="props.buttonColor" @click="confirmAction" />
     </template>
     
   </BaseModal>
 </template>
 
 <script setup lang="ts">
+import type { PropType } from "vue";
 import ActionButton from "../buttons/ActionButton.vue";
 import BaseModal from "./BaseModal.vue";
 
@@ -24,6 +25,10 @@ const props = defineProps({
   message: {
     type: String,
     default: "Vuoi davvero procedere con questa azione?",
+  },
+  buttonColor: {
+    type: String as PropType<"red" | "green" | "blue" | "gray" | undefined>,
+    default: "red",
   },
 });
 

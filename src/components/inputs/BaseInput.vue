@@ -1,6 +1,6 @@
 <template>
-  <div :class="labelPosition">
-    <label v-if="label" :for="id" class="text-sm font-medium text-gray-800">
+  <div class="flex flex-col" :class="labelPosition">
+    <label v-if="label" :for="id" class="text-sm font-medium text-blue-950">
       {{ label }}
     </label>
     <input

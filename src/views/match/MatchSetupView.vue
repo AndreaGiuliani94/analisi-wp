@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useGameStore } from '../stores/gameStore';
+import { useGameStore } from '@/stores/gameStore';
 import { PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
@@ -130,8 +130,7 @@ const loadLastRoster = async (isHome: boolean) => {
   const team = isHome ? store.match.homeTeam : store.match.awayTeam;
 
     if (!team.id) {
-        console.warn("Attenzione: Seleziona e conferma prima l'intestazione della squadra!");
-        // Mostra un toast di avviso
+        useToast().warning("Attenzione: Seleziona e conferma prima l'intestazione della squadra!");
         return;
     }
 

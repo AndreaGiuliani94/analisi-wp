@@ -17,27 +17,6 @@ export const updatePlayer = async (playerId: string, payload: any) => {
   }
   return response;
 };
-export const createNewPlayer = async (
-  matchId: string,
-  isHomeTeam: boolean,
-  player: Player,
-) => {
-  const response = await fetch(`${BE_URL}/players`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      match_id: matchId, // L'ID della partita attuale
-      team_type: isHomeTeam ? "HOME" : "AWAY", // O il team_id reale se lo hai
-      number: player.number,
-      name: player.name,
-      isGk: player.isGK,
-    }),
-  });
-
-  if (!response.ok)
-    throw new Error("Errore durante la creazione del giocatore");
-  return response;
-};
 
 export const getTeamsByName = async (teamName: string) => {
   const res = await fetch(
@@ -180,4 +159,33 @@ export const restartMatch = async (matchId: string, requestBody: any) => {
   }
   
   return response;
+};
+
+export const addPlayerToTeamRoster = async (teamId: string, playerDetails: { name: string; isGK: boolean; dateOfBirth: string }) => {
+  const response = await fetch(`${BE_URL}/teams/${teamId}/players`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(playerDetails),
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Errore durante l'aggiunta del giocatore al roster.");
+  }
+  return response.json(); // Assuming it returns the created player
+};
+
+export const removePlayerfromRoster = async (teamId: string, playerId: string) => {
+  const response = await fetch(`${BE_URL}/teams/${teamId}/players/${playerId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Errore durante la rimozione del giocatore dal roster.");
+  }
+  return response.json(); // Assuming it returns the created player
 };

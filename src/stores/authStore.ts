@@ -4,6 +4,7 @@ import { defineStore } from 'pinia';
 interface User {
   id: string;
   orgId: string;
+  orgRole: string;
   email: string;
   name: string;
   isSystemAdmin: boolean;
