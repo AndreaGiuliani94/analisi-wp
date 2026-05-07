@@ -1,7 +1,7 @@
 <template>
     <div class="p-2">
 
-        <div class="relative w-full max-w-lg mx-auto aspect-4/3 bg-cyan-50 border-2 border-cyan-200 rounded-lg">
+        <div class="relative w-full aspect-4/3 bg-cyan-50 border-2 border-cyan-200 rounded-lg">
 
             <div class="absolute inset-0 overflow-hidden rounded-t-lg z-0">
 

@@ -1,7 +1,7 @@
 <template>
   <div class="">
     <!-- Header di Benvenuto & Quick Actions -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-10">
       <div>
         <h1 class="text-3xl font-black text-blue-950 tracking-tight">
           Bentornato, <span class="text-blue-600">{{ user?.name || 'Coach' }}</span>!
@@ -9,7 +9,7 @@
         <p class="text-gray-500 mt-1">Gestisci le tue partite e analizza le performance della squadra.</p>
       </div>
       
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col lg:flex-row items-center gap-3">
         <ActionButton 
           @click="openCreateModal" 
           :disabled="loading" 
@@ -25,6 +25,14 @@
           label="Unisciti a un partita"
           :icon="UserGroupIcon"
         />
+
+        <ActionButton
+          :to="'/live/'+user?.organization.slug"
+          label="Live pubblici"
+          :icon="PlayIcon"
+          color="green"
+          :disabled="loading"
+        />
       </div>
     </div>
 
@@ -36,9 +44,9 @@
           <div class="p-6 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-lg font-bold text-blue-950 flex items-center gap-2">
               <ClockIcon class="size-5 text-blue-600" />
-              Ultime Sessioni
+              Ultime partite
             </h2>
-            <router-link to="/workspace/sessions" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+            <router-link to="/workspace/matches" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
               Vedi tutte
             </router-link>
           </div>
@@ -103,7 +111,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/authStore';
 import { ref, computed, toRef } from 'vue';
-import { PlusIcon, UserGroupIcon, ClockIcon, TrophyIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { PlusIcon, UserGroupIcon, ClockIcon, TrophyIcon, InformationCircleIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import SessionsItem from '@/components/SessionsItem.vue';
 import NewSessionModal from '@/components/modals/NewSessionModal.vue';

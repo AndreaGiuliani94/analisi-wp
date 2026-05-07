@@ -16,21 +16,23 @@
     <div class="mb-2.5 flex flex-col md:flex-row justify-between gap-3">
 
         <TeamRosterEditor
-            :team="store.match.homeTeam"
+            :team="gameStore.match.homeTeam"
             :isHome="true"
             :userRole="userRole"
             theme="blue"
             :availableTeams="availableHomeTeams"
             :available-players="homeTeamRoster"
+            :suggestedTeams="suggestedTeams"
             :isLoading="isLoadingHomeRosters"
+            :is-game-started="isGameStarted"
             @edit-player="handleUpdatePlayerName($event)"
-            @fetch-available="fetchAvailableTeams(store.match.homeTeam.name, true)"
+            @fetch-available="fetchAvailableTeams(gameStore.match.homeTeam.name, true)"
             @load-last="loadLastRoster(true)"
             @confirm-team="handleTeamConfirm(true)"
         />
 
         <TeamRosterEditor
-            :team="store.match.awayTeam"
+            :team="gameStore.match.awayTeam"
             :isHome="false" 
             :userRole="userRole"
             theme="blue"
@@ -38,8 +40,9 @@
             :available-players="awayTeamRoster"
             :suggestedTeams="suggestedTeams"
             :isLoading="isLoadingAwayRosters"
+            :is-game-started="isGameStarted"
             @edit-player="handleUpdatePlayerName($event)"
-            @fetch-available="fetchAvailableTeams(store.match.awayTeam.name, false)"
+            @fetch-available="fetchAvailableTeams(gameStore.match.awayTeam.name, false)"
             @load-last="loadLastRoster(false)"
             @confirm-team="handleTeamConfirm(false)"
         />
@@ -49,7 +52,7 @@
         :icon="PlayIcon" 
         label="Live!" 
         @click="startLiveMatch"
-        :disabled="store.actualPlayers?.length < 7 || store.actualOpponents?.length < 7 || store.match.awayTeam?.name == ''" 
+        :disabled="gameStore.actualPlayers?.length < 7 || gameStore.actualOpponents?.length < 7 || gameStore.match.awayTeam?.name == '' || isGameStarted" 
         color="green"
         :loading="isStarting"
     />
@@ -57,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useGameStore } from '@/stores/gameStore';
 import { PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
@@ -70,14 +73,16 @@ import { useRouter } from 'vue-router';
 import type { Team } from '@/interfaces/Team';
 import { useToast } from 'vue-toastification';
 import { useTimerStore } from '@/stores/timerStore';
+import { MatchStatus } from '@/enum/MatchStatus';
 
-const store = useGameStore();
+const gameStore = useGameStore();
 const sessionStore = useSessionStore();
 const { role: userRole } = useUserRole(sessionStore.currentSession.participants);
 
 const router = useRouter();
 const toast = useToast();
 const isStarting = ref(false);
+const isGameStarted = (computed(() => gameStore.match.status !== MatchStatus.SCHEDULED && gameStore.match.status !== MatchStatus.WARMUP))
 
 const availableHomeTeams = ref<TeamInfo[]>([]);
 const availableAwayTeams = ref<TeamInfo[]>([]);
@@ -93,8 +98,8 @@ const homeTeamRoster = ref([]);
 const awayTeamRoster = ref([]);
 
 // Teniamo traccia dell'ultimo ID confermato per capire se è cambiata una squadra
-const lastConfirmedHomeId = ref(store.match.homeTeam.id);
-const lastConfirmedAwayId = ref(store.match.awayTeam.id);
+const lastConfirmedHomeId = ref(gameStore.match.homeTeam.id);
+const lastConfirmedAwayId = ref(gameStore.match.awayTeam.id);
 
 const fetchAvailableTeams = async (teamName: string, isHome: boolean) => {
     // 1. Evitiamo chiamate a vuoto se il nome non è ancora stato inserito
@@ -111,7 +116,7 @@ const fetchAvailableTeams = async (teamName: string, isHome: boolean) => {
     // 4. Esecuzione
     targetLoading.value = true;
     try {
-        const response = await store.getTeamsByName(teamName);
+        const response = await gameStore.getTeamsByName(teamName);
         targetList.value = response;
         
         // Salviamo il nome appena cercato per la cache
@@ -127,7 +132,7 @@ const fetchAvailableTeams = async (teamName: string, isHome: boolean) => {
 };
 
 const loadLastRoster = async (isHome: boolean) => {
-  const team = isHome ? store.match.homeTeam : store.match.awayTeam;
+  const team = isHome ? gameStore.match.homeTeam : gameStore.match.awayTeam;
 
     if (!team.id) {
         useToast().warning("Attenzione: Seleziona e conferma prima l'intestazione della squadra!");
@@ -136,7 +141,7 @@ const loadLastRoster = async (isHome: boolean) => {
 
     try {
         // Chiamata al BE
-        const response = store.getLastTeamRoster(team.id);
+        const response = gameStore.getLastTeamRoster(team.id);
         const lastRosterData = await response;
 
         if (!lastRosterData || lastRosterData.length === 0) {
@@ -175,7 +180,7 @@ const loadLastRoster = async (isHome: boolean) => {
 const loadSuggestedTeams = async () => {
     try {
         console.log("Chiamata BE per tutti i team...");
-        const response = await store.getAllTeams();
+        const response = await gameStore.getAllTeams();
         suggestedTeams.value = response;
         console.log(suggestedTeams.value);
         // Qui andrà la logica per ricaricare l'ultima distinta
@@ -186,7 +191,7 @@ const loadSuggestedTeams = async () => {
 };
 
 const handleTeamConfirm = async (isHome: boolean) => {
-    const team = isHome ? store.match.homeTeam : store.match.awayTeam;
+    const team = isHome ? gameStore.match.homeTeam : gameStore.match.awayTeam;
     const previousId = isHome ? lastConfirmedHomeId.value : lastConfirmedAwayId.value;
 
     // 1. CONTROLLO CAMBIO SQUADRA
@@ -209,7 +214,7 @@ const handleTeamConfirm = async (isHome: boolean) => {
         if(team.id === '') {
             console.log("Crea nuova squadra: name: " + team.name + ", category: " + team.category )
 
-            const response = await store.createNewTeam(team);
+            const response = await gameStore.createNewTeam(team);
             team.id = response.id;
 
             if (isHome) lastConfirmedHomeId.value = team.id;
@@ -226,7 +231,7 @@ const handleTeamConfirm = async (isHome: boolean) => {
 };
 
 const loadTeamRoaster = async (team: Team, isHome: boolean) => {
-    const response = await store.getTeamRoster(team.id);
+    const response = await gameStore.getTeamRoster(team.id);
     if(isHome) homeTeamRoster.value = response.players
     else awayTeamRoster.value = response.players
 }
@@ -237,7 +242,7 @@ const startLiveMatch = async () => {
 
     try {
         // 2. CHIAMATE AL BACKEND (Bulk Save)
-        await store.savePregameData();
+        await gameStore.savePregameData();
 
         // 3. NAVIGAZIONE ALLA PARTITA
         router.push('live');
@@ -256,7 +261,7 @@ const handleUpdatePlayerName = async (payload: any) => {
         console.log(`Modifica globale richiesta per il giocatore ${payload.id}`);
         
         // 1. Chiamata al Backend
-        await store.updatePlayer(payload);
+        await gameStore.updatePlayer(payload);
         
         if(payload.name) {
             // 2. Aggiorniamo la "rosa" (availablePlayers)        
@@ -277,20 +282,20 @@ const handleUpdatePlayerName = async (payload: any) => {
 };
 
 const resetAll = async() => {
-    store.clearDistinta();
+    gameStore.clearDistinta();
     useTimerStore().resetTimer();
 }
 
 onMounted(async () => {
-  store.loadStore();
+  gameStore.loadStore();
   await loadSuggestedTeams();
-  await fetchAvailableTeams(store.match.homeTeam.name, true);
-  await fetchAvailableTeams(store.match.awayTeam.name, false);
-  if(store.match.homeTeam.id) {
-    loadTeamRoaster(store.match.homeTeam, true)
+  await fetchAvailableTeams(gameStore.match.homeTeam.name, true);
+  await fetchAvailableTeams(gameStore.match.awayTeam.name, false);
+  if(gameStore.match.homeTeam.id) {
+    loadTeamRoaster(gameStore.match.homeTeam, true)
   }
-  if(store.match.awayTeam.id) {
-    loadTeamRoaster(store.match.awayTeam, false)
+  if(gameStore.match.awayTeam.id) {
+    loadTeamRoaster(gameStore.match.awayTeam, false)
   }
 });
 </script>

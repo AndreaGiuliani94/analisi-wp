@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="text-xs px-2 py-1 rounded border whitespace-nowrap"
+    class="text-xs px-2 py-1 rounded border whitespace-nowrap truncate max-w-fit"
     :class="badgeColorClasses"
   >
     {{ text }}

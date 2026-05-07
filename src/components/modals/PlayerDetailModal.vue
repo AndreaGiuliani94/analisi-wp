@@ -2,7 +2,7 @@
   <BaseModal
     :is-open="isOpen"
     @close="closeModal"
-    max-width="max-w-xl lg:max-w-3xl"
+    max-width="max-w-xl md:max-w-3xl"
   >
 
     <div>

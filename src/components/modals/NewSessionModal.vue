@@ -4,23 +4,41 @@
     title="Nuova Partita" 
     @close="closeModal"
   >
-    <div >
+    <div class="flex flex-col gap-4 items-start justify-between ">
       <BaseInput
+        class="w-full"
         id="name"
         v-model="title"
         :placeholder="settingsStore.homeTeamName + ' - ...'"
         label="Nome partita"
         required/>
-
+      <div class=" w-full grid grid-cols-2 gap-4 ">
+        <BaseInput
+          id="scheduledDate"
+          type="date"
+          v-model="date"
+          label="Data partita"
+          required/>
+        <BaseInput
+          id="scheduledTime"
+          type="time"
+          v-model="time"
+          placeholder="Orario partita"
+          label="Orario partita"
+          required/>
+      </div>
+      
       <div v-if="error" class="text-red-500 text-sm">{{ error }}</div>
       <div v-if="success" class="text-green-600 text-sm">Creazione completata!</div>
 
     </div>
     <template #footer>
         <ActionButton
+          size="lg"
           color="green"
           type="submit"
           :label="loading ? 'Creazione...' : 'Crea'"
+          @click="register"
           :disabled="loading"
           />
     </template>
@@ -44,6 +62,8 @@ const settingsStore = useSettingsStore()
 
 // Form state
 const title = ref('')
+const date = ref('')
+const time = ref('')
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
@@ -54,8 +74,12 @@ const register = async () => {
   loading.value = true
 
   try {
-
-    const res = await createNewSession(title.value);
+    const payload = {
+      title: title.value,
+      date: date.value,
+      time: time.value
+    }
+    const res = await createNewSession(payload);
 
     if (!res.ok) {
       const { detail } = await res.json()

@@ -3,7 +3,7 @@
     player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
     class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg select-none"
-    @click.stop="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
+    @click.stop="handleClick(team.name == gameStore.match?.homeTeam.name ? 0 : 1)" 
     @mousedown="startHold" 
     @mouseup="stopHold" 
     @touchstart.passive="startHold" 
@@ -13,8 +13,8 @@
     >
     <template v-if="isEditing">
       <input v-model="editableName" class="bg-transparent border-none outline-none w-full flex-1 min-w-0"
-        @blur="saveEdit(team.name == settings.homeTeamName ? 0 : 1)" 
-        @keyup.enter="saveEdit(team.name == settings.homeTeamName ? 0 : 1)"
+        @blur="saveEdit(team.name == gameStore.match?.homeTeam.name ? 0 : 1)" 
+        @keyup.enter="saveEdit(team.name == gameStore.match?.homeTeam.name ? 0 : 1)"
         ref="inputField" />
     </template>
     <template v-else>
@@ -52,21 +52,21 @@
   <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
-      :team="team.name == settings.homeTeamName ? 0 : 1"
+      :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(0)"
       @handleFoul="addFoul($event, 0)"
       @handleEDCS="addEDCS($event, 0)" 
       @remove="removeExclution(0)" />
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
-      :team="team.name == settings.homeTeamName ? 0 : 1"
+      :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(1)"
       @handleFoul="addFoul($event, 1)"
       @handleEDCS="addEDCS($event, 1)" 
       @remove="removeExclution(1)" />
     <ExclutionButton 
       :disabled="userRole === 'viewer'"
-      :team="team.name == settings.homeTeamName ? 0 : 1"
+      :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(2)"
       @handleFoul="addFoul($event, 2)" 
       @handleEDCS="addEDCS($event, 2)" 
@@ -223,7 +223,7 @@ const saveEdit = (team: number) => {
 const addFoul = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
   gameStore.processFoul({
     number: props.player.number, 
-    team: (props.team.name === settings.homeTeamName ? 0 : 1), 
+    team: (props.team.name === gameStore.match?.homeTeam.name ? 0 : 1), 
     type: payload.type as FoulType, 
     exclNumber: exclNumber, 
     position: payload.position as FoulPosition, 
@@ -235,7 +235,7 @@ const addFoul = (payload : { type: string, position: string, ball: boolean, earn
 const addEDCS = (payload : { type: string, edcsType: string }, exclNumber: number) => {
   gameStore.processFoul({
     number: props.player.number, 
-    team: (props.team.name === settings.homeTeamName ? 0 : 1), 
+    team: (props.team.name === gameStore.match?.homeTeam.name ? 0 : 1), 
     type: payload.type as FoulType, 
     edcsType: payload.edcsType as EDCSType, 
     exclNumber:exclNumber
@@ -243,15 +243,15 @@ const addEDCS = (payload : { type: string, edcsType: string }, exclNumber: numbe
 };
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
-  gameStore.addShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type, payload.position, payload.outcome)
+  gameStore.addShot(props.player.number, (props.team.name === gameStore.match?.homeTeam.name ? 0 : 1), payload.type, payload.position, payload.outcome)
 };
 
 const removeShot = (payload : { type: ShotCategory }) => {
-  gameStore.removeShot(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), payload.type)
+  gameStore.removeShot(props.player.number, (props.team.name === gameStore.match?.homeTeam.name ? 0 : 1), payload.type)
 };
 
 const removeExclution = (exclNumber: number) => {
-  gameStore.removeExclution(props.player.number, (props.team.name === settings.homeTeamName ? 0 : 1), exclNumber);
+  gameStore.removeExclution(props.player.number, (props.team.name === gameStore.match?.homeTeam.name ? 0 : 1), exclNumber);
 };
 
 const getExclutionState = (index: number) => {

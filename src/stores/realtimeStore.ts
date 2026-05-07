@@ -3,6 +3,9 @@ import { useGameStore } from './gameStore';
 import { defineStore } from 'pinia';
 import { useTimerStore } from './timerStore';
 import { useSessionStateStore } from './sessionStateStore';
+import { matchPeriodToNumber } from '@/const/consts';
+import type { MatchPeriod } from '@/enum/MatchPeriod';
+import { MatchStatus } from '@/enum/MatchStatus';
 
 export const useRealtimeStore = defineStore('realtime', {
   state: () => ({
@@ -45,31 +48,44 @@ export const useRealtimeStore = defineStore('realtime', {
                 console.log("Broadcast ignorato: sono il mittente.");
                 return; 
               }
+              else if (broadcastData.payload_json.action === 'MATCH_START') {
+                gameStore.match.status = MatchStatus.IN_PROGRESS;
+              } 
+              else if (broadcastData.payload_json.action === 'MATCH_END') {
+                gameStore.match.status = MatchStatus.FINISHED;
+              } 
+              else if (broadcastData.payload_json.action === 'LIVE_START') {
+                gameStore.match.isLive = true;
+              } 
+              else if (broadcastData.payload_json.action === 'LIVE_END') {
+                gameStore.match.isLive = false;
+              } 
               else if (broadcastData.payload_json.action === 'TIMER_PLAY') {
-                  timerStore.setTimeFromString(broadcastData.payload_json.time);
-                  timerStore.currentQuarter = broadcastData.payload_json.quarter;
-                  timerStore.runLocalTimer();
+                timerStore.setTimeFromString(broadcastData.payload_json.time);
+                timerStore.currentPeriod = matchPeriodToNumber[broadcastData.payload_json.period as MatchPeriod];
+                timerStore.runLocalTimer();
               } 
               else if (broadcastData.payload_json.action === 'TIMER_STOP') {
-                  timerStore.stopLocalTimer();
-                  timerStore.setTimeFromString(broadcastData.payload_json.time);
-                  timerStore.currentQuarter = broadcastData.payload_json.quarter;
-                  
-                  // Sincronizziamo i tempi dei giocatori dal database
-                  if (broadcastData.playerStatsTime) {
-                    gameStore.syncPlayerTimes(broadcastData.payload_json.playerStats);
-                  }
+                timerStore.stopLocalTimer();
+                timerStore.setTimeFromString(broadcastData.payload_json.time);
+                timerStore.currentPeriod = matchPeriodToNumber[broadcastData.payload_json.period as MatchPeriod];
+                
+                // Sincronizziamo i tempi dei giocatori dal database
+                if (broadcastData.playerStatsTime) {
+                  gameStore.syncPlayerTimes(broadcastData.payload_json.playerStats);
+                }
               }
               else if (broadcastData.payload_json.action === 'ADD' || broadcastData.payload_json.action === 'UPDATE' || broadcastData.payload_json.action === 'DELETE') {
-                  // Passiamo gli eventi sportivi al gameStore
-                  gameStore.handleIncomingBroadcast(broadcastData);
+                // Passiamo gli eventi sportivi al gameStore
+                gameStore.handleIncomingBroadcast(broadcastData);
               }
               else if (broadcastData.payload_json.action === 'SUBSTITUTIONS') {
-                  // Gestione sostituzioni da remoto
-                  gameStore.applyBulkSubstitutions(broadcastData.payload_json.playerStats);
+                // Gestione sostituzioni da remoto
+                gameStore.applyBulkSubstitutions(broadcastData.payload_json.playerStats);
               }
               else if (broadcastData.payload_json.action === 'MATCH_RESTART') {
                 console.log("Comando di reset ricevuto dal Master. Svuoto la UI.");
+                gameStore.match.status = MatchStatus.WARMUP;
                 gameStore.clearTeams();
                 gameStore.events = [];
                 timerStore.resetTimer();

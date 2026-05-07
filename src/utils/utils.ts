@@ -97,7 +97,7 @@ function getFoulDescription(event: MatchEvent) {
   const fPos = foulPositionLabels[event.foulPosition || ''] || event.foulPosition || '';
   const fBall = event.foulWithBall ? 'con palla' : 'senza palla';
   const fEarnedBy = event.earnedByPlayerId ?
-    (event.team === useSettingsStore().homeTeamName
+    (event.team === useGameStore().match?.homeTeam.name 
       ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.earnedByPlayerId)?.name
       : useGameStore().match.homeTeam.players.find(pl => pl.id === event.earnedByPlayerId)?.name) : '';
   return `${fType}${fPos ? ' - ' + fPos : ''}, ${fBall}${fEarnedBy ? ', guadagnata da ' + fEarnedBy : ''}`.trim();
@@ -108,7 +108,7 @@ function getShotDescription(event: MatchEvent) {
   const category = shotCategoryLabels[event.shotCategory || ''] || event.shotCategory || '';
   const pos = shotPositionLabels[event.shotPosition || ''] || event.shotPosition || '';
   const gk = event.defendingGoalkeeperId ?
-    (event.team === useSettingsStore().homeTeamName
+    (event.team === useGameStore().match?.homeTeam.name 
       ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name
       : useGameStore().match.homeTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name) : '';
   return `${outcome} - ${category}${pos ? ', ' + pos : ''}${gk ? ', portiere: ' + gk : ''}`.trim();
@@ -123,11 +123,22 @@ export function formatTime(seconds: number) {
   ).padStart(2, "0")}`;
 }
 
+export function formatDateTime(dateStr: string) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleString([], {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
 export function resetTeam (team: Team, isHome: boolean) {
   team.category = '';
   team.id = '';
   team.activatedTimer = isHome ? useSettingsStore().enableHomePlayersTime : useSettingsStore().enableOppPlayersTime;
-  team.name = isHome ? useSettingsStore().homeTeamName : '';
+  team.name = '';
   team.score = 0;
   team.timeOut1 = false;
   team.timeOut2 = false;

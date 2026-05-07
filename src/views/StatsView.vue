@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto py-8 px-4">
+  <div class="">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
       <div>
         <h1 class="text-3xl font-black text-blue-950 tracking-tight">Statistiche</h1>
@@ -49,7 +49,7 @@
             </div>
             <p class="text-gray-400">Nessuna partita trovata con i filtri selezionati.</p>
           </div>
-          <div v-else class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto custom-scrollbar">
+          <div v-else class="divide-y divide-gray-100 max-h-150 overflow-y-auto custom-scrollbar">
             <div
               v-for="match in filteredMatches"
               :key="match.id"

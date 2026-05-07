@@ -1,0 +1,8 @@
+export enum MatchStatus {
+    SCHEDULED = 'SCHEDULED',
+    WARMUP = 'WARMUP',
+    IN_PROGRESS = 'IN_PROGRESS',
+    PAUSED = 'PAUSED',
+    FINISHED = 'FINISHED',
+    CANCELED = 'CANCELED'
+}

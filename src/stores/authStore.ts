@@ -8,6 +8,16 @@ interface User {
   email: string;
   name: string;
   isSystemAdmin: boolean;
+  organization: Organization;
+}
+
+interface Organization {
+  id: string
+  logo_url: string
+  name: string
+  plan_type: string
+  slug: string
+  subscription_status: string
 }
 
 export const useAuthStore = defineStore('auth', {

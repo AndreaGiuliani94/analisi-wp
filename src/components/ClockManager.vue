@@ -87,7 +87,7 @@ const props = defineProps<{
   shrink: boolean
 }>()
 
-const handleStart = () => {
+const handleStart = async () => {
   const homeCount = gameStore.activeCount;
   const awayCount = gameStore.activeOppCount;
 
@@ -107,6 +107,7 @@ const handleStart = () => {
   }
 
   // 3. AVVIO MATCH
+  await gameStore.startMatch();
   timerStore.toggleGlobalTimer()
 };
 

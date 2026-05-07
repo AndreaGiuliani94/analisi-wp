@@ -22,9 +22,10 @@
         </div>
         
         <div class="flex gap-4 w-full"
-            :class="[isModal? '': 'p-2', 
-                (isModal ) ? 'flex-col lg:flex-row' : 'flex-row'
-            ]">
+            :class="{
+                        'p-2 flex-col md:flex-row': (viewMode === 'map' && isModal) || (viewMode === 'stats' && !isModal ) || (viewMode === 'map' && !isModal), 
+                        'flex-col': (viewMode === 'stats' && isModal), 
+                    }" >
     
             <div class="flex-1">
     
@@ -151,12 +152,13 @@
             </div>
     
             <div class="border-slate-200"
-                    :class="[isModal? 'border rounded-lg p-2 shadow-sm lg:p-4 w-full ': 'lg:px-4 pt-2 lg:border-l border-t lg:border-t-0',
-                    (viewMode === 'map' && !isModal) ? 'lg:w-1/2' : '', 
-                    (viewMode === 'map' && isModal) ? 'lg:w-1/3' : '', 
-                    (viewMode === 'stats' && isModal ) ? 'w-full' : '',
-                    (viewMode === 'stats' && !isModal ) ? 'lg:w-1/3' : '',
-                    ]" >
+                    :class="{
+                        'border rounded-lg p-2 shadow-sm lg:p-4 w-full ': isModal,
+                        'md:px-4 pt-2 md:border-l border-t md:border-t-0': !isModal,
+                        'md:w-1/3': (viewMode === 'map' && isModal) || (viewMode === 'stats' && !isModal ), 
+                        'md:w-1/2': (viewMode === 'map' && !isModal),
+                        'w-full': (viewMode === 'stats' && isModal)
+                    }" >
                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Disciplina</h4>
                 
                 <div v-if="mappedCommessi.length + mappedGuadagnati.length > 0" class="flex flex-col gap-4">

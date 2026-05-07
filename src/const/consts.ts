@@ -1,4 +1,5 @@
 import { FoulType, FoulPosition, EDCSType } from "@/enum/ExclutionDescription";
+import { MatchPeriod } from "@/enum/MatchPeriod";
 import { PlanType } from "@/enum/PlanType";
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import type { Category } from "@/interfaces/shot/Category";
@@ -74,3 +75,15 @@ export const planOptions = [
   { label: 'Pro', value: PlanType.PRO },
   { label: 'Elite', value: PlanType.ELITE}
 ];
+
+export const matchPeriodToNumber: Record<MatchPeriod, number> = {
+  [MatchPeriod.T1]: 1,
+  [MatchPeriod.T2]: 2,
+  [MatchPeriod.T3]: 3,
+  [MatchPeriod.T4]: 4,
+  [MatchPeriod.PENALTIES]: 5
+}
+
+export const numberToMatchPeriod = Object.fromEntries(
+  Object.entries(matchPeriodToNumber).map(([key, value]) => [value, key])
+) as Record<number, MatchPeriod>;

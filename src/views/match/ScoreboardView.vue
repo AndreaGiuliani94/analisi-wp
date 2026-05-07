@@ -1,117 +1,96 @@
 <template>
-  <div class="w-full" :class="{'mb-5': userRole && userRole ==='viewer'}">
-    <div class="grid grid-cols-3">
-      <h1 class="justify-self-end font-bold text-3xl text-blue-950">
-        {{ gameStore.match.homeTeam.name }}
-      </h1>
-      <div class="flex flex-col items-center">
-        <div class="flex items-center gap-3">
-          <div class="text-3xl font-bold text-center text-blue-950">
-            <div v-if="!isShrinked">
-              <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
-              <div class="flex gap-1 text-sm font-medium self-end mb-1">
-                <template v-for="(p, i) in gameStore.partials" :key="i">
-                  <span class="flex items-center" >
-                    <span class="text-xs mr-0.5 text-gray-400" v-if="i > 0">|</span>
-                    <span :class="[
-                      i + 1 > timerStore.currentQuarter ? 'text-gray-400' : 'text-blue-950', 
-                      i + 1 == timerStore.currentQuarter ? 'animate-pulse bg-blue-950 text-white px-1 rounded-2xl' : '']" 
-                      >{{ p.home }}-{{ p.away }}</span>
-                  </span>
-                </template>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <ScoreboardHeader
+    :match="gameStore.match"
+    :partials="gameStore.partials"
+    :formatted-time="timerStore.formattedTime"
+    :current-period="timerStore.currentPeriod"
+    :is-shrinked="isShrinked"
+    :user-role="userRole"
+    :is-correction-mode="isCorrectionMode"
+    :is-timer-master="timerStore.isTimerMaster && timerStore.currentPeriod !== matchPeriodToNumber[MatchPeriod.PENALTIES]"
+    :penalty-partial="penaltyScorePartial"
+    @restart-match="openConfirmRestart"
+    @end-match="isEndMatchModalOpen = true"
+    @suspend-match="openConfirmSuspend"
+    @cancel-match="openConfirmCancel"
+    @remove-quarter="gameStore.removeQuarter"
+    @start-public-live="gameStore.startPublicLive"
+    @end-public-live="gameStore.endPublicLive"
+  />
 
-      <h1 class="justify-self-start font-bold text-3xl text-blue-950">
-        {{ gameStore.match.awayTeam.name }}
-      </h1>
-    </div>
-  
+  <div v-if="timerStore.currentPeriod === matchPeriodToNumber[MatchPeriod.PENALTIES]" class="h-fit">
+    <PenaltyArena 
+      :turn-number="currentPenaltyTurn"
+      :home-team-name="gameStore.match.homeTeam.name"
+      :away-team-name="gameStore.match.awayTeam.name"
+      :shooting-team-name="activeTeam.name"
+      :shooters="activeTeamShooters"
+      :opposing-goalies="defendingTeamGoalies"
+      :penalty-events="penaltyEvents"
+      :isMatchInProgress="isMatchInProgress"
+      @save-penalty="handlePenaltySave"
+      @set-starting-team="homeStartsFirst = $event"
+    />
   </div>
 
-  <div class="flex flex-col h-min-screen">
-    <div v-if="userRole && userRole !== 'viewer'" class="sticky bg-white/90 backdrop-blur-md pb-2 rounded-lg border mb-0.5 transition-all duration-300"
-      :class="[isShrinked ? 'shadow-lg border-gray-300 top-1 z-10' : 'border-white top-0']">
+  <div class="mb-2.5 flex flex-col xl:flex-row justify-between gap-3"
+    :class="{ 'mt-50': isShrinked }">
 
-      <div class="grid grid-cols-3 items-center">
+    <TeamItem :teamKey="'HOME'" :team="gameStore.match.homeTeam" :players="gameStore.actualPlayers"
+      @openModal="openModal"
+      @toggleTimeOut="toggleTimeOut"></TeamItem>
 
-        <div class="inline-flex items-end transition-all duration-300" :class="isShrinked ? 'm-2' : ''">
-          <ModeToggleItem :hide-labels="isShrinked" class="transition-all duration-300" />
-        </div>
+    <TeamItem :teamKey="'AWAY'" :team="gameStore.match.awayTeam" :players="gameStore.actualOpponents"
+      @openModal="openModal"
+      @toggleTimeOut="toggleTimeOut"></TeamItem>
 
-        <div class="font-bold flex justify-center text-end m-2 text-blue-950 text-4xl">
-          {{ timerStore.formattedTime }}
-        </div>
-
-        <div v-if="isShrinked" class="flex justify-end items-center mr-2 text-xl font-bold text-center text-blue-950 transition-all duration-300">
-          <div class="grid grid-rows-2 transition-all duration-300">
-            <div >{{ gameStore.match.homeTeam.score }} - {{ gameStore.match.awayTeam.score}}</div>
-            <div class="flex justify-center items-center text-base transition-all duration-300">
-              <button v-if="isCorrectionMode" @click="gameStore.removeQuarter()" 
-                class="flex items-center justify-center w-5 h-5 rounded-full
-                        transition text-white bg-red-800 border border-red-800
-                        disabled:text-gray-400 disabled:border-gray-300 disabled:bg-gray-200" >
-                <MinusIcon class="size-3 stroke-4 text-white" /> 
-              </button>
-              <div :class="isCorrectionMode ? 'ml-2' : ''">{{ timerStore.currentQuarter }} T</div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="justify-self-end">
-          <NavButton
-            :color="'red'"
-            :label="'Restart'"
-            :icon="ArrowPathIcon"
-            :onClick="restartMatch">
-          </NavButton>
-        </div>
-      </div>
-      
-      <ClockManager v-if="timerStore.isTimerMaster" :shrink="isShrinked" />
-      
-    </div>
-  
-    <div :style="{ marginTop: `${headerHeight}px` }" class="mb-2.5 flex flex-col lg:flex-row justify-between gap-3">
-  
-      <TeamItem :teamKey="'HOME'" :team="gameStore.match.homeTeam" :players="gameStore.actualPlayers"
-        @openModal="openModal"
-        @toggleTimeOut="toggleTimeOut"></TeamItem>
-  
-      <TeamItem :teamKey="'AWAY'" :team="gameStore.match.awayTeam" :players="gameStore.actualOpponents"
-        @openModal="openModal"
-        @toggleTimeOut="toggleTimeOut"></TeamItem>
-  
-    </div>
-  
-    <!-- <div class="flex justify-center items-center gap-10" role="group">
-      <ActionButton :icon="TableCellsIcon" label="Report" to="report" color="green" position="center"/>
-      <ActionButton :icon="CalendarDaysIcon" label="Eventi" to="events" color="green" position="center" :disabled="gameStore.events.length == 0"/>
-    </div> -->
-    <!-- Modale con statistiche -->
-    <QuickReportModal v-if="team" :isOpen="showConfirmModal" :team="team"
-          @confirm="confirmCleanup" @close="showConfirmModal = false" />
   </div>
+
+  <QuickReportModal 
+    v-if="team" 
+    :isOpen="showConfirmModal" 
+    :team="team"
+    @confirm="confirmCleanup" 
+    @close="showConfirmModal = false" />
+
+  <EndMatchModal 
+    :isOpen="isEndMatchModalOpen"
+    :hide-penalties="timerStore.currentPeriod === matchPeriodToNumber[MatchPeriod.PENALTIES]"
+    @close="isEndMatchModalOpen = false"
+    @confirmEnd="handleConfirmEnd"
+    @goToPenalties="handleGoToPenalties"
+  />
+
+  <ConfirmModal
+    :isOpen="isActionConfirmModalOpen"
+    :title="actionConfirmModalTitle"
+    :message="actionConfirmModalMessage"
+    :button-color="actionConfirmModalButtonColor"
+    @confirm="handleActionConfirm"
+    @close="isActionConfirmModalOpen = false"
+  />
 
 </template>
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/gameStore';
-import ClockManager from '@/components/ClockManager.vue';
-import { ArrowLeftIcon, ArrowPathIcon, CalendarDaysIcon, TableCellsIcon } from '@heroicons/vue/20/solid';
-import { onBeforeUnmount, onMounted, ref, toRef } from 'vue';
+import { onMounted, onUnmounted, ref, toRef, computed } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/interfaces/Team';
-import NavButton from '@/components/buttons/NavButton.vue';
 import TeamItem from '@/components/TeamItem.vue';
-import ActionButton from '@/components/buttons/ActionButton.vue';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useUserRole } from '@/composables/useUserRole';
-import ModeToggleItem from '@/components/ModeToggleItem.vue';
-import { MinusIcon } from '@heroicons/vue/24/outline';
 import { useTimerStore } from '@/stores/timerStore';
+import ScoreboardHeader from '@/components/match/ScoreboardHeader.vue';
+import EndMatchModal from '@/components/modals/EndMatchModal.vue';
+import { useToast } from 'vue-toastification';
+import { MatchPeriod } from '@/enum/MatchPeriod';
+import { matchPeriodToNumber } from '@/const/consts';
+import ConfirmModal from '@/components/modals/ConfirmModal.vue';
+import PenaltyArena from '@/components/match/PenaltyArena.vue';
+import { MatchEventType } from "@/enum/MatchEventDescription";
+import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
+import { MatchStatus } from '@/enum/MatchStatus';
 
 const gameStore = useGameStore()
 const timerStore = useTimerStore()
@@ -119,20 +98,22 @@ const sessionStore = useSessionStore()
 const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
 
 const isShrinked = ref(false)
-const headerRef = ref<HTMLElement | null>(null)
-const headerHeight = ref(0)
+const isEndMatchModalOpen = ref(false)
+const isActionConfirmModalOpen = ref(false)
+const actionConfirmModalTitle = ref('')
+const actionConfirmModalMessage = ref('')
+const actionConfirmModalButtonColor = ref<'red' | 'green' | 'blue' | 'gray'>('red')
 
 const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 
-const updateHeaderHeight = () => {
-  if (headerRef.value) {
-    headerHeight.value = headerRef.value.getBoundingClientRect().height
-  }
-}
-
 const updateScroll = () => {
-  // Verifichiamo la posizione verticale della finestra
-  const scrollThreshold = 60 
+  // Se siamo ai rigori, l'header non deve rimpicciolirsi mai
+  if (timerStore.currentPeriod === matchPeriodToNumber[MatchPeriod.PENALTIES]) {
+    isShrinked.value = false;
+    return;
+  }
+
+  const scrollThreshold = 100 
   isShrinked.value = window.scrollY > scrollThreshold
 }
 
@@ -158,16 +139,115 @@ const restartMatch = async () => {
   timerStore.resetTimer();
 };
 
-onMounted(async () => {
-  updateHeaderHeight()
-  window.addEventListener('resize', updateHeaderHeight)
+const handleConfirmEnd = async () => {
+  await gameStore.endMatch();
+  isEndMatchModalOpen.value = false;
+};
+
+const handleGoToPenalties = async () => {
+  isEndMatchModalOpen.value = false;
+  isShrinked.value = false; // Reset immediato dello stato shrink
+  await timerStore.goToPenalties(gameStore.match.id);
+};
+
+const penaltyScorePartial = computed(() => gameStore.penaltyScorePartial);
+const isMatchInProgress = computed(() => gameStore.match.status === MatchStatus.IN_PROGRESS);
+
+/** 
+ * LOGICA RIGORI
+ */
+const penaltyEvents = computed(() => 
+  gameStore.events.filter(e => e.quarter === matchPeriodToNumber[MatchPeriod.PENALTIES] && e.eventType === MatchEventType.SHOT)
+);
+
+const homeStartsFirst = ref(true);
+
+const currentPenaltyTurn = computed(() => Math.floor(penaltyEvents.value.length / 2) + 1);
+
+const isHomeTurn = computed(() => {
+  const isEven = penaltyEvents.value.length % 2 === 0;
+  return homeStartsFirst.value ? isEven : !isEven;
+});
+
+const activeTeam = computed(() => isHomeTurn.value ? gameStore.match.homeTeam : gameStore.match.awayTeam);
+const defendingTeam = computed(() => isHomeTurn.value ? gameStore.match.awayTeam : gameStore.match.homeTeam);
+
+const activeTeamShooters = computed(() => 
+  activeTeam.value.players.filter(p => p.name && p.name.trim() !== '' && !gameStore.isOut(p))
+);
+
+const defendingTeamGoalies = computed(() => 
+  defendingTeam.value.players.filter(p => p.isGK && p.name && p.name.trim() !== '')
+);
+
+const handlePenaltySave = async (payload: any) => {
+  const shooter = activeTeam.value.players.find(p => p.id === payload.shooter_id);
+  if (!shooter) return;
+
+  if (payload.outcome === ShotOutcome.GOAL) {
+    activeTeam.value.score++;
+  }
+
+  await gameStore.saveEvent({
+    eventType: MatchEventType.SHOT,
+    currentTeam: activeTeam.value,
+    player: shooter,
+    details: {
+      shotCategory: ShotCategory.PENALTY,
+      shotOutcome: payload.outcome,
+      defendingGoalkeeperId: payload.goalkeeper_id
+    }
+  });
+};
+
+const openConfirmRestart = () => {
+  actionConfirmModalTitle.value = 'Riavvia Partita';
+  actionConfirmModalMessage.value = 'Sei sicuro di voler riavviare la partita? Tutti i dati salvati fino a questo momento verranno cancellati.';
+  actionConfirmModalButtonColor.value = 'red';
+  isActionConfirmModalOpen.value = true;
+  currentAction.value = 'restart';
+};
+
+const openConfirmSuspend = () => {
+  actionConfirmModalTitle.value = 'Sospendi Partita';
+  actionConfirmModalMessage.value = 'Sei sicuro di voler sospendere la partita? Il cronometro verrà messo in pausa e lo stato del match cambierà in "Sospeso".';
+  actionConfirmModalButtonColor.value = 'blue';
+  isActionConfirmModalOpen.value = true;
+  currentAction.value = 'suspend';
+};
+
+const openConfirmCancel = () => {
+  actionConfirmModalTitle.value = 'Annulla Partita';
+  actionConfirmModalMessage.value = 'Sei sicuro di voler annullare la partita? Questa azione è irreversibile e il match verrà contrassegnato come "Annullato".';
+  actionConfirmModalButtonColor.value = 'red';
+  isActionConfirmModalOpen.value = true;
+  currentAction.value = 'cancel';
+};
+
+const currentAction = ref<'suspend' | 'cancel' | 'restart' | null>(null);
+
+const handleActionConfirm = async () => {
+  if (currentAction.value === 'suspend') {
+    await timerStore.masterStop();
+    await gameStore.suspendMatch();
+    useToast().info("Partita sospesa con successo!");
+  } else if (currentAction.value === 'cancel') {
+    await gameStore.cancelMatch();
+    useToast().info("Partita annullata con successo!");
+  } else if (currentAction.value === 'restart') {
+    await restartMatch();
+    useToast().info("Partita riavviata con successo!");
+  }
+  isActionConfirmModalOpen.value = false;
+  currentAction.value = null;
+};
+
+onMounted(() => {
   window.addEventListener('scroll', updateScroll)
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateHeaderHeight)
+onUnmounted(() => {
   window.removeEventListener('scroll', updateScroll)
 })
-
 
 </script>

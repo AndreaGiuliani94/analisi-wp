@@ -2,13 +2,15 @@ import { defineStore } from 'pinia';
 import { useGameStore } from './gameStore';
 import { useSettingsStore } from './settingsStore';
 import { useSessionStateStore } from './sessionStateStore';
-import { timerPlay, timerStop } from '@/services/timerService';
+import { startPenalties, timerPlay, timerStop } from '@/services/timerService';
 import { useToast } from 'vue-toastification';
+import { matchPeriodToNumber, numberToMatchPeriod } from '@/const/consts';
+import { MatchPeriod } from '@/enum/MatchPeriod';
 
 export const useTimerStore = defineStore('timerStore', {
   state: () => ({
     countdown: 480,
-    currentQuarter: 1,
+    currentPeriod: 1,
     isTimerRunning: false,
     isTimerMaster: localStorage.getItem("is_timer_master") === "true",
     timerInterval: null as any,
@@ -23,6 +25,7 @@ export const useTimerStore = defineStore('timerStore', {
   },
 
   actions: {
+
     setTimerMaster(data: any) {
       let isMaster = false;
       if(data.user_role === 'timekeeper') {
@@ -33,6 +36,7 @@ export const useTimerStore = defineStore('timerStore', {
       this.isTimerMaster = isMaster;
       localStorage.setItem("is_timer_master", isMaster ? "true" : "false");
     },
+
     giveUpTimerMaster() {
       console.log("È entrato un Timekeeper. Cedo il controllo del tempo.");
 
@@ -43,6 +47,7 @@ export const useTimerStore = defineStore('timerStore', {
       // Opzionale: Mostra un Toast/Alert all'owner per avvisarlo!
       useToast().info("Non sei più il gestore del tempo!");
     },
+
     takeTimerMaster() {
       console.log("È uscito un Timekeeper. Prendo il controllo del tempo.");
       
@@ -53,6 +58,7 @@ export const useTimerStore = defineStore('timerStore', {
       // Opzionale: Mostra un Toast/Alert all'owner per avvisarlo!
       useToast().info("Sei diventato il nuovo gestore del tempo!")
     },
+
     setTimeFromString(timeString: string) {
       if (!timeString || !timeString.includes(':')) {
         console.warn("Formato tempo non valido ricevuto dal BE:", timeString);
@@ -71,6 +77,7 @@ export const useTimerStore = defineStore('timerStore', {
       // Aggiorniamo il vero state numerico!
       this.countdown = (minutes * 60) + seconds;
     },
+
     // --- AZIONI MASTER (chiamate dai bottoni UI) ---
     async toggleGlobalTimer() {
       if (this.isTimerRunning) await this.masterStop();
@@ -85,7 +92,7 @@ export const useTimerStore = defineStore('timerStore', {
       const payload = {
         match_id: gameStore.match.id,
         sender_client_id: sessionStateStore.clientId,
-        quarter: this.currentQuarter,
+        period: numberToMatchPeriod[this.currentPeriod],
         time: this.formattedTime
       }
       await timerPlay(payload)
@@ -99,7 +106,7 @@ export const useTimerStore = defineStore('timerStore', {
       const payload = {
         match_id: gameStore.match.id,
         sender_client_id: sessionStateStore.clientId,
-        quarter: this.currentQuarter,
+        period: numberToMatchPeriod[this.currentPeriod],
         time: this.formattedTime
       }
       await timerStop(payload);
@@ -121,7 +128,7 @@ export const useTimerStore = defineStore('timerStore', {
     },
 
     removeQuarter() {
-        this.currentQuarter = Math.min(1, this.currentQuarter - 1)
+        this.currentPeriod = Math.min(1, this.currentPeriod - 1)
     },
 
     // --- LOGICA CONDIVISA (L'intervallo locale) ---
@@ -154,20 +161,35 @@ export const useTimerStore = defineStore('timerStore', {
       this.stopLocalTimer();
       
       // Evitiamo di andare oltre i tempi prestabiliti
-      if (this.currentQuarter >= settingsStore.totalPeriods) return;
+      if (this.currentPeriod >= settingsStore.totalPeriods) return;
       
-      this.currentQuarter++;
+      this.currentPeriod++;
       this.countdown = settingsStore.periodDuration * 60;
     },
 
     resetTimer() {
       const settingsStore = useSettingsStore();
       this.stopLocalTimer();
-      this.currentQuarter = 1;
+      this.currentPeriod = 1;
       this.countdown = settingsStore.periodDuration * 60;
       this.isTimerRunning = true;
       if(this.isTimerMaster)
         this.masterStop();
-    }
+    },
+
+    async goToPenalties(matchId: string) {
+      try {
+        const sessionStateStore = useSessionStateStore();
+        await startPenalties(matchId, { sender_client_id: sessionStateStore.clientId });
+        this.currentPeriod = matchPeriodToNumber[MatchPeriod.PENALTIES];
+        this.countdown = 0;
+        useToast().info("Spostamento ai tiri di rigore effettuato");
+      } catch (error) {
+        console.error("Errore durante la chiusura del match:", error);
+        useToast().error("Impossibile avviare i rigori");
+        throw error;
+      }
+    },
   }
+
 });

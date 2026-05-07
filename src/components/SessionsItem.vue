@@ -71,7 +71,7 @@ const getMatchLabel = (session: any) => {
 }
 
 const openConfirmDelete = async (session: Session) => {
-  confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + session.sessions.title + '. Sicuro di voler procedere?'
+  confirmRemoveMessage.value = 'Stai per rimuovere tutti i dati realtivi alla partita ' + session.session.title + '. Sicuro di voler procedere?'
   sessionToRemove.value = session;
   showRemoveConfirmModal.value = true;
 }

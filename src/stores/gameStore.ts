@@ -8,7 +8,8 @@ import { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
 import { useToast } from "vue-toastification";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
-import { createNewTeam, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, restartMatch, savePregameSetup, updatePlayer, updateSubstitutions } from "@/services/matchService";
+import { createNewTeam, endMatch, endPublicLive, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, restartMatch, savePregameSetup, startMatch, startPublicLive, suspendMatch, cancelMatch, updatePlayer, updateSubstitutions } from "@/services/matchService";
+import { MatchPeriod } from "@/enum/MatchPeriod";
 import type { TeamInfo } from "@/interfaces/TeamInfo";
 import type { NewPlayer } from "@/interfaces/NewPlayer";
 import { deleteMatchEvent, saveMatchEvent, updateMatchEvent } from "@/services/eventService";
@@ -17,6 +18,8 @@ import { useTimerStore } from "./timerStore";
 import type { Substitutions } from "@/interfaces/Substitutions";
 import { useSessionStateStore } from "./sessionStateStore";
 import { clearTeam, resetTeam } from "@/utils/utils";
+import { matchPeriodToNumber, numberToMatchPeriod } from "@/const/consts";
+import { MatchStatus } from "@/enum/MatchStatus";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -53,6 +56,22 @@ export const useGameStore = defineStore("gameStore", {
         }
       });
       return partials;
+    },
+    penaltyScorePartial: (state) => {
+      const penaltyPeriodNumber = matchPeriodToNumber[MatchPeriod.PENALTIES];
+      let homePenaltyGoals = 0;
+      let awayPenaltyGoals = 0;
+
+      state.events.forEach(event => {
+        if (event.eventType === MatchEventType.SHOT && event.shotOutcome === ShotOutcome.GOAL && event.quarter === penaltyPeriodNumber) {
+          if (event.team === state.match.homeTeam.name) {
+            homePenaltyGoals++;
+          } else {
+            awayPenaltyGoals++;
+          }
+        }
+      });
+      return { home: homePenaltyGoals, away: awayPenaltyGoals };
     },
     /**
      * Restituisce tutti i tiri di un giocatore, filtrabili (opzionalmente) per quarto
@@ -237,7 +256,7 @@ export const useGameStore = defineStore("gameStore", {
           {
             sender_client_id: useSessionStateStore().clientId,
             time: timerStore.formattedTime,
-            quarter: timerStore.currentQuarter,
+            period: numberToMatchPeriod[timerStore.currentPeriod],
             substitutions: payload 
         });
       } catch (error) {
@@ -273,6 +292,78 @@ export const useGameStore = defineStore("gameStore", {
       if(settingsStore.enableOppPlayersTime)
         updateTeam(this.match.awayTeam);
     },
+    async startMatch() {
+      if (this.match.status === MatchStatus.SCHEDULED || this.match.status === MatchStatus.WARMUP) {
+        try {
+          const sessionStateStore = useSessionStateStore();
+          await startMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+          this.match.status = MatchStatus.IN_PROGRESS;
+        } catch (error) {
+          console.error("Errore durante l'inizio del match:", error);
+          useToast().error("Impossibile avviare il match sul server");
+        }
+      }
+    },
+    async endMatch() {
+      try {
+        const sessionStateStore = useSessionStateStore();
+        await endMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        this.match.status = MatchStatus.FINISHED;
+        useToast().success("Partita conclusa con successo!");
+      } catch (error) {
+        console.error("Errore durante la chiusura del match:", error);
+        useToast().error("Impossibile terminare il match sul server");
+        throw error;
+      }
+    },
+    async suspendMatch() {
+      try {
+        const sessionStateStore = useSessionStateStore();
+        await suspendMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        this.match.status = MatchStatus.PAUSED;
+        useToast().success("Partita sospesa con successo!");
+      } catch (error) {
+        console.error("Errore durante la sospensione del match:", error);
+        useToast().error("Impossibile sospendere il match sul server");
+        throw error;
+      }
+    },
+    async cancelMatch() {
+      try {
+        const sessionStateStore = useSessionStateStore();
+        await cancelMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        this.match.status = MatchStatus.CANCELED;
+        useToast().success("Partita annullata con successo!");
+      } catch (error) {
+        console.error("Errore durante l'annullamento del match:", error);
+        useToast().error("Impossibile annullare il match sul server");
+        throw error;
+      }
+    },
+    async startPublicLive() {
+      try {
+        const sessionStateStore = useSessionStateStore();
+        await startPublicLive(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        this.match.isLive = true;
+        useToast().success("La partita è in live!");
+      } catch (error) {
+        console.error("Errore durante la chiusura del match:", error);
+        useToast().error("Impossibile terminare il match sul server");
+        throw error;
+      }
+    },
+    async endPublicLive() {
+      try {
+        const sessionStateStore = useSessionStateStore();
+        await endPublicLive(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        this.match.isLive = false;
+        useToast().success("Live terminato con successo!");
+      } catch (error) {
+        console.error("Errore durante la chiusura del match:", error);
+        useToast().error("Impossibile terminare il match sul server");
+        throw error;
+      }
+    },
     async clearDistinta() {
       resetTeam(this.match.homeTeam, true);
       resetTeam(this.match.awayTeam, false);
@@ -283,6 +374,7 @@ export const useGameStore = defineStore("gameStore", {
       clearTeam(this.match.awayTeam, false);
     },
     async restartMatch() {
+      this.match.status = MatchStatus.WARMUP;
       this.clearTeams();
       this.events = [];
       await restartMatch(this.match.id, {sender_client_id: useSessionStateStore().clientId});
@@ -573,7 +665,7 @@ export const useGameStore = defineStore("gameStore", {
         // Info Database
         matchId: this.match.id,
         playerId: payload.player?.id,
-        quarter: useTimerStore().currentQuarter,
+        quarter: useTimerStore().currentPeriod,
         time: useTimerStore().formattedTime,
         eventType: payload.eventType,
 
@@ -634,7 +726,7 @@ export const useGameStore = defineStore("gameStore", {
     getAllTeamShotsByType(team: Team, type: ShotCategory, quarter: number | null = null) {
       const settingsStore = useSettingsStore();
       var totalShots: MatchEvent[] = [];
-      var players = (team.name === settingsStore.homeTeamName) ? this.match.homeTeam.players : this.match.awayTeam.players;
+      var players = (team.name === this.match.homeTeam.name) ? this.match.homeTeam.players : this.match.awayTeam.players;
       players.forEach(pl => {
         if(pl.id) {
           switch (type) {
@@ -671,7 +763,7 @@ export const useGameStore = defineStore("gameStore", {
       }
     },
     getOpponentsPlayerName(playerId: string, team: Team) {
-      if(team.name === useSettingsStore().homeTeamName)
+      if(team.name === this.match.homeTeam.name)
         return this.match.awayTeam.players.find(player => player.id === playerId)?.name
       else
         return this.match.homeTeam.players.find(player => player.id === playerId)?.name
@@ -743,7 +835,7 @@ export const useGameStore = defineStore("gameStore", {
             }
           });
         }
-
+        this.match.status = MatchStatus.WARMUP;
         return responseData;
 
       } catch (error) {
@@ -800,12 +892,22 @@ export const useGameStore = defineStore("gameStore", {
         }
       });
     },
+
     applyBulkSubstitutions(subsFromBackend: any[]) {
       subsFromBackend.forEach(sub => {
         let player = this.match.homeTeam.players.find((p: Player) => p.id === sub.player_id) 
                   || this.match.awayTeam.players.find((p: Player) => p.id === sub.player_id);
 
         if (player) {
+        // Identifichiamo se il giocatore sta effettivamente cambiando stato per l'animazione
+        if (player.active !== sub.is_playing) {
+          (player as any).visualStatus = sub.is_playing ? 'entering' : 'leaving';
+          // Rimuoviamo l'evidenziazione dopo 2 secondi
+          setTimeout(() => {
+            (player as any).visualStatus = null;
+          }, 2000);
+        }
+
           // 1. Allineiamo lo stato (entrato/uscito)
           player.active = sub.is_playing;
           
@@ -880,7 +982,7 @@ export const useGameStore = defineStore("gameStore", {
 function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
   this.match.homeTeam = {
     activatedTimer: settingsStore.enableHomePlayersTime,
-    name: this.match.homeTeam.name ? this.match.homeTeam.name : settingsStore.homeTeamName,
+    name: this.match.homeTeam.name ? this.match.homeTeam.name : '',
     id: this.match.homeTeam.id ? this.match.homeTeam.id : '',
     category: this.match.homeTeam.category ? this.match.homeTeam.category : '',
     score: 0,
@@ -934,5 +1036,3 @@ function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
     }),
   };
 }
-
-

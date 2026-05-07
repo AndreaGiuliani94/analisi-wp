@@ -61,7 +61,7 @@
                         :class="getRowStyle(event)"
                     >
                         <td class="px-4 py-3 whitespace-nowrap text-center font-bold">
-                            {{ event.quarter }}°
+                            {{ numberToMatchPeriod[event.quarter] }}
                         </td>
                         
                         <td class="px-4 py-3 whitespace-nowrap text-center font-mono tabular-nums opacity-75">
@@ -126,6 +126,7 @@ import { ShotOutcome } from '@/enum/ShotDescription';
 import { getEventDescription } from '@/utils/utils';
 import QuarterFilter from '@/components/filters/QuarterFilter.vue';
 import { computed, ref } from 'vue';
+import { numberToMatchPeriod } from '@/const/consts';
 
 const gameStore = useGameStore();
 

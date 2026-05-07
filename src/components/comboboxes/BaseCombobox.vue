@@ -9,7 +9,7 @@
     >
       <div class="relative text-blue-950">
         <ComboboxInput
-          class="w-full px-3 py-1.5 text-sm font-medium leading-4 lg:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
+          class="w-full ps-3 pe-8 truncate py-1.5 text-sm font-medium leading-4 lg:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
           :class="{ 'uppercase': uppercase }"
           :placeholder="placeholder"
           :displayValue="(val) => val as string"
@@ -90,7 +90,7 @@
                       v-model="query"
                       type="text"
                       :placeholder="placeholder"
-                      class="w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                      class="w-full pl-10 pr-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none truncate"
                       :class="{ 'uppercase': uppercase }"
                       @keyup.enter="handleMobileEnter"
                     />

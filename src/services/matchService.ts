@@ -1,4 +1,3 @@
-import type { Player } from "@/interfaces/Player";
 const BE_URL = import.meta.env.VITE_BE_URL;
 
 export const updatePlayer = async (playerId: string, payload: any) => {
@@ -76,6 +75,138 @@ export const getAllTeams = async () => {
 export const savePregameSetup = async (matchId: string, requestBody: any) => {
   const response = await fetch(
     `${BE_URL}/matches/${matchId}/setup`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};
+
+export const startMatch = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/start`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};
+
+export const endMatch = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/end`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};
+
+export const suspendMatch = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/suspend`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};
+
+export const cancelMatch = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/cancel`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};
+
+export const startPublicLive = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/live-start`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    // Se il BE risponde con 400 o 500, lanciamo un'eccezione
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Errore server: ${response.status}`);
+  }
+  
+  return response;
+};
+
+export const endPublicLive = async (matchId: string, requestBody: any) => {
+  const response = await fetch(
+    `${BE_URL}/matches/${matchId}/live-end`,
     {
       method: "POST",
       headers: {

@@ -11,6 +11,9 @@ import { MatchEventType } from '@/enum/MatchEventDescription';
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { convertDbEventToUI } from '@/utils/converter';
 import { useTimerStore } from './timerStore'
+import type { MatchPeriod } from '@/enum/MatchPeriod'
+import { matchPeriodToNumber } from '@/const/consts'
+import type { MatchStatus } from '@/enum/MatchStatus'
 
 const myClientId = crypto.randomUUID();
 
@@ -42,6 +45,15 @@ export const useSessionStateStore = defineStore('sessionState', {
             useTimerStore().setTimerMaster(data);
         },
 
+        async joinPublicSession(sessionId: string) {
+            this.sessionId = sessionId
+            localStorage.setItem("session_id", sessionId);
+            
+            await this.getMatchIdBySessionId();
+            await this.getMatchDetails();
+            await this.getEvents();
+        },
+
         async getMatchIdBySessionId() {
             const res = await getMatchIdBySessionId(this.sessionId);
             const data = await res.json()
@@ -58,7 +70,7 @@ export const useSessionStateStore = defineStore('sessionState', {
                 const dbMatch = await res.json();
                 
                 const timerStore = useTimerStore();
-                timerStore.currentQuarter = dbMatch.current_quarter
+                timerStore.currentPeriod = matchPeriodToNumber[dbMatch.current_period as MatchPeriod]
                 timerStore.setTimeFromString(dbMatch.current_time)
                 timerStore.isTimerRunning = dbMatch.is_timer_running
 
@@ -70,6 +82,8 @@ export const useSessionStateStore = defineStore('sessionState', {
                 // Popoliamo il match
                 gameStore.match = {
                     id: this.matchId,
+                    isLive: dbMatch.is_public_live,
+                    status: dbMatch.status as MatchStatus,
                     homeTeam: {
                         name: (dbMatch.home_team) ? dbMatch.home_team.club_name : '',
                         id: (dbMatch.home_team) ? dbMatch.home_team.id : (dbMatch.home_team_id ? dbMatch.home_team_id : ''),

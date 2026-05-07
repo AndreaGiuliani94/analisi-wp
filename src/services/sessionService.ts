@@ -2,6 +2,9 @@ const BE_URL = import.meta.env.VITE_BE_URL;
 export const joinSession = async (sessionId: string) => {
     const res = await fetch(BE_URL + `/sessions/join/${sessionId}`, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
         credentials: 'include'
     })
     return res;
@@ -34,16 +37,14 @@ export const updateSession = async (sessionId: string, match: any, events: any) 
     return res;
 }
 
-export const createNewSession = async (title: string) => {
+export const createNewSession = async (payload: any) => {
     const res = await fetch(BE_URL + '/sessions/create', {
         method: 'POST',
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            title: title
-        })
+        body: JSON.stringify(payload)
     })
     return res;
 }

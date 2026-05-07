@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center">
+  <div class="flex justify-center m-16 max-h-fit">
     <div class="bg-white shadow-lg rounded-2xl border-2 border-gray-300 p-8 w-full max-w-sm text-center text-blue-950">
       <h1 class="text-2xl font-bold  mb-6">Accedi</h1>
       

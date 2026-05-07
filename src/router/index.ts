@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import SettingsView from '@/views/match/SettingsView.vue';
 import SessionCreate from '@/components/SessionsItem.vue';
 import AppLayout from '@/views/AppLayout.vue';
-import LandingView from '@/views/LandingView.vue';
+import LandingView from '@/views/public/LandingView.vue';
 import OnboardView from '@/views/backoffice/OnboardView.vue';
 import BackofficeView from '@/views/backoffice/BackofficeView.vue';
 import OrganizationDetailView from '@/views/backoffice/OrganizationDetailView.vue';
@@ -20,6 +20,8 @@ import MatchSetupView from '@/views/match/MatchSetupView.vue';
 import EventView from '@/views/match/EventView.vue';
 import ReportView from '@/views/match/ReportView.vue';
 import StatsView from '@/views/StatsView.vue';
+import PublicLiveMatchView from '@/views/public/match/PublicLiveMatchView.vue';
+import MatchesView from '@/views/MatchesView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -35,6 +37,16 @@ const router = createRouter({
       component: LoginView 
     },
     { path: "/auth/callback", component: CallbackView },
+    {
+      path: '/live/:slug',
+      name: 'ClubLiveHub',
+      component: () => import('@/views/public/ClubLiveHub.vue')
+    },
+    {
+      path: '/live/:slug/match/:sessionId',
+      name: 'PublicMatchLive',
+      component: PublicLiveMatchView
+    },
     { 
       path: "/workspace", 
       component: AppLayout,
@@ -88,6 +100,10 @@ const router = createRouter({
         { 
           path: 'session/:id', 
           component: MatchDetail
+        },
+        {
+          path: 'matches',
+          component: MatchesView
         }
       ]
     },

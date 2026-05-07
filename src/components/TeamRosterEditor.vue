@@ -1,11 +1,10 @@
 <template>
   <div class="px-2.5 py-1.5 border border-gray-300 rounded-md mb-2.5 flex flex-col justify-between w-full">
-        <!-- :class="isHome ? '' : 'bg-blue-50'"> -->
     
     <div class="m-2.5 flex items-center justify-between flex-wrap gap-3 align-middle font-medium text-lg">
       
       <div class="flex-1 min-w-40">
-          <span v-if="isHome || isLocked || userRole === 'viewer'" :class="colorMap.teamName" class="font-bold">
+          <span v-if="isHeaderLocked || userRole === 'viewer'" :class="colorMap.teamName" class="font-bold">
               {{ team?.name || (isHome ? 'Squadra di Casa' : 'Avversari') }}
           </span>
   
@@ -20,7 +19,7 @@
             @select="handleTeamSelect"
             @focusout="emit('fetch-available')"
             uppercase
-            placeholder="Nome Avversari..."
+            :placeholder="isHome ? 'Squadra in Casa...' : 'SQUADRA FUORI CASA...'"
             class="w-full max-w-xs"
           />
       </div>
@@ -36,7 +35,7 @@
             size="sm"
             :theme="theme"
             :loading="isLoading"
-            :disabled="isLocked || userRole === 'viewer' || team.name === ''"
+            :disabled="isHeaderLocked || userRole === 'viewer' || team.name === ''"
             @open="emit('fetch-available')"
             class="w-full lg:w-60"
           />
@@ -46,15 +45,16 @@
             @click="toggleLock"
             :color="saveButtonColor"
             size="sm"
-            :disabled="!team.name || !team.category"
-            :title="isLocked ? 'Modifica squadra' : 'Conferma e abilita giocatori'"
-            :icon="isLocked ? PencilIcon : CheckIcon"
+            :disabled="!team.name || !team.category || isGameStarted"
+            :title="isHeaderLocked ? 'Modifica squadra' : 'Conferma e abilita giocatori'"
+            :icon="isHeaderLocked ? PencilIcon : CheckIcon"
             icon-size="size-4"
           />
 
           <ActionButton 
-            v-if="isLocked && userRole !== 'viewer'"
+            v-if="isHeaderLocked && userRole !== 'viewer'"
             @click="emit('load-last')"
+            :disabled="isGameStarted"
             color="green"
             size="sm"
             title="Ricarica ultima distinta"
@@ -65,7 +65,7 @@
       </div>
     </div>
 
-    <div v-if="!isLocked && userRole !== 'viewer'" class="mx-3 mt-1 mb-2 text-xs text-gray-500 italic flex items-center gap-1.5">
+    <div v-if="!isHeaderLocked && userRole !== 'viewer'" class="mx-3 mt-1 mb-2 text-xs text-gray-500 italic flex items-center gap-1.5">
       <InformationCircleIcon class="size-4" />
       Salva l'intestazione per sbloccare e compilare i giocatori.
     </div>
@@ -77,7 +77,11 @@
       
       <div class="w-full">
 
-        <div v-if="userRole !== 'viewer'" class="flex-1 flex items-center gap-1">
+        <div v-if="userRole === 'viewer' || isGameStarted">
+          {{ player.name }}
+        </div>
+
+        <div v-else class="flex-1 flex items-center gap-1">
           <BaseCombobox
             v-model="player.name"
             :selected-id="player.id"
@@ -85,13 +89,13 @@
             option-label="name"
             option-value="id"
             placeholder="Nome Giocatore..."
-            :disabled="!isLocked" 
+            :disabled="!isHeaderLocked" 
             class="flex-1"
             @select="(selectedObj) => handlePlayerSelect(player, selectedObj)"
           >
             <template #action>
               <button
-                v-if="player.id && isLocked"
+                v-if="player.id && isHeaderLocked"
                 @click.stop="openEditModal(player)"
                 class="text-blue-950 hover:text-blue-600 transition-colors p-0.5 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
                 title="Correggi anagrafica giocatore"
@@ -102,9 +106,7 @@
           </BaseCombobox>
 
         </div>
-        <div v-else>
-          {{ player.name }}
-        </div>
+        
 
       </div>
       
@@ -113,7 +115,7 @@
           type="checkbox" 
           v-model="player.isGK" 
           @change="emit('edit-player', {id: player.id, isGK: player.isGK})" 
-          :disabled="!isLocked"
+          :disabled="!isHeaderLocked"
           class="sr-only peer">
         <div 
           class="px-2 py-1 text-[10px] font-bold border rounded-full transition-all text-gray-400 border-gray-300
@@ -150,6 +152,7 @@ const props = defineProps({
   availablePlayers: { type: Array as () => any[], default: () => [] },
   isLoading: { type: Boolean, default: false },
   isHome: { type: Boolean, default: false },
+  isGameStarted: { type: Boolean, default: false },
   theme: { type: String as () => 'red' | 'blue' | 'gray' | 'green', default: 'blue' },
 });
 
@@ -170,7 +173,7 @@ const playerSlotToEdit = ref<any>(null);
 
 // Computed: l'intestazione è "bloccata" (quindi i giocatori pronti alla selezione)
 // se abbiamo già ID e Nome. Se però l'utente preme la matita, lo sblocchiamo.
-const isLocked = computed(() => {
+const isHeaderLocked = computed(() => {
   if (isManuallyUnlocked.value) {
     return false; // L'utente ha forzato lo sblocco
   }
@@ -313,7 +316,7 @@ const handleTeamSelect = (selectedTeamObj: any) => {
 };
 
 const toggleLock = () => {
-  if (isLocked.value) {
+  if (isHeaderLocked.value) {
     isManuallyUnlocked.value = true; // Torna a modificare l'intestazione
   } else {
     confirmHeader(); // Salva e blocca
