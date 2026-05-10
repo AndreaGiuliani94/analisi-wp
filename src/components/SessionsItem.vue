@@ -14,7 +14,7 @@
           <div class="flex gap-2">
             <NavButton 
               :icon="MagnifyingGlassIcon"
-              :to="`/workspace/session/${session.session_id}`"
+              :to="`/workspace/matches/${session.session_id}`"
             />
     
             <NavButton 

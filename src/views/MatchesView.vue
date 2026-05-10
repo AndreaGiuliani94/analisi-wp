@@ -23,46 +23,40 @@
     </div>
 
     <!-- Grid Card -->
-    <div v-if="sessionStore.sessions?.length > 0" class="grid grid-cols-1 gap-4">
+    <div v-if="sessionStore.sessions?.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <div v-for="session in sessionStore.sessions" :key="session.session_id" 
-                class="group relative bg-white rounded-lg border border-slate-200 px-4 py-2 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all duration-300 flex flex-col">
+                class="group relative bg-white rounded-lg border border-slate-200 px-4 py-2 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
             
             <!-- Header Card -->
-            <div class="flex justify-between items-start mb-2">
+            <div class="grid grid-cols-3 items-start mb-2">
                 <div class="flex flex-col overflow-hidden">
                     <h3 class="font-bold text-blue-950 truncate pr-2" :title="session.session.title">
                         {{ session.session.title }}
                     </h3>
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ formatDateTime(session.session.match.scheduled_at) }}</span>
                 </div>
-                <RoleBadge :role="session.role" />
+                <RoleBadge class="justify-self-center" :role="session.role" />
+                <div class="flex justify-end pl-4">
+                    <MatchStatusBadge :status="session.session.match.status" :isLive="session.session.match.is_public_live" :size="'sm'" />
+                </div>
             </div>
 
             <!-- Matchup Central -->
             <div class="flex-1 flex flex-col justify-center">
-                <div v-if="session.session.match" class="bg-slate-50 rounded-3xl w-full py-2 border border-slate-100 grid grid-cols-3 items-center mb-2">
-                    <!-- Colonna 1: Badge allineato a sinistra -->
-                    <div class="flex justify-start pl-4">
-                        <MatchStatusBadge :status="session.session.match.status" :isLive="session.session.match.is_public_live" :size="'sm'" />
+                <div v-if="session.session.match" class="bg-slate-50 rounded-3xl w-full py-2 border border-slate-100 flex justify-center gap-2 items-center mb-2">
+
+                    <p class="flex-1 text-right font-black text-blue-950 text-sm uppercase truncate">
+                        {{ session.session.match.home_team?.club_name || '-' }}
+                    </p>
+
+                    <div class="shrink-0 size-8 bg-white rounded-full flex items-center justify-center text-[9px] font-black text-slate-300 border border-slate-200 transition-colors duration-300 shadow-sm">
+                        VS
                     </div>
 
-                    <!-- Colonna 2: Matchup centrato -->
-                    <div class="flex items-center justify-center gap-3">
-                        <p class="flex-1 text-right font-black text-blue-950 text-sm uppercase truncate">
-                            {{ session.session.match.home_team?.club_name || '-' }}
-                        </p>
+                    <p class="flex-1 text-left font-black text-blue-950 text-sm uppercase truncate">
+                        {{ session.session.match.away_team?.club_name || '-' }}
+                    </p>
 
-                        <div class="shrink-0 size-8 bg-white rounded-full flex items-center justify-center text-[9px] font-black text-slate-300 border border-slate-200 group-hover:bg-blue-950 group-hover:text-white group-hover:border-blue-950 transition-colors duration-300 shadow-sm">
-                            VS
-                        </div>
-
-                        <p class="flex-1 text-left font-black text-blue-950 text-sm uppercase truncate">
-                            {{ session.session.match.away_team?.club_name || '-' }}
-                        </p>
-                    </div>
-                    
-                    <!-- Colonna 3: Vuota per bilanciare la grid e mantenere il centro -->
-                    <div />
                 </div>
 
                 <div v-else class="py-10 flex flex-col items-center justify-center text-slate-300 gap-2 mb-2">
@@ -78,7 +72,7 @@
                 <NavButton 
                     class=""
                     :icon="MagnifyingGlassIcon"
-                    :to="`/workspace/session/${session.session_id}`"
+                    :to="`/workspace/matches/${session.session_id}`"
                     title="Vedi Dettagli"
                     label="Dettagli"
                 />

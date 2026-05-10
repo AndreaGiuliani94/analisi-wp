@@ -98,11 +98,12 @@ const router = createRouter({
           component: SessionCreate
         },
         { 
-          path: 'session/:id', 
+          path: 'matches/:id', 
           component: MatchDetail
         },
         {
           path: 'matches',
+          name: 'Storico partite',
           component: MatchesView
         }
       ]

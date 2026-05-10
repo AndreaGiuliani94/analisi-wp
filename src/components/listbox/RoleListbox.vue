@@ -4,7 +4,7 @@
       <!-- Pulsante "select" -->
         <ListboxButton 
           v-slot="{ open }" 
-          class="relative z-5 cursor-pointer rounded bg-gray-200 
+          class="relative z-5 cursor-pointer rounded
             flex justify-center items-center disabled:cursor-default"
             >
             <!-- Usa il badge qui -->

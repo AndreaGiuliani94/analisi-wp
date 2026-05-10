@@ -36,9 +36,7 @@ import ActionButton from '../buttons/ActionButton.vue';
 import BaseModal from './BaseModal.vue';
 import { useToast } from 'vue-toastification';
 import { createNewTeam } from '@/services/matchService';
-import { categoryEnumOptions } from '@/enum/TeamCategory';
 import BaseSelect from '../selects/BaseSelect.vue';
-import BaseListbox from '../listbox/BaseListbox.vue';
 
 const props = defineProps<{
   isOpen: boolean;

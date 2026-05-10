@@ -37,6 +37,18 @@ export const updateSession = async (sessionId: string, match: any, events: any) 
     return res;
 }
 
+export const updateSessionDetails = async (sessionId: string, payload: any) => {
+    const res = await fetch(`${BE_URL}/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+    })
+    return res;
+}
+
 export const createNewSession = async (payload: any) => {
     const res = await fetch(BE_URL + '/sessions/create', {
         method: 'POST',
