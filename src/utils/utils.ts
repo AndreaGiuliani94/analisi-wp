@@ -6,10 +6,11 @@ import type { Player } from "@/interfaces/Player";
 import { useGameStore } from "@/stores/gameStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { Team } from "@/interfaces/Team";
+import { useTimeFormat } from "@/composables/useTimeFormat";
 
 export function getExclution (exclution: MatchEvent) {
     var str: string = '';
-    str += exclution.quarter + 'T ' + exclution.time + ' ' + getLabel(exclution.foulType, foulCategoryLabels) + ' ';
+    str += exclution.quarter + 'T ' + useTimeFormat().formatMsToTimer(exclution.time) + ' ' + getLabel(exclution.foulType, foulCategoryLabels) + ' ';
     if(exclution.foulType !== FoulType.EDCS) {
       str += getLabel(exclution.foulPosition, foulPositionLabels) + ' ' + (exclution.foulWithBall ? 'Con palla' : 'Senza palla');
     } else {

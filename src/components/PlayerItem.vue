@@ -45,7 +45,7 @@
       <BoltIcon v-if="player.active" class="w-5 h-5 text-red-800" />
       <EllipsisHorizontalCircleIcon v-else class="w-5 h-5 text-gray-400" />
       
-      <span class="tabular-nums">{{ formatTime(player.actualTime) }}</span>
+      <span class="tabular-nums">{{ useTimeFormat().formatMsToTimer(player.actualTime) }}</span>
     </div>
   </div>
 
@@ -141,6 +141,7 @@ import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
 import { foulCategoryLabels, foulPositionLabels } from "@/const/consts";
 import { formatTime, getLabel } from "@/utils/utils";
 import { FoulType, type EDCSType, type FoulPosition } from "@/enum/ExclutionDescription";
+import { useTimeFormat } from "@/composables/useTimeFormat";
 
 const props = defineProps({
   player: {

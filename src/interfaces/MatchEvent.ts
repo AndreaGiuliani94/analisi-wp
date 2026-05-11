@@ -15,7 +15,7 @@ export interface MatchEvent {
   matchId: string;
   playerId?: string;
   quarter: number;
-  time: string;
+  time: number;
   eventType: MatchEventType;
 
   // Tiri (Opzionali)

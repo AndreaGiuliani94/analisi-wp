@@ -41,8 +41,8 @@
                                 {{ player.name }}
                             </span>
                         </td>
-                        <td class="p-2 font-mono">{{ formatTime(player.activeTime) }}</td>
-                        <td class="p-2 font-mono">{{ formatTime(player.benchTime) }}</td>
+                        <td class="p-2 font-mono">{{ useTimeFormat().formatMsToTimer(player.activeTime) }}</td>
+                        <td class="p-2 font-mono">{{ useTimeFormat().formatMsToTimer(player.benchTime) }}</td>
                         <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'even') }}</td>
                         <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'sup') }}</td>
                         <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'penalty') }}</td>
@@ -84,6 +84,7 @@ import PlayerDetail from './PlayerDetail.vue';
 import { formatTime, getExclution } from '@/utils/utils';
 import { ShotOutcome } from '@/enum/ShotDescription';
 import FoulBadge from './badges/FoulBadge.vue';
+import { useTimeFormat } from '@/composables/useTimeFormat';
 
 const gameStore = useGameStore();
 

@@ -9,8 +9,8 @@
                 </div>
                 <div class="font-bold">{{ player.name }}</div>
                 <div class="text-sm text-gray-600 flex gap-3 ml-2 border-l border-blue-200 pl-3">
-                    <span>{{isModal ? 'In: ' : 'Dentro: '}}<strong class="font-mono text-blue-950">{{ formatTime(player.activeTime) }}</strong></span>
-                    <span>{{isModal ? 'Out: ' : 'Fouri: '}}<strong class="font-mono text-blue-950">{{ formatTime(player.benchTime) }}</strong></span>
+                    <span>{{isModal ? 'In: ' : 'Dentro: '}}<strong class="font-mono text-blue-950">{{ useTimeFormat().formatMsToTimer(player.activeTime) }}</strong></span>
+                    <span>{{isModal ? 'Out: ' : 'Fouri: '}}<strong class="font-mono text-blue-950">{{ useTimeFormat().formatMsToTimer(player.benchTime) }}</strong></span>
                 </div>
             </div>
 
@@ -200,6 +200,7 @@ import { formatTime, getExclution } from '@/utils/utils';
 import FoulAccordionCard from './cards/FoulAccordionCard.vue';
 import type { MatchEvent } from '@/interfaces/MatchEvent';
 import QuarterFilter from './filters/QuarterFilter.vue';
+import { useTimeFormat } from '@/composables/useTimeFormat';
 
 const gameStore = useGameStore()
 

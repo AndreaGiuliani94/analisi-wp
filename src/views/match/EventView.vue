@@ -65,7 +65,7 @@
                         </td>
                         
                         <td class="px-4 py-3 whitespace-nowrap text-center font-mono tabular-nums opacity-75">
-                            {{ event.time }}
+                            {{ useTimeFormat().formatMsToTimer(event.time) }}
                         </td>
                         
                         <td class="px-4 py-3 whitespace-nowrap font-medium uppercase text-xs opacity-90">
@@ -127,6 +127,7 @@ import { getEventDescription } from '@/utils/utils';
 import QuarterFilter from '@/components/filters/QuarterFilter.vue';
 import { computed, ref } from 'vue';
 import { numberToMatchPeriod } from '@/const/consts';
+import { useTimeFormat } from '@/composables/useTimeFormat';
 
 const gameStore = useGameStore();
 

@@ -255,7 +255,7 @@ export const useGameStore = defineStore("gameStore", {
           this.match.id, 
           {
             sender_client_id: useSessionStateStore().clientId,
-            time: timerStore.formattedTime,
+            time: timerStore.countdown,
             period: numberToMatchPeriod[timerStore.currentPeriod],
             substitutions: payload 
         });
@@ -268,22 +268,22 @@ export const useGameStore = defineStore("gameStore", {
      * @param seconds Quanti secondi aggiungere (es. 1 per lo scorrere normale, o 30 per forward). 
      * Usare valori negativi per il 'back' (es. -10).
      */
-    adjustPlayerTimes(seconds: number) {
+    adjustPlayerTimes(deltaMs: number) {
       const settingsStore = useSettingsStore();
-      const maxSeconds = settingsStore.periodDuration * 60 * settingsStore.totalPeriods; // Limite massimo partita
+      const maxMSeconds = settingsStore.periodDuration * 60 * settingsStore.totalPeriods * 1000; // Limite massimo partita
 
       const updateTeam = (team: any) => {
         team.players.forEach((player: any) => {
           
           if (player.active) {
             // Aggiunge (o sottrae) secondi, assicurandosi di restare tra 0 e il massimo possibile
-            player.activeTime = Math.max(0, Math.min(maxSeconds, (player.activeTime || 0) + seconds));
+            player.activeTime = Math.max(0, Math.min(maxMSeconds, (player.activeTime || 0) + deltaMs));
           } else {
-            player.benchTime = Math.max(0, Math.min(maxSeconds, (player.benchTime || 0) + seconds));
+            player.benchTime = Math.max(0, Math.min(maxMSeconds, (player.benchTime || 0) + deltaMs));
           }
           
           // actualTime (che si resetta ai cambi) si aggiorna di conseguenza
-          player.actualTime = Math.max(0, Math.min(maxSeconds, (player.actualTime || 0) + seconds));
+          player.actualTime = Math.max(0, Math.min(maxMSeconds, (player.actualTime || 0) + deltaMs));
         });
       };
 
@@ -666,7 +666,7 @@ export const useGameStore = defineStore("gameStore", {
         matchId: this.match.id,
         playerId: payload.player?.id,
         quarter: useTimerStore().currentPeriod,
-        time: useTimerStore().formattedTime,
+        time: useTimerStore().countdown,
         eventType: payload.eventType,
 
         // Dati specifici

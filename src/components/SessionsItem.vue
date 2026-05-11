@@ -62,7 +62,16 @@ const loading = ref(false)
 
 const sessionStore = useSessionStore()
 
-const filteredSessions = computed(() => { return sessionStore.sessions.slice(0, props.limit)})
+const filteredSessions = computed(() => {
+  if (!sessionStore.sessions) return [];
+
+  return [...sessionStore.sessions].sort((a, b) => {
+    const dateA = a.session?.match?.scheduled_at ? new Date(a.session.match.scheduled_at).getTime() : 0;
+    const dateB = b.session?.match?.scheduled_at ? new Date(b.session.match.scheduled_at).getTime() : 0;
+
+    return dateB - dateA; // Ordine decrescente: dalla più recente alla più vecchia
+  }).slice(0, props.limit);
+});
 
 const getMatchLabel = (session: any) => { 
   if(!session.match) return ''

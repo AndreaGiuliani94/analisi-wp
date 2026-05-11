@@ -102,13 +102,13 @@ const sortedPlayers = computed(() => {
           :number="1"
           :teamName="teamKey"
           :used="team.timeOut1"
-          @toggleTimeOut="handleTimeOutToggle(1)"
+          :disabled="true"
         />
         <TimeOutButton
           :number="2"
           :teamName="teamKey"
           :used="team.timeOut2"
-          @toggleTimeOut="handleTimeOutToggle(2)"
+          :disabled="true"
         />
       </div>
     </div>
