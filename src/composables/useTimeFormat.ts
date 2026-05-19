@@ -25,7 +25,16 @@ export function useTimeFormat() {
     return `${paddedMinutes}:${paddedSeconds}`;
   };
 
+  const formatTimerToMs = (timerString: string): number => {
+    if (!timerString) return 0;
+    const parts = timerString.split(':').map(Number);
+    const minutes = parts.length > 1 ? parts[0] : 0;
+    const seconds = parts.length > 1 ? parts[1] : parts[0];
+    return (minutes * 60 + (seconds || 0)) * 1000;
+  };
+
   return {
-    formatMsToTimer
+    formatMsToTimer,
+    formatTimerToMs
   };
 }

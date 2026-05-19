@@ -14,7 +14,7 @@ import { MatchStatus } from '@/enum/MatchStatus';
 
 const props = withDefaults(defineProps<{
   isLive: boolean;
-  status: MatchStatus;
+  status: MatchStatus | undefined;
   size?: 'sm' | 'md'; // sm for compact views, md for default
 }>(), {
   size: 'md'

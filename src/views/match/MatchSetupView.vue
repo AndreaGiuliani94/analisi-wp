@@ -2,7 +2,7 @@
     <div class="w-full grid grid-cols-3 items-center mb-4">
         <div></div>
         <h1 class="text-3xl text-center font-bold text-blue-950">Distinta</h1>
-        <div v-if="userRole !== 'viewer'" class="flex justify-between items-center justify-self-end">
+        <div v-if="usePermissions().canEditMatch(userRole)" class="flex justify-between items-center justify-self-end">
             <NavButton
                 :color="'red'"
                 :label="'Pulisci'"
@@ -65,8 +65,6 @@ import { useGameStore } from '@/stores/gameStore';
 import { PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
 import NavButton from '@/components/buttons/NavButton.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
-import { useUserRole } from '@/composables/useUserRole';
-import { useSessionStore } from '@/stores/sessionStore';
 import type { TeamInfo } from '@/interfaces/TeamInfo';
 import TeamRosterEditor from '@/components/TeamRosterEditor.vue';
 import { useRouter } from 'vue-router';
@@ -74,10 +72,12 @@ import type { Team } from '@/interfaces/Team';
 import { useToast } from 'vue-toastification';
 import { useTimerStore } from '@/stores/timerStore';
 import { MatchStatus } from '@/enum/MatchStatus';
+import { useMatchStateStore } from '@/stores/matchStateStore';
+import { usePermissions } from '@/composables/usePermissions';
 
 const gameStore = useGameStore();
-const sessionStore = useSessionStore();
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants);
+const matchStateStore = useMatchStateStore();
+const userRole = matchStateStore.userRole;
 
 const router = useRouter();
 const toast = useToast();

@@ -103,7 +103,7 @@ const emit = defineEmits(['update:modelValue', 'open', 'select']);
 // --- DIZIONARIO DEI TEMI ---
 const themes: Record<string, any> = {
   blue: {
-    button: 'text-blue-950 active:border-blue-950 hover:bg-blue-50 active:border-blue-400 active:ring-blue-300',
+    button: 'text-blue-950 border-slate-200 active:border-blue-950 hover:bg-blue-50 active:ring-blue-300',
     optionActive: 'bg-blue-50 font-bold rounded rounded-xl mx-1',
     optionInactive: 'text-blue-950 font-normal',
     options: ' text-blue-950',

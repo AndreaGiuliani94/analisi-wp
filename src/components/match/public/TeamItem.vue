@@ -3,15 +3,12 @@ import PlayerItem from '@/components/match/public/PlayerItem.vue';
 import type { Team } from '../../../interfaces/Team';
 import TimeOutButton from '@/components/buttons/TimeOutButton.vue';
 import type { Player } from '../../../interfaces/Player';
-import { useSessionStore } from '@/stores/sessionStore';
-import { useUserRole } from '@/composables/useUserRole';
 import { useGameStore } from '@/stores/gameStore';
 import { ShotCategory } from '@/enum/ShotDescription';
 import { computed } from 'vue';
 import { InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { useMatchStateStore } from '@/stores/matchStateStore';
 
-const sessionStore = useSessionStore()
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 const gameStore = useGameStore()
 
 const stats = computed(() => ({
@@ -32,11 +29,6 @@ const emit = defineEmits<{
   (e: 'toggleTimeOut', payload: { teamName: 'HOME' | 'AWAY', number: 1 | 2 }): void
 }>()
 
-const handleTimeOutToggle = (number: 1 | 2) => {
-  if(userRole && userRole.value !== 'viewer'){
-    emit('toggleTimeOut', { teamName: props.teamKey, number })
-  }
-}
 
 const handleOpenModal = () => {
   emit('openModal', props.team)

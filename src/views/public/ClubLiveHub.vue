@@ -48,15 +48,16 @@
             <!-- Card Header: Categoria e Stato -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3 text-[10px]">
-                    <span class="px-3 py-1 rounded-lg bg-blue-50 text-blue-700 font-black uppercase tracking-widest border border-blue-100">
-                      {{ match.home_team?.category }}
-                    </span>
-                    <div class="font-bold text-slate-400 uppercase text-center truncate">
-                      {{ match.session.title }}
-                  </div>
-                    <span v-if="match.scheduled_at" class="font-bold text-slate-400">
-                      {{ formatDateTime(match.scheduled_at) }}
-                    </span>
+                    <TournamentCategoryGenderBadge :category="match.tournament?.category" :gender="match.tournament?.gender" />
+
+                    <div class="flex flex-col text-xs">
+                        <div class="font-bold text-slate-500 uppercase truncate leading-tight">
+                          <span class="font-black">{{ match.tournament?.name }}</span>
+                        </div>
+                        <span v-if="match.scheduled_at || match.name" class="text-slate-400 font-medium">
+                          {{ match.name ?( match.name + ' - ') : '' }} {{ match.scheduled_at ? formatDateTime(match.scheduled_at) : '' }}
+                        </span>
+                    </div>
                 </div>
                 <MatchStatusBadge :status="match.status" :isLive="match.is_public_live" :size="'sm'" />
             </div>
@@ -83,7 +84,7 @@
                   color="blue"
                   :icon="PlayIcon"
                   class="rounded-2xl"
-                  @click="goToMatch(match.session.id)"
+                  @click="goToMatch(match.id)"
                 />
             </div>
           </div>
@@ -107,13 +108,14 @@
 <script setup lang="ts">
 import { ref, onMounted, toRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { BuildingOffice2Icon, SignalIcon, VideoCameraSlashIcon, ChevronRightIcon, PlayCircleIcon, PlayIcon } from '@heroicons/vue/24/outline';
+import { BuildingOffice2Icon, SignalIcon, VideoCameraSlashIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import { getClubLiveMatches } from '@/services/publicService';
-import { useAuthStore } from '@/stores/authStore';
 import MatchStatusBadge from '@/components/badges/MatchStatusBadge.vue';
 import type { MatchStatus } from '@/enum/MatchStatus';
 import { formatDateTime } from '@/utils/utils';
+import TournamentCategoryGenderBadge from '@/components/badges/TournamentCategoryGenderBadge.vue';
+import type { TournamentGender } from '@/interfaces/Tournament';
 
 interface PublicClubData {
   id: string;
@@ -126,10 +128,7 @@ interface PublicMatchData {
   status: MatchStatus;
   is_public_live: boolean;
   scheduled_at: string;
-  session: {
-    id: string,
-    title: string
-  }
+  name: string;
   home_team: {
     id: string;
     club_name: string;
@@ -139,6 +138,12 @@ interface PublicMatchData {
     id: string;
     club_name: string;
     category: string;
+  };
+  tournament: {
+    id: string;
+    name: string;
+    category: string;
+    gender: TournamentGender;
   };
 }
 
@@ -168,8 +173,8 @@ const fetchClubLiveMatches = async () => {
   }
 };
 
-const goToMatch = (sessionId: string) => {
-  router.push(`/live/${slug}/match/${sessionId}`);
+const goToMatch = (matchId: string) => {
+  router.push(`/live/${slug}/match/${matchId}`);
 };
 
 onMounted(() => {

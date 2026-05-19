@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { useGameStore } from './gameStore';
 import { defineStore } from 'pinia';
 import { useTimerStore } from './timerStore';
-import { useSessionStateStore } from './sessionStateStore';
+import { useMatchStateStore } from './matchStateStore';
 import { matchPeriodToNumber } from '@/const/consts';
 import type { MatchPeriod } from '@/enum/MatchPeriod';
 import { MatchStatus } from '@/enum/MatchStatus';
@@ -16,6 +16,7 @@ export const useRealtimeStore = defineStore('realtime', {
     subscribeToMatch() {
       const gameStore = useGameStore();
       const timerStore = useTimerStore();
+      const clientId = useMatchStateStore().clientId;
 
       // 1. Evitiamo di iscriverci due volte
       if (this.activeChannel) {
@@ -23,7 +24,6 @@ export const useRealtimeStore = defineStore('realtime', {
       }
 
       const myRole = localStorage.getItem("user_role") || "viewer";
-      const mySessionId = localStorage.getItem("session_id");
       
       // 2. Creiamo l'iscrizione alla tabella 'realtime_broadcasts'
       this.activeChannel = supabase
@@ -44,7 +44,7 @@ export const useRealtimeStore = defineStore('realtime', {
             
             if (broadcastData) {
               // 1. DEDUPLICAZIONE: Controlliamo se siamo stati noi a generare l'evento
-              if (broadcastData.sender_client_id === useSessionStateStore().clientId) {
+              if (broadcastData.sender_client_id === clientId) {
                 console.log("Broadcast ignorato: sono il mittente.");
                 return; 
               }
@@ -118,7 +118,7 @@ export const useRealtimeStore = defineStore('realtime', {
             
             // 4. TRACCIAMO LA NOSTRA PRESENZA!
             const presenceStatus = await this.activeChannel.track({
-              user_id: mySessionId,
+              user_id: clientId,
               role: myRole,
               online_at: new Date().toISOString(),
             });

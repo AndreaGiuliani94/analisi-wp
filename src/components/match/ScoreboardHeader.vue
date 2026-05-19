@@ -57,7 +57,7 @@
         </div>
       
         <!-- Barra di Controllo Sticky (Mode, Timer, Actions) -->
-        <div v-if="userRole !== 'viewer'" 
+        <div v-if="usePermissions().canEditMatch(userRole)" 
           class="sticky bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border transition-all duration-300 z-50"
           :class="[isShrinked ? 'shadow-xl border-slate-300 top-2' : 'border-transparent top-0']">
       
@@ -132,6 +132,8 @@ import { MinusIcon, SignalIcon } from '@heroicons/vue/24/outline';
 import type { Match } from '@/interfaces/Match';
 import MatchStatusBadge from '@/components/badges/MatchStatusBadge.vue';
 import ActionButton from '../buttons/ActionButton.vue';
+import { usePermissions } from '@/composables/usePermissions';
+import type { MatchRole } from '@/enum/RoleType';
 
 defineProps<{
   match: Match;
@@ -139,7 +141,7 @@ defineProps<{
   formattedTime: string;
   currentPeriod: number;
   isShrinked: boolean;
-  userRole?: string;
+  userRole?: MatchRole | null;
   isCorrectionMode: boolean;
   isTimerMaster: boolean;
   penaltyPartial?: { home: number, away: number } | null;

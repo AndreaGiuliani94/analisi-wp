@@ -370,7 +370,7 @@ export const useVideoStore = defineStore("video", {
         );
         console.log("connesso a S3", response);
       } catch(error) {
-        console.error("Errore nella connsessiona a S3", error);
+        console.error("Errore nella connessione a S3", error);
       }
     },
 

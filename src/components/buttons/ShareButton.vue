@@ -16,7 +16,7 @@ import { ClipboardIcon } from '@heroicons/vue/24/outline'
 import ActionButton from './ActionButton.vue';
 
 const props = defineProps<{
-  sessionId: string
+  matchId: string
   shareTitle?: string
 }>()
 
@@ -24,7 +24,7 @@ const copied = ref(false)
 
 const copyCode = async () => {
   try {
-    await navigator.clipboard.writeText(props.sessionId)
+    await navigator.clipboard.writeText(props.matchId)
     copied.value = true
     setTimeout(() => (copied.value = false), 2000)
   } catch (e) {

@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia'
 import { useGameStore } from './gameStore'
-import { getEvents, getMatchDetails, getMatchIdBySessionId } from '@/services/sessionService'
-import { useSessionStore } from './sessionStore'
 import { mapPlayerToFE, padRosterToMax } from '@/utils/utils'
-import type { SessionState } from '@/interfaces/session/SessionState'
+import type { MatchState } from '@/interfaces/MatchState'
 import { useSettingsStore } from './settingsStore'
 import type { Team } from '@/interfaces/Team';
 import type { Player } from '@/interfaces/Player';
@@ -14,45 +12,44 @@ import { useTimerStore } from './timerStore'
 import type { MatchPeriod } from '@/enum/MatchPeriod'
 import { matchPeriodToNumber } from '@/const/consts'
 import type { MatchStatus } from '@/enum/MatchStatus'
-import { getLiveEvents, getLiveMatchDetails, getLiveMatchIdBySessionId } from '@/services/publicService'
+import { getLiveEvents, getLiveMatchDetails } from '@/services/publicService'
+import { getMatchDetails, joinMatch } from '@/services/matchService'
+import { getEvents } from '@/services/eventService'
+import type { MatchRole } from '@/enum/RoleType'
 
 const myClientId = crypto.randomUUID();
 
-export const useSessionStateStore = defineStore('sessionState', {
-    state: (): SessionState => {
-        const savedSessionId = localStorage.getItem("session_id");
+export const useMatchStateStore = defineStore('matchState', {
+    state: (): MatchState => {
         const savedMatchId = localStorage.getItem("match_id");
         return {
-            sessionId: savedSessionId ? savedSessionId : '',
             matchId: savedMatchId ? savedMatchId : '',
+            participants: [],
             channel: null,
             title: '',
             clientId: myClientId,
+            userRole: null as MatchRole | null
         }
     },
 
     actions: {
         
-        async joinSession(sessionId: string) {
-            this.sessionId = sessionId
-            localStorage.setItem("session_id", sessionId);
-            
-            await this.getMatchIdBySessionId();
+        async joinMatch(matchId: string) {
+            const res = await joinMatch(matchId);
+            if (!res.ok) {
+                throw new Error('Errore durante l’unione alla partita.')
+            }
+            this.matchId = matchId;
+            localStorage.setItem("match_id", matchId);
+
             await this.getMatchDetails();
             await this.getEvents();
 
-            const sessionStore = useSessionStore()
-            const data = await sessionStore.joinSession(sessionId);
+            const data ={
+                user_role: 'owner'
+            }// TODO: Sostituire con il ruolo reale recuperato dal BE
             localStorage.setItem("user_role", data.user_role);
             useTimerStore().setTimerMaster(data);
-        },
-
-        async getMatchIdBySessionId() {
-            const res = await getMatchIdBySessionId(this.sessionId);
-            const data = await res.json()
-
-            this.matchId = data.match_id
-            localStorage.setItem("match_id", this.matchId);
         },
 
         async getMatchDetails() {
@@ -82,21 +79,12 @@ export const useSessionStateStore = defineStore('sessionState', {
             }
         },
 
-        async joinPublicSession(sessionId: string) {
-            this.sessionId = sessionId
-            localStorage.setItem("session_id", sessionId);
+        async joinPublicMatch(matchId: string) {
+            this.matchId = matchId;
+            localStorage.setItem("match_id", matchId);
             
-            await this.getLiveMatchIdBySessionId();
             await this.getLiveMatchDetails();
             await this.getLiveEvents();
-        },
-
-        async getLiveMatchIdBySessionId() {
-            const res = await getLiveMatchIdBySessionId(this.sessionId);
-            const data = await res.json()
-
-            this.matchId = data.match_id
-            localStorage.setItem("match_id", this.matchId);
         },
 
         async getLiveMatchDetails() {
@@ -120,7 +108,7 @@ export const useSessionStateStore = defineStore('sessionState', {
             try {
                 const res = await getLiveEvents(this.matchId);
                 const data = await res.json();
-                this._processEvents(data, true); // Pass true for public session
+                this._processEvents(data, true); // Pass true for public match
             } catch (error) {
                 console.error("Errore durante l'idratazione degli eventi:", error);
             }
@@ -130,7 +118,7 @@ export const useSessionStateStore = defineStore('sessionState', {
          * Helper interno per processare i dettagli del match recuperati dal backend.
          * Popola gameStore.match e le proprietà del timerStore.
          * @param dbMatch I dati del match grezzi dal backend.
-         * @param isPublic Indica se la sessione è pubblica (per future differenziazioni).
+         * @param isPublic Indica se la partita è pubblica (per future differenziazioni).
          */
         _processMatchDetails(dbMatch: any, isPublic: boolean) {
             const settings = useSettingsStore();
@@ -140,6 +128,7 @@ export const useSessionStateStore = defineStore('sessionState', {
             timerStore.currentPeriod = matchPeriodToNumber[dbMatch.current_period as MatchPeriod]
             timerStore.countdown = dbMatch.current_time
             timerStore.isTimerRunning = dbMatch.is_timer_running
+            this.userRole = dbMatch.user_role as MatchRole;
 
             const mappedHomePlayers = dbMatch.home_players.map(mapPlayerToFE);
             const mappedAwayPlayers = dbMatch.away_players.map(mapPlayerToFE);
@@ -184,7 +173,7 @@ export const useSessionStateStore = defineStore('sessionState', {
          * Helper interno per processare gli eventi recuperati dal backend.
          * Popola gameStore.events e calcola i punteggi progressivi.
          * @param eventsData L'array di eventi grezzi dal backend.
-         * @param isPublic Indica se la sessione è pubblica (per future differenziazioni).
+         * @param isPublic Indica se la partita è pubblica (per future differenziazioni).
          */
         _processEvents(eventsData: any, isPublic: boolean) {
             const gameStore = useGameStore();

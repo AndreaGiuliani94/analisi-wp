@@ -7,7 +7,6 @@ import ProfileView from '@/views/ProfileView.vue';
 import CallbackView from '@/views/login/CallbackView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import SettingsView from '@/views/match/SettingsView.vue';
-import SessionCreate from '@/components/SessionsItem.vue';
 import AppLayout from '@/views/AppLayout.vue';
 import LandingView from '@/views/public/LandingView.vue';
 import OnboardView from '@/views/backoffice/OnboardView.vue';
@@ -21,7 +20,11 @@ import EventView from '@/views/match/EventView.vue';
 import ReportView from '@/views/match/ReportView.vue';
 import StatsView from '@/views/StatsView.vue';
 import PublicLiveMatchView from '@/views/public/match/PublicLiveMatchView.vue';
+import PublicLiveLayout from '@/views/public/match/PublicLiveLayout.vue';
 import MatchesView from '@/views/MatchesView.vue';
+import TournamentsView from '@/views/tournament/TournamentsView.vue';
+import TournamentDetailView from '@/views/tournament/TournamentDetailView.vue';
+import PublicLiveMatchEventsView from '@/views/public/match/PublicLiveMatchEventsView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -43,9 +46,20 @@ const router = createRouter({
       component: () => import('@/views/public/ClubLiveHub.vue')
     },
     {
-      path: '/live/:slug/match/:sessionId',
-      name: 'PublicMatchLive',
-      component: PublicLiveMatchView
+      path: '/live/:slug/match/:matchId',
+      component: PublicLiveLayout,
+      children: [
+        {
+          path: '',
+          name: 'PublicMatchLive',
+          component: PublicLiveMatchView
+        },
+        {
+          path: 'events',
+          name: 'PublicMatchEvents',
+          component: PublicLiveMatchEventsView
+        }
+      ]
     },
     { 
       path: "/workspace", 
@@ -94,12 +108,18 @@ const router = createRouter({
           component: StatsView
         },
         { 
-          path: 'session', 
-          component: SessionCreate
-        },
-        { 
           path: 'matches/:id', 
           component: MatchDetail
+        },
+        {
+          path: 'tournaments',
+          name: 'Tornei',
+          component: TournamentsView
+        },
+        {
+          path: 'tournaments/:id',
+          name: 'Dettagli Torneo',
+          component: TournamentDetailView
         },
         {
           path: 'matches',

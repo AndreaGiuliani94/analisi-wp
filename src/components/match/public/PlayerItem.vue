@@ -27,17 +27,17 @@
 
   <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
-      :disabled="userRole === 'viewer'"
+      :disabled="true"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(0)"
       />
     <ExclutionButton 
-      :disabled="userRole === 'viewer'"
+      :disabled="true"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(1)"
       />
     <ExclutionButton 
-      :disabled="userRole === 'viewer'"
+      :disabled="true"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(2)"
       />
@@ -83,19 +83,16 @@
 
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
-import { ref, nextTick, type PropType, computed } from "vue";
+import { ref, type PropType, computed } from "vue";
 import type { Player } from "@/interfaces/Player";
 import ExclutionButton from "@/components/buttons/ExclutionButton.vue";
-import { BoltIcon, EllipsisHorizontalCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
-import ShotButton from "@/components/buttons/ShotButton.vue";
-import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
+import { ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/24/outline";
+import { ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useSessionStore } from "@/stores/sessionStore";
-import { useUserRole } from "@/composables/useUserRole";
 import PlayerDetailModal from "@/components/modals/PlayerDetailModal.vue";
 import { foulCategoryLabels, foulPositionLabels } from "@/const/consts";
-import { formatTime, getLabel } from "@/utils/utils";
-import { FoulType, type EDCSType, type FoulPosition } from "@/enum/ExclutionDescription";
+import { getLabel } from "@/utils/utils";
+import { FoulType } from "@/enum/ExclutionDescription";
 import type { Team } from "@/interfaces/Team";
 
 const props = defineProps({
@@ -111,9 +108,7 @@ const props = defineProps({
 
 const gameStore = useGameStore();
 const settings = useSettingsStore();
-const sessionStore = useSessionStore();
 const isPlayerDetailOpen = ref<boolean>(false);
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 
 const playerShots = computed(() => {
   if(props.player.id) 

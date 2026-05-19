@@ -39,7 +39,7 @@
     </div>
   </div>
 
-  <div v-if="team.activatedTimer && userRole !== 'viewer'" class=" ms-1 flex flex-col gap-1">
+  <div v-if="team.activatedTimer && canEditMatch(userRole)" class=" ms-1 flex flex-col gap-1">
     <div class="flex items-center gap-1 text-blue-950">
       
       <BoltIcon v-if="player.active" class="w-5 h-5 text-red-800" />
@@ -51,21 +51,21 @@
 
   <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
-      :disabled="userRole === 'viewer'"
+      :disabled="!canEditMatch(userRole)"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(0)"
       @handleFoul="addFoul($event, 0)"
       @handleEDCS="addEDCS($event, 0)" 
       @remove="removeExclution(0)" />
     <ExclutionButton 
-      :disabled="userRole === 'viewer'"
+      :disabled="!canEditMatch(userRole)"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(1)"
       @handleFoul="addFoul($event, 1)"
       @handleEDCS="addEDCS($event, 1)" 
       @remove="removeExclution(1)" />
     <ExclutionButton 
-      :disabled="userRole === 'viewer'"
+      :disabled="!canEditMatch(userRole)"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
       :exclution-state="getExclutionState(2)"
       @handleFoul="addFoul($event, 2)" 
@@ -76,7 +76,7 @@
   <template v-if="settings.enableShoot">
     <div class="inline-flex items-center ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">PARI</div>
-      <ShotButton v-if="userRole !== 'viewer'"
+      <ShotButton v-if="canEditMatch(userRole)"
         :disabled="!player.active" 
         :type="ShotCategory.EVEN" 
         @handleShot="addShot"
@@ -85,7 +85,7 @@
     </div>
     <div class="inline-flex items-center justify-center ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 inline-flex items-center justify-end" >SUP</div>
-      <ShotButton v-if="userRole !== 'viewer'"
+      <ShotButton v-if="canEditMatch(userRole)"
         :disabled="!player.active" 
         :type="ShotCategory.SUP" 
         :is-goal="false" 
@@ -95,7 +95,7 @@
     </div>
     <div class="inline-flex items-center ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">RIG</div>
-      <ShotButton v-if="userRole !== 'viewer'"
+      <ShotButton v-if="canEditMatch(userRole)"
         :disabled="!player.active" 
         :type="ShotCategory.PENALTY" 
         :is-goal="false" 
@@ -135,13 +135,13 @@ import { BoltIcon, EllipsisHorizontalCircleIcon, ExclamationTriangleIcon, Inform
 import ShotButton from "./buttons/ShotButton.vue";
 import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useSessionStore } from "@/stores/sessionStore";
-import { useUserRole } from "@/composables/useUserRole";
 import PlayerDetailModal from "./modals/PlayerDetailModal.vue";
 import { foulCategoryLabels, foulPositionLabels } from "@/const/consts";
 import { formatTime, getLabel } from "@/utils/utils";
 import { FoulType, type EDCSType, type FoulPosition } from "@/enum/ExclutionDescription";
 import { useTimeFormat } from "@/composables/useTimeFormat";
+import { useMatchStateStore } from "@/stores/matchStateStore";
+import { usePermissions } from "@/composables/usePermissions";
 
 const props = defineProps({
   player: {
@@ -156,14 +156,15 @@ const props = defineProps({
 
 const gameStore = useGameStore();
 const settings = useSettingsStore();
-const sessionStore = useSessionStore();
 const holdTimeout = ref<NodeJS.Timeout | null>(null);
 const isEditing = ref<boolean>(false);
 const isPlayerDetailOpen = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const matchStateStore = useMatchStateStore();
+const { canEditMatch } = usePermissions();
+const userRole = computed(() => matchStateStore.userRole);
 
 const playerShots = computed(() => {
   if(props.player.id) 
@@ -202,8 +203,7 @@ const stopHold = () => {
 };
 
 const handleClick = (team: number) => {
-  console.log("Click triggerato! isEditing:", isEditing.value, "isHolding:", isHolding.value);
-  if (userRole?.value === 'viewer') return;
+  if (!canEditMatch(userRole.value)) return;
   
   // Se stiamo editando o abbiamo appena finito una pressione lunga, NON triggheriamo il toggle
   if (isHolding.value || isEditing.value) {
@@ -214,7 +214,7 @@ const handleClick = (team: number) => {
 };
 
 const saveEdit = (team: number) => {
-  if(userRole && userRole.value !== 'viewer'){
+  if(canEditMatch(userRole.value)){
     isEditing.value = false;
     isHolding.value = false;
     //store.updatePlayerName(props.player.number, editableName.value, team);

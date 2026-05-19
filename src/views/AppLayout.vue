@@ -39,10 +39,15 @@
           <span v-if="!isCollapsed" class="ml-4 whitespace-nowrap">Partite</span>
         </router-link>
 
-        <router-link to="/workspace/stats" class="flex items-center px-3 py-3 rounded-lg transition-colors hover:bg-blue-900" active-class="bg-blue-800 font-semibold border-l-4 border-white" :title="isCollapsed ? 'Statistiche' : ''">
+        <router-link to="/workspace/tournaments" class="flex items-center px-3 py-3 rounded-lg transition-colors hover:bg-blue-900" active-class="bg-blue-800 font-semibold border-l-4 border-white" :title="isCollapsed ? 'Tornei' : ''">
+          <trophy-icon class="size-6 justify-self-center" />
+          <span v-if="!isCollapsed" class="ml-4 whitespace-nowrap">Tornei</span>
+        </router-link>
+
+        <!-- <router-link to="/workspace/stats" class="flex items-center px-3 py-3 rounded-lg transition-colors hover:bg-blue-900" active-class="bg-blue-800 font-semibold border-l-4 border-white" :title="isCollapsed ? 'Statistiche' : ''">
           <chart-bar-icon class="size-6 justify-self-center" />
           <span v-if="!isCollapsed" class="ml-4 whitespace-nowrap">Statistiche</span>
-        </router-link>
+        </router-link> -->
         
       </nav>
 
@@ -88,7 +93,7 @@
 import Icon from '@/components/icons/Icon.vue';
 import { useInitials } from '@/composables/useInitials';
 import { useAuthStore } from '@/stores/authStore';
-import { UserCircleIcon, UserIcon, Squares2X2Icon, LifebuoyIcon, UserGroupIcon, BuildingOffice2Icon, ChartBarIcon, CalendarDateRangeIcon, CalendarIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
+import { UserCircleIcon, UserIcon, Squares2X2Icon, LifebuoyIcon, UserGroupIcon, BuildingOffice2Icon, ChartBarIcon, TrophyIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
 import { Bars3Icon, ChevronDoubleLeftIcon } from '@heroicons/vue/24/solid';
 import { ref, computed, toRef } from 'vue';
 import { useRoute } from 'vue-router';

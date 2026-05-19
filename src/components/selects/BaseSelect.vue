@@ -3,10 +3,10 @@
     <label v-if="label" class="text-sm font-semibold text-blue-950">
       {{ label }}
     </label>
-    <select
+    <select 
       :value="modelValue"
       @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
-      class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm text-blue-950 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400"
+      class="w-full bg-white px-3 py-1.5 text-sm md:text-md font-small md:font-small leading-4 md:leading-6 border border-gray-300 rounded-md transition duration-150 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
       :disabled="disabled"
     >
       <option v-for="opt in options" :key="opt.value" :value="opt.value">

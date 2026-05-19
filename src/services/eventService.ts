@@ -1,6 +1,15 @@
-import type { MatchEvent } from "@/interfaces/MatchEvent";
-
 const BE_URL = import.meta.env.VITE_BE_URL;
+
+export const getEvents = async (matchId: string) => {
+    const res = await fetch(`${BE_URL}/events/match/${matchId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    })
+    return res;
+}
 
 export const saveMatchEvent = async (payload: any ) => {
   const response = await fetch(

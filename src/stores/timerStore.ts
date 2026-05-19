@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { useGameStore } from './gameStore';
 import { useSettingsStore } from './settingsStore';
-import { useSessionStateStore } from './sessionStateStore';
+import { useMatchStateStore } from './matchStateStore';
 import { startPenalties, timerPlay, timerStop } from '@/services/timerService';
 import { useToast } from 'vue-toastification';
 import { matchPeriodToNumber, numberToMatchPeriod } from '@/const/consts';
@@ -71,10 +71,10 @@ export const useTimerStore = defineStore('timerStore', {
       if (this.isTimerRunning) return;
       this.runLocalTimer();
       const gameStore = useGameStore();
-      const sessionStateStore = useSessionStateStore();
+      const matchStateStore = useMatchStateStore();
       const payload = {
         match_id: gameStore.match.id,
-        sender_client_id: sessionStateStore.clientId,
+        sender_client_id: matchStateStore.clientId,
         period: numberToMatchPeriod[this.currentPeriod],
         time: this.countdown
       }
@@ -85,10 +85,10 @@ export const useTimerStore = defineStore('timerStore', {
       if (!this.isTimerRunning) return;
       this.stopLocalTimer();
       const gameStore = useGameStore();
-      const sessionStateStore = useSessionStateStore();
+      const matchStateStore = useMatchStateStore();
       const payload = {
         match_id: gameStore.match.id,
-        sender_client_id: sessionStateStore.clientId,
+        sender_client_id: matchStateStore.clientId,
         period: numberToMatchPeriod[this.currentPeriod],
         time: this.countdown
       }
@@ -202,8 +202,8 @@ export const useTimerStore = defineStore('timerStore', {
 
     async goToPenalties(matchId: string) {
       try {
-        const sessionStateStore = useSessionStateStore();
-        await startPenalties(matchId, { sender_client_id: sessionStateStore.clientId });
+        const matchStateStore = useMatchStateStore();
+        await startPenalties(matchId, { sender_client_id: matchStateStore.clientId });
         this.currentPeriod = matchPeriodToNumber[MatchPeriod.PENALTIES];
         this.countdown = 0;
         useToast().info("Spostamento ai tiri di rigore effettuato");

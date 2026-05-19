@@ -6,7 +6,7 @@
     :current-period="timerStore.currentPeriod"
     :is-shrinked="isShrinked"
     :user-role="userRole"
-    :is-correction-mode="isCorrectionMode"
+    :is-correction-mode="gameStore.isCorrectionMode"
     :is-timer-master="timerStore.isTimerMaster && timerStore.currentPeriod !== matchPeriodToNumber[MatchPeriod.PENALTIES]"
     :penalty-partial="penaltyScorePartial"
     @restart-match="openConfirmRestart"
@@ -78,8 +78,6 @@ import { onMounted, onUnmounted, ref, toRef, computed } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/interfaces/Team';
 import TeamItem from '@/components/TeamItem.vue';
-import { useSessionStore } from '@/stores/sessionStore';
-import { useUserRole } from '@/composables/useUserRole';
 import { useTimerStore } from '@/stores/timerStore';
 import ScoreboardHeader from '@/components/match/ScoreboardHeader.vue';
 import EndMatchModal from '@/components/modals/EndMatchModal.vue';
@@ -91,11 +89,11 @@ import PenaltyArena from '@/components/match/PenaltyArena.vue';
 import { MatchEventType } from "@/enum/MatchEventDescription";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { MatchStatus } from '@/enum/MatchStatus';
+import { useMatchStateStore } from '@/stores/matchStateStore';
+import { usePermissions } from '@/composables/usePermissions';
 
 const gameStore = useGameStore()
 const timerStore = useTimerStore()
-const sessionStore = useSessionStore()
-const isCorrectionMode = toRef(gameStore, 'isCorrectionMode');
 
 const isShrinked = ref(false)
 const isEndMatchModalOpen = ref(false)
@@ -104,7 +102,8 @@ const actionConfirmModalTitle = ref('')
 const actionConfirmModalMessage = ref('')
 const actionConfirmModalButtonColor = ref<'red' | 'green' | 'blue' | 'gray'>('red')
 
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const matchStateStore = useMatchStateStore();
+const userRole = matchStateStore.userRole;
 
 const updateScroll = () => {
   // Se siamo ai rigori, l'header non deve rimpicciolirsi mai

@@ -16,7 +16,7 @@ import { deleteMatchEvent, saveMatchEvent, updateMatchEvent } from "@/services/e
 import { convertDbEventToUI, refactorSaveEventPayload } from "@/utils/converter";
 import { useTimerStore } from "./timerStore";
 import type { Substitutions } from "@/interfaces/Substitutions";
-import { useSessionStateStore } from "./sessionStateStore";
+import { useMatchStateStore } from "./matchStateStore";
 import { clearTeam, resetTeam } from "@/utils/utils";
 import { matchPeriodToNumber, numberToMatchPeriod } from "@/const/consts";
 import { MatchStatus } from "@/enum/MatchStatus";
@@ -254,7 +254,7 @@ export const useGameStore = defineStore("gameStore", {
         await updateSubstitutions(
           this.match.id, 
           {
-            sender_client_id: useSessionStateStore().clientId,
+            sender_client_id: useMatchStateStore().clientId,
             time: timerStore.countdown,
             period: numberToMatchPeriod[timerStore.currentPeriod],
             substitutions: payload 
@@ -295,8 +295,8 @@ export const useGameStore = defineStore("gameStore", {
     async startMatch() {
       if (this.match.status === MatchStatus.SCHEDULED || this.match.status === MatchStatus.WARMUP) {
         try {
-          const sessionStateStore = useSessionStateStore();
-          await startMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+          const matchStateStore = useMatchStateStore();
+          await startMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
           this.match.status = MatchStatus.IN_PROGRESS;
         } catch (error) {
           console.error("Errore durante l'inizio del match:", error);
@@ -306,8 +306,8 @@ export const useGameStore = defineStore("gameStore", {
     },
     async endMatch() {
       try {
-        const sessionStateStore = useSessionStateStore();
-        await endMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        const matchStateStore = useMatchStateStore();
+        await endMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.status = MatchStatus.FINISHED;
         useToast().success("Partita conclusa con successo!");
       } catch (error) {
@@ -318,8 +318,8 @@ export const useGameStore = defineStore("gameStore", {
     },
     async suspendMatch() {
       try {
-        const sessionStateStore = useSessionStateStore();
-        await suspendMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        const matchStateStore = useMatchStateStore();
+        await suspendMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.status = MatchStatus.PAUSED;
         useToast().success("Partita sospesa con successo!");
       } catch (error) {
@@ -330,8 +330,8 @@ export const useGameStore = defineStore("gameStore", {
     },
     async cancelMatch() {
       try {
-        const sessionStateStore = useSessionStateStore();
-        await cancelMatch(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        const matchStateStore = useMatchStateStore();
+        await cancelMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.status = MatchStatus.CANCELED;
         useToast().success("Partita annullata con successo!");
       } catch (error) {
@@ -342,8 +342,8 @@ export const useGameStore = defineStore("gameStore", {
     },
     async startPublicLive() {
       try {
-        const sessionStateStore = useSessionStateStore();
-        await startPublicLive(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        const matchStateStore = useMatchStateStore();
+        await startPublicLive(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.isLive = true;
         useToast().success("La partita è in live!");
       } catch (error) {
@@ -354,8 +354,8 @@ export const useGameStore = defineStore("gameStore", {
     },
     async endPublicLive() {
       try {
-        const sessionStateStore = useSessionStateStore();
-        await endPublicLive(this.match.id, { sender_client_id: sessionStateStore.clientId });
+        const matchStateStore = useMatchStateStore();
+        await endPublicLive(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.isLive = false;
         useToast().success("Live terminato con successo!");
       } catch (error) {
@@ -377,7 +377,7 @@ export const useGameStore = defineStore("gameStore", {
       this.match.status = MatchStatus.WARMUP;
       this.clearTeams();
       this.events = [];
-      await restartMatch(this.match.id, {sender_client_id: useSessionStateStore().clientId});
+      await restartMatch(this.match.id, {sender_client_id: useMatchStateStore().clientId});
     },
     addShot(
       number: number,
@@ -454,7 +454,7 @@ export const useGameStore = defineStore("gameStore", {
         if (eventId) {
           try {
             // Passiamo l'ID e il myClientId per la deduplicazione!
-            await deleteMatchEvent(eventId, useSessionStateStore().clientId); 
+            await deleteMatchEvent(eventId, useMatchStateStore().clientId); 
           } catch (error) {
             console.error("Errore durante l'eliminazione dell'evento:", error);
             // Opzionale: gestire un "rollback" visivo reinserendo l'evento se fallisce la cancellazione
@@ -510,7 +510,7 @@ export const useGameStore = defineStore("gameStore", {
         existingFoulEvent.edcsType = payload.edcsType;
         
         
-        const bePayload = refactorSaveEventPayload(useSessionStateStore().clientId, existingFoulEvent);
+        const bePayload = refactorSaveEventPayload(useMatchStateStore().clientId, existingFoulEvent);
         await this.updateEvent(existingFoulEvent.id, bePayload); 
         
       } else {
@@ -585,7 +585,7 @@ export const useGameStore = defineStore("gameStore", {
         }
         // Chiamata al BE
         try {
-          await deleteMatchEvent(eventToRemove.id, useSessionStateStore().clientId);
+          await deleteMatchEvent(eventToRemove.id, useMatchStateStore().clientId);
         } catch (error) {
             console.error("Errore durante l'eliminazione dell'evento:", error);
             // Opzionale: gestire un "rollback" visivo reinserendo l'evento se fallisce la cancellazione
@@ -687,7 +687,7 @@ export const useGameStore = defineStore("gameStore", {
 
       // 5. CHIAMATA AL BACKEND
       try {
-        const res = await saveMatchEvent(refactorSaveEventPayload(useSessionStateStore().clientId, newEvent)); // La tua POST
+        const res = await saveMatchEvent(refactorSaveEventPayload(useMatchStateStore().clientId, newEvent)); // La tua POST
 
         const response = await res.json();
         

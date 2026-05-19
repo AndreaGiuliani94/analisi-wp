@@ -38,7 +38,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
-      <!-- Colonna Principale: Ultime Sessioni -->
+      <!-- Colonna Principale: Ultime Partite -->
       <div class="lg:col-span-2 space-y-6">
         <section class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div class="p-6 border-b border-gray-100 flex items-center justify-between">
@@ -52,23 +52,8 @@
           </div>
 
           <div class="divide-y divide-gray-100 p-4">
-            <SessionsItem :limit="3" />
-
-            <!-- Placeholder per SessionsItem - Se hai già il componente, usalo qui -->
-            <!-- <div v-for="n in 3" :key="n" class="p-5 hover:bg-slate-50 transition-colors cursor-pointer group">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-700 font-black border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    12-8
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-blue-950">Pro Recco vs AN Brescia</h3>
-                    <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Campionato A1 • 12 Mag 2024</p>
-                  </div>
-                </div>
-                <ChevronRightIcon class="size-5 text-gray-300 group-hover:text-blue-600 transition-colors" />
-              </div>
-            </div> -->
+            <!-- Display latest matches using the new component -->
+            <LatestMatchesItem :limit="5" />
           </div>
         </section>
       </div>
@@ -104,48 +89,44 @@
     </div>
   </div>
 
-  <NewSessionModal :isOpen="showCreateSessionModal" @close="closeCreateModal"/>
-  <JoinSessionModal :isOpen="showJoinSessionModal" @close="closeJoinModal"/>
+  <NewMatchModal :isOpen="showCreateMatchModal" @close="closeCreateModal"/>
+  <JoinMatchModal :isOpen="showJoinMatchModal" @close="closeJoinModal"/>
 </template>
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/authStore';
 import { ref, computed, toRef } from 'vue';
-import { PlusIcon, UserGroupIcon, ClockIcon, TrophyIcon, InformationCircleIcon, PlayIcon } from '@heroicons/vue/24/outline';
+import { PlusIcon, UserGroupIcon, ClockIcon, TrophyIcon, PlayIcon } from '@heroicons/vue/24/outline';
 import ActionButton from '@/components/buttons/ActionButton.vue';
-import SessionsItem from '@/components/SessionsItem.vue';
-import NewSessionModal from '@/components/modals/NewSessionModal.vue';
-import JoinSessionModal from '@/components/modals/JoinSessionModal.vue';
-import { useSessionStore } from '@/stores/sessionStore';
+import NewMatchModal from '@/components/modals/NewMatchModal.vue';
+import JoinMatchModal from '@/components/modals/JoinMatchModal.vue';
+import LatestMatchesItem from '@/components/LatestMatchesItem.vue';
 
 const authStore = useAuthStore();
 const user = toRef(authStore, 'user');
 
-const sessionStore = useSessionStore()
-const showCreateSessionModal = ref(false);
-const showJoinSessionModal = ref(false);
+const showCreateMatchModal = ref(false);
+const showJoinMatchModal = ref(false);
 const loading = ref(false)
 
 const openCreateModal = async () => {
   loading.value = true
-  showCreateSessionModal.value = true
+  showCreateMatchModal.value = true
 }
 
 const closeCreateModal = async () => {
-  showCreateSessionModal.value = false
+  showCreateMatchModal.value = false
   loading.value = false
-  sessionStore.getAllSessions()
 }
 
 const openJoinModal = async () => {
   loading.value = true
-  showJoinSessionModal.value = true
+  showJoinMatchModal.value = true
 }
 
 const closeJoinModal = async () => {
-  showJoinSessionModal.value = false
+  showJoinMatchModal.value = false
   loading.value = false
-  sessionStore.getAllSessions()
 }
 
 </script>

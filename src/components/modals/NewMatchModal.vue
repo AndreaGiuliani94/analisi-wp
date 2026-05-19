@@ -8,10 +8,19 @@
       <BaseInput
         class="w-full"
         id="name"
-        v-model="title"
+        v-model="name"
         :placeholder="settingsStore.homeTeamName + ' - ...'"
         label="Nome partita"
         required/>
+
+      <TournamentListbox
+        v-if="!tournamentId"
+        class="w-full"
+        v-model="selectedTournamentId"
+        label="Associa a un torneo (opzionale)"
+        placeholder="Nessun torneo"
+      />
+
       <div class=" w-full grid grid-cols-2 gap-4 ">
         <BaseInput
           id="scheduledDate"
@@ -46,24 +55,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
-import { createNewSession } from '@/services/sessionService';
+import { createNewMatch } from '@/services/matchService';
 import { useSettingsStore } from '@/stores/settingsStore';
 import BaseModal from './BaseModal.vue';
+import TournamentListbox from '../listbox/TournamentListbox.vue';
 
 const props = defineProps({
-  isOpen: Boolean
+  isOpen: Boolean,
+  tournamentId: {
+    type: String,
+    default: null
+  }
 });
 
-const emit = defineEmits([ "close" ])
+const emit = defineEmits([ "close", "created" ])
 const settingsStore = useSettingsStore()
 
 // Form state
-const title = ref('')
+const name = ref('')
 const date = ref('')
 const time = ref('')
+const selectedTournamentId = ref('')
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
@@ -75,11 +90,12 @@ const register = async () => {
 
   try {
     const payload = {
-      title: title.value,
+      name: name.value,
       date: date.value,
-      time: time.value
+      time: time.value,
+      tournament_id: props.tournamentId || selectedTournamentId.value || null
     }
-    const res = await createNewSession(payload);
+    const res = await createNewMatch(payload);
 
     if (!res.ok) {
       const { detail } = await res.json()
@@ -87,6 +103,8 @@ const register = async () => {
     }
 
     success.value = true
+
+    emit('created')
 
     setTimeout(() => {
       closeModal();
@@ -101,7 +119,8 @@ const register = async () => {
 const closeModal = () => {
     loading.value = false
     success.value = false
-    title.value = '';
+    name.value = '';
+    selectedTournamentId.value = '';
     emit("close");
 };
 </script>

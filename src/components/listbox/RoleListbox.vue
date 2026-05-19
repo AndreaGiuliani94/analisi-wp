@@ -1,5 +1,5 @@
 <template>
-  <Listbox :modelValue="modelValue" @update:modelValue="updateValue" :disabled="userRole !== 'owner' || modelValue === 'owner'">
+  <Listbox :modelValue="modelValue" @update:modelValue="updateValue" :disabled="userRole !== 'owner' || modelValue === MatchRole.OWNER">
     <div class="relative">
       <!-- Pulsante "select" -->
         <ListboxButton 
@@ -9,7 +9,7 @@
             >
             <!-- Usa il badge qui -->
             <RoleBadge :role="modelValue" >
-              <component v-if="userRole == 'owner' && modelValue != 'owner'"
+              <component v-if="userRole == 'owner' && modelValue !== MatchRole.OWNER"
                   :is="open ? ChevronUpIcon : ChevronDownIcon"
                   class="w-5 h-5"
               />
@@ -24,10 +24,10 @@
                 v-for="role in roles"
                 :key="role"
                 :value="role"
-                :disabled="role === 'timekeeper' && hasTimekeeper && modelValue !== 'timekeeper'"
+                :disabled="role === MatchRole.TIMEKEEPER && hasTimekeeper && modelValue !== MatchRole.TIMEKEEPER"
                 class="select-none p-1"
                 :class="[
-                  role === 'timekeeper' && hasTimekeeper && modelValue !== 'timekeeper'
+                  role === MatchRole.TIMEKEEPER && hasTimekeeper && modelValue !== MatchRole.TIMEKEEPER
                     ? 'opacity-50 cursor-not-allowed bg-gray-50' 
                     : 'cursor-pointer hover:bg-gray-100'
                 ]"
@@ -44,20 +44,21 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headless
 import RoleBadge from '../badges/RoleBadge.vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
 import { ChevronUpIcon } from '@heroicons/vue/20/solid';
+import { MatchRole } from '@/enum/RoleType';
 
 const props = defineProps<{
-  modelValue: 'owner' | 'editor' | 'viewer' | 'timekeeper'
+  modelValue: MatchRole
   userRole: string | undefined
   hasTimekeeper: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: 'editor' | 'viewer' | 'timekeeper'): void
+  (e: 'update:modelValue', value: MatchRole): void
 }>()
 
-const roles: Array< 'editor' | 'viewer' | 'timekeeper'> = [ 'editor', 'viewer', 'timekeeper']
+const roles: Array<MatchRole> = [ MatchRole.EDITOR, MatchRole.VIEWER, MatchRole.TIMEKEEPER ]
 
-function updateValue(newRole: 'editor' | 'viewer' | 'timekeeper') {
+function updateValue(newRole: MatchRole) {
   emit('update:modelValue', newRole)
 }
 </script>

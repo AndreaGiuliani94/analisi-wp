@@ -32,8 +32,8 @@
 import { ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
-import { joinSession } from '@/services/sessionService';
 import BaseModal from './BaseModal.vue';
+import { joinMatch } from '@/services/matchService';
 
 const props = defineProps({
   isOpen: Boolean
@@ -54,7 +54,7 @@ const join = async () => {
 
   try {
 
-    const res = await joinSession(code.value);
+    const res = await joinMatch(code.value);
 
     if (!res.ok) {
       const { detail } = await res.json()

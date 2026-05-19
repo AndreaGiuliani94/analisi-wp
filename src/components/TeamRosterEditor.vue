@@ -4,7 +4,7 @@
     <div class="m-2.5 flex items-center justify-between flex-wrap gap-3 align-middle font-medium text-lg">
       
       <div class="flex-1 min-w-40">
-          <span v-if="isHeaderLocked || userRole === 'viewer'" :class="colorMap.teamName" class="font-bold">
+          <span v-if="isHeaderLocked || !usePermissions().canEditMatch(userRole)" :class="colorMap.teamName" class="font-bold">
               {{ team?.name || (isHome ? 'Squadra di Casa' : 'Avversari') }}
           </span>
   
@@ -35,13 +35,13 @@
             size="sm"
             :theme="theme"
             :loading="isLoading"
-            :disabled="isHeaderLocked || userRole === 'viewer' || team.name === ''"
+            :disabled="isHeaderLocked || userRole === MatchRole.VIEWER || team.name === ''"
             @open="emit('fetch-available')"
             class="w-full lg:w-60"
           />
 
           <ActionButton 
-            v-if="userRole !== 'viewer'"
+            v-if="usePermissions().canEditMatch(userRole)"
             @click="toggleLock"
             :color="saveButtonColor"
             size="sm"
@@ -52,7 +52,7 @@
           />
 
           <ActionButton 
-            v-if="isHeaderLocked && userRole !== 'viewer'"
+            v-if="isHeaderLocked && usePermissions().canEditMatch(userRole)"
             @click="emit('load-last')"
             :disabled="isGameStarted"
             color="green"
@@ -65,7 +65,7 @@
       </div>
     </div>
 
-    <div v-if="!isHeaderLocked && userRole !== 'viewer'" class="mx-3 mt-1 mb-2 text-xs text-gray-500 italic flex items-center gap-1.5">
+    <div v-if="!isHeaderLocked && userRole !== MatchRole.VIEWER" class="mx-3 mt-1 mb-2 text-xs text-gray-500 italic flex items-center gap-1.5">
       <InformationCircleIcon class="size-4" />
       Salva l'intestazione per sbloccare e compilare i giocatori.
     </div>
@@ -77,7 +77,7 @@
       
       <div class="w-full">
 
-        <div v-if="userRole === 'viewer' || isGameStarted">
+        <div v-if="!usePermissions().canEditMatch(userRole) || isGameStarted">
           {{ player.name }}
         </div>
 
@@ -142,11 +142,13 @@ import ActionButton from './buttons/ActionButton.vue';
 import BaseCombobox from './comboboxes/BaseCombobox.vue';
 import { categoryEnumOptions } from '@/enum/TeamCategory';
 import EditPlayerModal from './modals/EditPlayerModal.vue';
+import { usePermissions } from '@/composables/usePermissions';
+import { MatchRole } from '@/enum/RoleType';
 
 
 const props = defineProps({
   team: { type: Object, required: true },
-  userRole: { type: String, default: 'editor' },
+  userRole: { type: String as () => MatchRole | null, default: MatchRole.EDITOR },
   availableTeams: { type: Array as () => any[], default: () => [] },
   suggestedTeams: { type: Array as () => any[], default: () => [] },
   availablePlayers: { type: Array as () => any[], default: () => [] },

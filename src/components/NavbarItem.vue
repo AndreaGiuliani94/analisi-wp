@@ -41,22 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { UserCircleIcon, WrenchScrewdriverIcon, UserIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline';
-import Icon from './icons/Icon.vue';
-import { useAuthStore } from '@/stores/authStore';
-import { useInitials } from '@/composables/useInitials';
-import { useSessionStore } from '@/stores/sessionStore';
-import { useUserRole } from '@/composables/useUserRole';
-import { useGameStore } from '@/stores/gameStore';
-import { toRef } from 'vue';
+import { WrenchScrewdriverIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline';
 
-const authStore = useAuthStore();
-const sessionStore = useSessionStore();
-const gameStore = useGameStore()
 
-const user = toRef(authStore, 'user');
-
-const { initials } = useInitials(user)
-
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 </script>

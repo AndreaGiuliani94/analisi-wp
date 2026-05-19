@@ -3,15 +3,15 @@ import PlayerItem from './PlayerItem.vue';
 import type { Team } from '../interfaces/Team';
 import TimeOutButton from './buttons/TimeOutButton.vue';
 import type { Player } from '../interfaces/Player';
-import { useSessionStore } from '@/stores/sessionStore';
-import { useUserRole } from '@/composables/useUserRole';
 import { useGameStore } from '@/stores/gameStore';
 import { ShotCategory } from '@/enum/ShotDescription';
 import { computed } from 'vue';
 import { InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { useMatchStateStore } from '@/stores/matchStateStore';
+import { usePermissions } from '@/composables/usePermissions';
 
-const sessionStore = useSessionStore()
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const matchStateStore = useMatchStateStore();
+const userRole = computed(() => matchStateStore.userRole);
 const gameStore = useGameStore()
 
 const stats = computed(() => ({
@@ -33,7 +33,7 @@ const emit = defineEmits<{
 }>()
 
 const handleTimeOutToggle = (number: 1 | 2) => {
-  if(userRole && userRole.value !== 'viewer'){
+  if(userRole && usePermissions().canEditMatch(userRole.value)){
     emit('toggleTimeOut', { teamName: props.teamKey, number })
   }
 }

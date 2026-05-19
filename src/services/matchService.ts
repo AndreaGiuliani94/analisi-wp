@@ -1,5 +1,89 @@
 const BE_URL = import.meta.env.VITE_BE_URL;
 
+export const createNewMatch = async (payload: any) => {
+    const res = await fetch(BE_URL + '/matches/create', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    return res;
+}
+
+export const joinMatch = async (matchId: string) => {
+    const res = await fetch(BE_URL + `/matches/join/${matchId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    })
+    return res;
+}
+
+export const getMatchDetails = async (matchId: string) => {
+    const res = await fetch(`${BE_URL}/matches/${matchId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    })
+    return res;
+}
+
+export const getLatestMatches = async (limit?: number) => {
+    const query = limit !== undefined ? `?limit=${limit}` : '';
+    const res = await fetch(`${BE_URL}/matches/latest${query}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    })
+    return res;
+}
+
+
+export const updateMatchDetails = async (matchId: string, payload: any) => {
+    const res = await fetch(`${BE_URL}/matches/${matchId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+    })
+    return res;
+}
+
+
+export const updateParticipantRole = async (matchId: string, userId: string, newRole: string) => {
+    const res = await fetch(`${BE_URL}/matches/${matchId}/participants`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: newRole,
+        partecipant_id: userId
+       })
+    });
+    return res;
+
+}
+export const deleteParticipant = async (matchId: string, userId: string) => {
+    const res = await fetch(`${BE_URL}/matches/${matchId}/participants/${userId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        partecipant_id: userId
+       })
+    });
+    return res;
+}
+
 export const updatePlayer = async (playerId: string, payload: any) => {
   // 1. Aggiornamento Backend
   const response = await fetch(
