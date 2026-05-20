@@ -6,7 +6,7 @@ export interface Tournament {
     name: string;
     title: string; // Alias per 'name' se usato in alcune parti
     category: string;
-    gender: 'M' | 'F' | 'MIXED';
+    gender: TournamentGender;
     season: string;
     match_count: number; // Numero totale di match
     matches: any[]; // Array di oggetti match

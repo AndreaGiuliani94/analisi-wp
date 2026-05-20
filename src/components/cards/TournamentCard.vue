@@ -59,7 +59,6 @@
 
 <script setup lang="ts">
 import { MagnifyingGlassIcon, TrashIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline'
-import NavButton from '@/components/buttons/NavButton.vue'
 import ActionButton from '@/components/buttons/ActionButton.vue'
 import TournamentCategoryGenderBadge from '@/components/badges/TournamentCategoryGenderBadge.vue'
 import type { Tournament } from '@/interfaces/Tournament'
