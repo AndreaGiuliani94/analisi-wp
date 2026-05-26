@@ -102,7 +102,7 @@ const login = async () => {
 
 const loginWithGoogle = () => {
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-  url.searchParams.set("client_id", import.meta.env.GOOGLE_CLIENT_ID);
+  url.searchParams.set("client_id", import.meta.env.VITE_GOOGLE_CLIENT_ID);
   url.searchParams.set("redirect_uri", import.meta.env.VITE_GOOGLE_REDIRECT_URI);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid email profile");

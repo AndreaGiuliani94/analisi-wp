@@ -26,7 +26,7 @@ onMounted(async () => {
   if (res.ok) {
     const data = await res.json();
     auth.setAuth(data.access_token, data.user);
-    router.push("/profile");
+    router.push("/workspace/dashboard");
   } else {
     alert("Login fallito");
     router.push("/login");
