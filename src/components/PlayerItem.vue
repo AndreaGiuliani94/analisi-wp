@@ -49,7 +49,7 @@
     </div>
   </div>
 
-  <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
+  <div v-if="settings.enableFouls" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
       :disabled="!canEditMatch(userRole)"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
@@ -73,7 +73,7 @@
       @remove="removeExclution(2)" />
   </div>
 
-  <template v-if="settings.enableShoot">
+  <template v-if="settings.enableShots">
     <div class="inline-flex items-center ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">PARI</div>
       <ShotButton v-if="canEditMatch(userRole)"

@@ -6,7 +6,7 @@
       @click="timerStore.masterBack(settingsStore.periodDuration * 60)"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       ">
       <ArrowUturnLeftIcon :class="['stroke-3', shrink ? 'size-3' : 'size-4' ]" />
     </button>
@@ -16,7 +16,7 @@
       @click="timerStore.masterBack(10)"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       ">
       <BackwardIcon :class="['me-2', shrink ? 'size-3' : 'size-4' ]" />10s
     </button>
@@ -26,14 +26,14 @@
       @click="timerStore.masterBack(1)"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       ">
       <BackwardIcon :class="['me-2', shrink ? 'size-3' : 'size-4' ]" />1s
     </button>
     <button @click="handleStart"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       "
       class="font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center border-4 border-amber-500 text-amber-500 active:text-white active:bg-amber-500 transition-all duration-200 disabled:text-gray-400 disabled:border-gray-400 disabled:bg-gray-200">
       <component :is="timerStore.isTimerRunning ? PauseIcon : PlayIcon" :class="['stroke-3', shrink ? 'size-5 min-w-5 min-h-5' : 'size-5 min-w-7 min-h-7']" />
@@ -44,7 +44,7 @@
       @click="timerStore.masterForward(1)"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       ">
       1s<ForwardIcon :class="['ms-2', shrink ? 'size-3' : 'size-4' ]" />
     </button>
@@ -54,7 +54,7 @@
       @click="timerStore.masterForward(10)"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       ">
       10s<ForwardIcon :class="['ms-2', shrink ? 'size-3' : 'size-4' ]" />
     </button>
@@ -64,7 +64,7 @@
       @click="timerStore.masterForward(settingsStore.periodDuration * 60)"
       :disabled="
         (settingsStore.enableHomePlayersTime && gameStore.activeCount > 7) || 
-        (settingsStore.enableOppPlayersTime && gameStore.activeOppCount > 7)
+        (settingsStore.enableAwayPlayersTime && gameStore.activeOppCount > 7)
       ">
       <ArrowUturnRightIcon :class="['stroke-3', shrink ? 'size-3' : 'size-4' ]" />
     </button>
@@ -93,7 +93,7 @@ const handleStart = async () => {
 
   // 1. BLOCCO CRITICO: Più di 7 giocatori
   if ((settingsStore.enableHomePlayersTime && homeCount > 7) || 
-      (settingsStore.enableOppPlayersTime && awayCount > 7)) {
+      (settingsStore.enableAwayPlayersTime && awayCount > 7)) {
     toast.error("Impossibile iniziare: troppi giocatori in acqua!");
     return; // Ferma l'esecuzione
   }
@@ -102,7 +102,7 @@ const handleStart = async () => {
   if (settingsStore.enableHomePlayersTime && homeCount < 7) {
     toast.warning(`Attenzione: ${gameStore.match.homeTeam.name} ha solo ${homeCount} giocatori attivi.`);
   }
-  if (settingsStore.enableOppPlayersTime && awayCount < 7) {
+  if (settingsStore.enableAwayPlayersTime && awayCount < 7) {
     toast.warning(`Attenzione: ${gameStore.match.awayTeam.name} ha solo ${awayCount} giocatori attivi.`);
   }
 

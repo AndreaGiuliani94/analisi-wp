@@ -186,7 +186,7 @@ export const useGameStore = defineStore("gameStore", {
         enablePlayersTime = settingsStore.enableHomePlayersTime;
       } else {
         el = this.match.awayTeam.players.find((el) => el.number === number);
-        enablePlayersTime = settingsStore.enableOppPlayersTime;
+        enablePlayersTime = settingsStore.enableAwayPlayersTime;
       }
 
       if (!el) return;
@@ -289,7 +289,7 @@ export const useGameStore = defineStore("gameStore", {
 
       if(settingsStore.enableHomePlayersTime)
         updateTeam(this.match.homeTeam);
-      if(settingsStore.enableOppPlayersTime)
+      if(settingsStore.enableAwayPlayersTime)
         updateTeam(this.match.awayTeam);
     },
     async startMatch() {
@@ -1010,7 +1010,7 @@ function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
 
 function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
   this.match.awayTeam = {
-    activatedTimer: settingsStore.enableOppPlayersTime,
+    activatedTimer: settingsStore.enableAwayPlayersTime,
     id: "",
     name: "",
     category: "",
@@ -1030,7 +1030,7 @@ function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
         shotsPenalty: [],
         exclutions: [],
         shotsFaced: [],
-        active: !settingsStore.enableOppPlayersTime,
+        active: !settingsStore.enableAwayPlayersTime,
         isGK: (playerNumber === 1 || playerNumber === 13),
       }
     }),

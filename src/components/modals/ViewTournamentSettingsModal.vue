@@ -15,9 +15,13 @@
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Numero Periodi</p>
             <p class="text-lg font-bold text-blue-950">{{ tournament.default_periods_count }}</p>
           </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Numero Massimo di Giocatori</p>
+            <p class="text-lg font-bold text-blue-950">{{ tournament.max_players }}</p>
+          </div>
           <div class="col-span-2">
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Rigori in caso di pareggio</p>
-            <p class="text-lg font-bold text-blue-950">{{ tournament.allow_ties ? 'Abilitati' : 'Disabilitati' }}</p>
+            <p class="text-lg font-bold text-blue-950">{{ tournament.allow_final_penalties ? 'Abilitati' : 'Disabilitati' }}</p>
           </div>
         </div>
 
@@ -36,16 +40,16 @@
             label="Numero periodi"
             required/>
 
+          <BaseInput
+            id="maxPlayers"
+            type="number"
+            v-model="maxPlayers"
+            label="Numero massimo di giocatori per squadra"
+            required/>
+
+
           <div class="col-span-2 flex items-center gap-2 ml-1">
-            <input 
-              id="enablePenalties" 
-              type="checkbox" 
-              v-model="editedAllowTies"
-              class="size-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 transition-all cursor-pointer"
-            />
-            <label for="enablePenalties" class="text-sm font-semibold text-slate-700 cursor-pointer select-none">
-              Abilita rigori in caso di pareggio
-            </label>
+            <SwitchButton v-model="editedAllowTies" label="Abilita rigori in caso di pareggio" />
           </div>
         </div>
       </Transition>
@@ -110,6 +114,7 @@ import { useTournamentStore } from '@/stores/tournamentStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from 'vue-toastification';
 import { TournamentRole } from '@/enum/RoleType';
+import SwitchButton from '../buttons/SwitchButton.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -126,6 +131,7 @@ const isEditing = ref(false);
 const editedPeriodDuration = ref('08:00');
 const editedPeriodCount = ref('4');
 const editedAllowTies = ref(false);
+const maxPlayers = ref('15');
 const loading = ref(false);
 
 const canEdit = computed(() => {
@@ -146,7 +152,8 @@ watch(() => props.isOpen, (newVal) => {
   if (newVal && props.tournament) {
     editedPeriodDuration.value = formatMsToTimer(props.tournament.default_period_length || 0);
     editedPeriodCount.value = String(props.tournament.default_periods_count || 4);
-    editedAllowTies.value = props.tournament.allow_ties || false;
+    editedAllowTies.value = props.tournament.allow_final_penalties || false;
+    maxPlayers.value = String(props.tournament.max_players || 15);
     isEditing.value = false;
   }
 });
@@ -159,7 +166,8 @@ const handleUpdate = async () => {
     const payload = {
       default_period_length: formatTimerToMs(editedPeriodDuration.value),
       default_periods_count: parseInt(editedPeriodCount.value),
-      allow_ties: editedAllowTies.value
+      allow_final_penalties: editedAllowTies.value,
+      max_players: parseInt(maxPlayers.value)
     };
     
     await tournamentStore.updateTournament(props.tournament.id, payload);

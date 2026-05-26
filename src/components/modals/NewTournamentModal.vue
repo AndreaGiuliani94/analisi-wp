@@ -53,6 +53,15 @@
             label="Numero periodi"
             required/>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <BaseInput
+            id="maxPlayers"
+            type="number"
+            v-model="maxPlayers"
+            label="Numero massimo di giocatori per squadra"
+            required/>
+
+        </div>
 
         <div class="flex items-center gap-2 mt-4 ml-1">
           <input 
@@ -108,13 +117,14 @@ const gender = ref('M')
 const periodDuration = ref('08:00')
 const periodCount = ref('4')
 const enablePenalties = ref(false)
+const maxPlayers = ref('15')
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
 
 const categoryOptions = [
   { label: 'Scegli...', value: '' },
-  ...['U12', 'U14', 'U16', 'U18', 'Senior'].map(cat => ({ label: cat, value: cat }))
+  ...['U12', 'U14', 'U16', 'U18', 'U20', 'Senior'].map(cat => ({ label: cat, value: cat }))
 ]
 
 const genderOptions = [
@@ -141,7 +151,8 @@ const register = async () => {
       gender: gender.value,
       default_period_length: periodDuration.value,
       default_periods_count: parseInt(periodCount.value),
-      allow_ties: enablePenalties.value
+      allow_final_penalties: enablePenalties.value,
+      max_players: maxPlayers.value
     }
     
     await tournamentStore.createNewTournament(payload);

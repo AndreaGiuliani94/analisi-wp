@@ -34,6 +34,17 @@ export const getMatchDetails = async (matchId: string) => {
     return res;
 }
 
+export const getMatchSettings = async (matchId: string) => {
+    const res = await fetch(`${BE_URL}/matches/${matchId}/settings`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+    })
+    return res;
+}
+
 export const getLatestMatches = async (limit?: number) => {
     const query = limit !== undefined ? `?limit=${limit}` : '';
     const res = await fetch(`${BE_URL}/matches/latest${query}`, {

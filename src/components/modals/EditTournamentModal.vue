@@ -79,7 +79,7 @@ const success = ref(false)
 
 const categoryOptions = [
   { label: 'Scegli...', value: '' },
-  ...['U12', 'U14', 'U16', 'U18', 'Senior'].map(cat => ({ label: cat, value: cat }))
+  ...['U12', 'U14', 'U16', 'U18', 'U20', 'Senior'].map(cat => ({ label: cat, value: cat }))
 ]
 
 const genderOptions = [

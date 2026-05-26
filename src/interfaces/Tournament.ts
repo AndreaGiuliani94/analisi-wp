@@ -13,7 +13,8 @@ export interface Tournament {
     participants: TournamentParticipant[]; // Array di oggetti utente associati al torneo
     default_period_length: number; // Durata di un periodo in millisecondi
     default_periods_count: number; // Numero di periodi
-    allow_ties: boolean; // Indica se sono abilitati i rigori in caso di pareggio
+    allow_final_penalties: boolean; // Indica se sono abilitati i rigori in caso di pareggio
+    max_players: number; // Numero massimo di giocatori per squadra
     // Aggiungi qui altre proprietà se presenti nella risposta del backend
 }
 

@@ -138,7 +138,7 @@ export function formatDateTime(dateStr: string) {
 export function resetTeam (team: Team, isHome: boolean) {
   team.category = '';
   team.id = '';
-  team.activatedTimer = isHome ? useSettingsStore().enableHomePlayersTime : useSettingsStore().enableOppPlayersTime;
+  team.activatedTimer = isHome ? useSettingsStore().enableHomePlayersTime : useSettingsStore().enableAwayPlayersTime;
   team.name = '';
   team.score = 0;
   team.timeOut1 = false;

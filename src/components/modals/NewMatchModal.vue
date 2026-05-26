@@ -9,7 +9,7 @@
         class="w-full"
         id="name"
         v-model="name"
-        :placeholder="settingsStore.homeTeamName + ' - ...'"
+        :placeholder="useAuthStore().user?.organization?.name + ' - ...'"
         label="Nome partita"
         required/>
 
@@ -62,6 +62,7 @@ import { createNewMatch } from '@/services/matchService';
 import { useSettingsStore } from '@/stores/settingsStore';
 import BaseModal from './BaseModal.vue';
 import TournamentListbox from '../listbox/TournamentListbox.vue';
+import { useAuthStore } from '@/stores/authStore.ts';
 
 const props = defineProps({
   isOpen: Boolean,

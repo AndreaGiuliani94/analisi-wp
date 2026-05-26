@@ -13,7 +13,7 @@ import type { MatchPeriod } from '@/enum/MatchPeriod'
 import { matchPeriodToNumber } from '@/const/consts'
 import type { MatchStatus } from '@/enum/MatchStatus'
 import { getLiveEvents, getLiveMatchDetails } from '@/services/publicService'
-import { getMatchDetails, joinMatch } from '@/services/matchService'
+import { getMatchDetails, getMatchSettings, joinMatch } from '@/services/matchService'
 import { getEvents } from '@/services/eventService'
 import type { MatchRole } from '@/enum/RoleType'
 
@@ -43,6 +43,7 @@ export const useMatchStateStore = defineStore('matchState', {
             localStorage.setItem("match_id", matchId);
 
             await this.getMatchDetails();
+            await this.getMatchSettings();
             await this.getEvents();
 
             const data ={
@@ -67,6 +68,26 @@ export const useMatchStateStore = defineStore('matchState', {
                 // Qui puoi gestire un toast di errore
             }
             
+        },
+
+        async getMatchSettings() {
+            try {
+                const res = await getMatchSettings(this.matchId);
+                const dbMatch = await res.json();
+                const settingsStore = useSettingsStore();
+                settingsStore.updateSettings({
+                    periodDuration: dbMatch.default_period_length,
+                    totalPeriods: dbMatch.default_periods_count,
+                    enableFouls: dbMatch.enable_fouls,
+                    enableShots: dbMatch.enable_shots,
+                    enableAwayPlayersTime: dbMatch.enable_away_players_timer,
+                    enableHomePlayersTime: dbMatch.enable_home_players_timer,
+                    maxPlayers: dbMatch.max_players,
+                    allowFinalPenalties: dbMatch.allow_final_penalties
+                });
+            } catch (error) {
+                console.error("Errore durante il recupero delle impostazioni del match:", error);
+            }
         },
 
         async getEvents() {
@@ -155,14 +176,14 @@ export const useMatchStateStore = defineStore('matchState', {
                     name: (dbMatch.away_team) ? dbMatch.away_team.club_name : '',
                     id: (dbMatch.away_team) ? dbMatch.away_team.id : (dbMatch.away_team_id ? dbMatch.away_team_id : ''),
                     category: (dbMatch.away_team) ? dbMatch.away_team.category : '',
-                    activatedTimer: settings.enableOppPlayersTime,
+                    activatedTimer: settings.enableAwayPlayersTime,
                     score: 0,
                     timeOut1: dbMatch.away_timeouts == 1,
                     timeOut2: dbMatch.away_timeouts == 2,
                     players: padRosterToMax(
                         mappedAwayPlayers, 
                         settings.maxPlayers, 
-                        settings.enableOppPlayersTime
+                        settings.enableAwayPlayersTime
                     )
                 }
             };

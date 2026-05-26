@@ -70,7 +70,7 @@
         <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 flex flex-col">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-blue-950">Utenti Associati ({{ tournament.participants?.length || 0 }})</h2>
-            <ActionButton 
+            <ActionButton v-if="usePermissions().canManageTournament(userTournamentRole)"
               label="Aggiungi Utente" 
               :icon="UserPlusIcon" 
               color="green"
@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTournamentStore } from '@/stores/tournamentStore'
 import ActionButton from '@/components/buttons/ActionButton.vue'
@@ -147,6 +147,8 @@ import { PlusIcon, PencilIcon, Cog6ToothIcon, ArrowRightIcon, UserCircleIcon, Ex
 import { formatDateTime } from '@/utils/utils'
 import type { Tournament } from '@/interfaces/Tournament' // Assicurati che l'interfaccia sia definita
 import RoleBadge from '@/components/badges/RoleBadge.vue'
+import { usePermissions } from '@/composables/usePermissions'
+import { useAuthStore } from '@/stores/authStore'
 
 const route = useRoute()
 const tournamentStore = useTournamentStore()
@@ -157,6 +159,14 @@ const showEditModal = ref(false)
 const showCreateMatchModal = ref(false)
 const showAddUserModal = ref(false)
 const showSettingsModal = ref(false)
+
+const userTournamentRole = computed(() => {
+  if (!tournament.value) return null
+  const authStore = useAuthStore()
+  const currentUserId = authStore.user?.id
+  const participant = tournament.value.participants?.find(p => p.user_id === currentUserId)
+  return participant ? participant.role : null
+})
 
 const fetchTournamentDetails = async () => {
   loading.value = true

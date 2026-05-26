@@ -36,7 +36,8 @@
                 </h1>
             </div>
 
-            <div class="absolute top-4 right-4">
+            <div v-if="usePermissions().canEditMatch(userRole)" 
+              class="absolute top-4 right-4">
               <ActionButton v-if="!match.isLive"
                 color="green"
                 :icon="SignalIcon"
@@ -116,6 +117,46 @@
           <div v-if="isTimerMaster" class="pt-2 transition-all duration-300 overflow-hidden" >
                <!-- :class="isShrinked ? 'max-h-16 opacity-90 scale-95 origin-top' : 'max-h-32 opacity-100'"> -->
             <ClockManager :shrink="isShrinked" />
+          </div>
+        </div>
+        <div v-else 
+          class="sticky bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border transition-all duration-300 z-50"
+          :class="[isShrinked ? 'shadow-xl border-slate-300 top-2' : 'border-transparent top-0']">
+      
+          <div class="grid grid-cols-3 items-center">
+            <!-- Sinistra: Toggle della Modalità -->
+            <div class="flex justify-start">
+            </div>
+      
+            <!-- Centro: Cronometro -->
+            <div class="flex flex-col items-center justify-center">
+              <div class="font-black tabular-nums text-blue-950 leading-none transition-all duration-300"
+                :class="isShrinked ? 'text-5xl' : 'text-6xl'">
+                {{ formattedTime }}
+              </div>
+            </div>
+      
+            <!-- Destra: Area Azioni Dinamica -->
+            <div class="flex justify-end items-center">
+              <!-- Stato Rimpicciolito: Mostra badge punteggio e controlli rapidi -->
+              <div v-if="isShrinked" class="flex flex-col items-center gap-1.5 duration-300">
+                <MatchBadgeScore
+                  :home-team="{ name: match.homeTeam.name, score: match.homeTeam.score, category: match.homeTeam.category }"
+                  :away-team="{ name: match.awayTeam.name, score: match.awayTeam.score, category: match.awayTeam.category }"
+                />
+                <div class="flex items-center gap-2">
+                  <PartialsItem
+                    :text-size="'text-sm'"
+                    :currentPeriod="currentPeriod"
+                    :home-score="match.homeTeam.score"
+                    :away-score="match.awayTeam.score"
+                    :partials="partials"
+                    :penalty-partial="penaltyPartial"
+                    :status="match.status"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
     </div>
