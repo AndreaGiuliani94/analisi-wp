@@ -8,7 +8,7 @@
                     {{ player.number }}.
                 </div>
                 <div class="font-bold">{{ player.name }}</div>
-                <div class="text-sm text-gray-600 flex gap-3 ml-2 border-l border-blue-200 pl-3">
+                <div v-if="team.activatedTimer" class="text-sm text-gray-600 flex gap-3 ml-2 border-l border-blue-200 pl-3">
                     <span>{{isModal ? 'In: ' : 'Dentro: '}}<strong class="font-mono text-blue-950">{{ useTimeFormat().formatMsToTimer(player.activeTime) }}</strong></span>
                     <span>{{isModal ? 'Out: ' : 'Fouri: '}}<strong class="font-mono text-blue-950">{{ useTimeFormat().formatMsToTimer(player.benchTime) }}</strong></span>
                 </div>

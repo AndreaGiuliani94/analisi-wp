@@ -1,23 +1,23 @@
 <template>
     <div class="inline-flex items-stretch  rounded-full overflow-hidden " :class="{
         'bg-gray-100': (theme === 'light'),
-        'bg-blue-950': (theme === 'dark')
+        'bg-blue-800': (theme === 'dark')
     }">
 
         <!-- Sigla Casa -->
         <div class="px-2 py-1 text-xs font-bold w-11 text-center tracking-wider truncate rounded-s-full border-y border-l flex items-center justify-center"
             :class="{
                 'border-gray-200 text-blue-950': (theme === 'light'),
-                'border-blue-950 text-white': (theme === 'dark')
+                'border-blue-800 text-white': (theme === 'dark')
         }">
             {{ abbreviations.home }}
         </div>
 
         <!-- Punteggio -->
         <div
-            class="px-3 py-1  font-black text-sm min-w-14 text-center border-y border-blue-950 flex items-center justify-center":class="{
+            class="px-3 py-1  font-black text-sm min-w-14 text-center border-y flex items-center justify-center":class="{
                 'border-blue-950 bg-blue-950 text-white': (theme === 'light'),
-                'border-gray-200 text-blue-950 bg-gray-100': (theme === 'dark')
+                'border-gray-100 text-blue-950 bg-gray-100': (theme === 'dark')
         }">
             {{ homeTeam.score ?? 0 }} - {{ awayTeam.score ?? 0 }}
         </div>
@@ -27,7 +27,7 @@
             class="px-2 py-1 text-xs font-bold w-11 text-center tracking-wider truncate border-y border-r flex items-center justify-center"
             :class="{
                 'border-gray-200 text-blue-950': (theme === 'light'),
-                'border-blue-950 text-white': (theme === 'dark')
+                'border-blue-800 text-white': (theme === 'dark')
         }">
             {{ abbreviations.away }}
         </div>

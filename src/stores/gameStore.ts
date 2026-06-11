@@ -29,6 +29,8 @@ export const useGameStore = defineStore("gameStore", {
       subsTimeoutId: null as any,
       events: [] as MatchEvent[],
       match: {} as Match,
+      highlightedPlayerId: null as string | null,
+      highlightTimeoutId: null as any,
     };
   },
   getters: {
@@ -37,9 +39,9 @@ export const useGameStore = defineStore("gameStore", {
     actualOpponents: (state) =>
       state.match.awayTeam?.players.filter((player) => player.name.length > 0),
     activeOppCount: (state) =>
-      state.match.awayTeam?.players.filter((player) => player.active).length,
+      state.match.awayTeam?.players.filter((player) => player.name.length > 0 && player.active ).length || 0,
     activeCount: (state) =>
-      state.match.homeTeam?.players.filter((player) => player.active).length,
+      state.match.homeTeam?.players.filter((player) => player.name.length > 0 && player.active ).length || 0,
     partials: (state) => {
       const partials = Array.from({ length: 4 }, (_, i) => ({
         home: 0,
@@ -183,10 +185,10 @@ export const useGameStore = defineStore("gameStore", {
       let enablePlayersTime
       if (team === 0) {
         el = this.match.homeTeam.players.find((el) => el.number === number);
-        enablePlayersTime = settingsStore.enableHomePlayersTime;
+        enablePlayersTime = settingsStore.enableHomePlayersTime || settingsStore.enableSubstitutions;
       } else {
         el = this.match.awayTeam.players.find((el) => el.number === number);
-        enablePlayersTime = settingsStore.enableAwayPlayersTime;
+        enablePlayersTime = settingsStore.enableAwayPlayersTime || settingsStore.enableSubstitutions;
       }
 
       if (!el) return;
@@ -195,7 +197,12 @@ export const useGameStore = defineStore("gameStore", {
 
       if (isAttemptingToActivate) {
         // 2. Controlli pre-attivazione
-        const currentActiveCount = this.match.homeTeam.players.filter(p => p.active).length;
+        let currentActiveCount;
+        if (team === 0) {
+          currentActiveCount = this.activeCount;
+        } else {
+          currentActiveCount = this.activeOppCount;
+        }
         
         // Controllo espulsioni definitive
         if (this.isOut(el)) {
@@ -218,9 +225,13 @@ export const useGameStore = defineStore("gameStore", {
       }
       
     },
-    togglePlayerActive(player: any) {
+    togglePlayerActive(player: any, isForced = false, forcedState = false) {
       // 1. OPTIMISTIC UI: Aggiorniamo istantaneamente la grafica
-      player.active = !player.active;
+      if(isForced) {
+        player.active = forcedState;
+      } else { 
+        player.active = !player.active;
+      }
       
       // Il cambio azzera sempre il tempo effettivo in vasca dell'ultimo "shift"
       player.actualTime = 0; 
@@ -438,7 +449,7 @@ export const useGameStore = defineStore("gameStore", {
     },
     async removeShotEvent(player: Player) {
       const index = this.events.findLastIndex( event =>
-          event.player.id === player.id && event.eventType === MatchEventType.SHOT
+          event.player?.id === player.id && event.eventType === MatchEventType.SHOT
       );
       if (index !== -1) {
         // 1. Estrapoliamo l'ID dell'evento generato dal DB
@@ -461,6 +472,32 @@ export const useGameStore = defineStore("gameStore", {
           }
         } else {
           console.warn("Impossibile eliminare a DB: Evento sprovvisto di ID");
+        }
+      }
+    },
+    async removeTimeOutEvent(teamName: string) {
+      const timerStore = useTimerStore();
+      const teamId = teamName === this.match.homeTeam.name ? this.match.homeTeam.id : this.match.awayTeam.id;
+      const index = this.events.findLastIndex( event =>
+          event.teamId === teamId &&
+          event.eventType === MatchEventType.TIME_OUT &&
+          event.quarter === timerStore.currentPeriod // Assumiamo che il timeout sia sempre nel periodo corrente
+      );
+      
+      if (index !== -1) {
+        const eventId = this.events[index].id;
+
+        // Optimistic UI: Rimuoviamo istantaneamente dalla UI
+        this.events.splice(index, 1);
+
+        // Chiamata al BE
+        if (eventId) {
+          try {
+            await deleteMatchEvent(eventId, useMatchStateStore().clientId); 
+          } catch (error) {
+            console.error("Errore durante l'eliminazione del timeout:", error);
+            useToast().error("Impossibile eliminare il timeout sul server!");
+          }
         }
       }
     },
@@ -572,7 +609,7 @@ export const useGameStore = defineStore("gameStore", {
       // Troviamo l'evento esatto nella cronaca
       const eventToRemove = this.events.find(
         (e: MatchEvent) => 
-          e.player.id === player.id &&
+          e.player?.id === player.id &&
           e.eventType === MatchEventType.FOUL &&
           e.quarter === excl.quarter &&
           e.time === excl.time
@@ -592,24 +629,21 @@ export const useGameStore = defineStore("gameStore", {
           }
       }
     },
-    async addTimeOut(number: number, team: string) {
-      number === 1
-        ? team === "HOME"
-          ? (this.match.homeTeam.timeOut1 = true)
-          : (this.match.awayTeam.timeOut1 = true)
-        : team === "HOME"
-          ? (this.match.homeTeam.timeOut2 = true)
-          : (this.match.awayTeam.timeOut2 = true);
-    },
     async toggleTimeOut(number: number, team: string) {
-      if (team === "HOME") {
-        number === 1
-          ? (this.match.homeTeam.timeOut1 = !this.match.homeTeam.timeOut1)
-          : (this.match.homeTeam.timeOut2 = !this.match.homeTeam.timeOut2);
+      const currentTeam = team === "HOME" ? this.match.homeTeam : this.match.awayTeam;
+
+      const isAdding = number === 1 ? !currentTeam.timeOut1 : !currentTeam.timeOut2;
+
+      if (number === 1) currentTeam.timeOut1 = isAdding;
+      else currentTeam.timeOut2 = isAdding;
+
+      if (isAdding) {
+        await this.saveEvent({
+          eventType: MatchEventType.TIME_OUT,
+          currentTeam: currentTeam
+        });
       } else {
-        number === 1
-          ? (this.match.awayTeam.timeOut1 = !this.match.awayTeam.timeOut1)
-          : (this.match.awayTeam.timeOut2 = !this.match.awayTeam.timeOut2);
+        await this.removeTimeOutEvent(currentTeam.name);
       }
     },
     getAllPlayerShots(player: Player, quarter: number | null) {
@@ -637,7 +671,7 @@ export const useGameStore = defineStore("gameStore", {
     async saveEvent(payload: {
       eventType: MatchEventType;
       currentTeam: Team;
-      player: Player;
+      player?: Player;
       details?: {
         // Tiri
         shotCategory?: ShotCategory;
@@ -661,6 +695,7 @@ export const useGameStore = defineStore("gameStore", {
         player: payload.player,
         homeScore: this.match.homeTeam.score,
         awayScore: this.match.awayTeam.score,
+        teamId: payload.currentTeam.id,
 
         // Info Database
         matchId: this.match.id,
@@ -1001,7 +1036,7 @@ function initializeHomeTeam(this: any, settingsStore: SettingsStore) {
         shotsPenalty: [],
         exclutions: [],
         shotsFaced: [],
-        active: !settingsStore.enableHomePlayersTime,
+        active: !(settingsStore.enableHomePlayersTime || settingsStore.enableSubstitutions),
         isGK: (playerNumber === 1 || playerNumber === 13),
       }
     }),
@@ -1030,7 +1065,7 @@ function initializeAwayTeam(this: any, settingsStore: SettingsStore) {
         shotsPenalty: [],
         exclutions: [],
         shotsFaced: [],
-        active: !settingsStore.enableAwayPlayersTime,
+        active: !(settingsStore.enableAwayPlayersTime || settingsStore.enableSubstitutions),
         isGK: (playerNumber === 1 || playerNumber === 13),
       }
     }),

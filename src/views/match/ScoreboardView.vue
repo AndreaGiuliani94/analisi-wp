@@ -55,7 +55,7 @@
 
   <EndMatchModal 
     :isOpen="isEndMatchModalOpen"
-    :hide-penalties="timerStore.currentPeriod === matchPeriodToNumber[MatchPeriod.PENALTIES]"
+    :hide-penalties="timerStore.currentPeriod === matchPeriodToNumber[MatchPeriod.PENALTIES] || !settingsStore.allowFinalPenalties"
     @close="isEndMatchModalOpen = false"
     @confirmEnd="handleConfirmEnd"
     @goToPenalties="handleGoToPenalties"
@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/gameStore';
-import { onMounted, onUnmounted, ref, toRef, computed } from 'vue';
+import { onMounted, onUnmounted, ref, toRef, computed, watch } from 'vue';
 import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import type { Team } from '@/interfaces/Team';
 import TeamItem from '@/components/TeamItem.vue';
@@ -90,10 +90,12 @@ import { MatchEventType } from "@/enum/MatchEventDescription";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { MatchStatus } from '@/enum/MatchStatus';
 import { useMatchStateStore } from '@/stores/matchStateStore';
-import { usePermissions } from '@/composables/usePermissions';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { FoulType } from '@/enum/ExclutionDescription';
 
 const gameStore = useGameStore()
 const timerStore = useTimerStore()
+const settingsStore = useSettingsStore();
 
 const isShrinked = ref(false)
 const isEndMatchModalOpen = ref(false)
@@ -115,6 +117,31 @@ const updateScroll = () => {
   const scrollThreshold = 100 
   isShrinked.value = window.scrollY > scrollThreshold
 }
+
+/**
+ * Monitora i nuovi eventi per evidenziare il giocatore in caso di fallo grave
+ */
+watch(() => gameStore.events.length, (newLength, oldLength) => {
+  // Interrompiamo sempre l'animazione del giocatore all'arrivo di un nuovo evento
+  if (gameStore.highlightTimeoutId) {
+    clearTimeout(gameStore.highlightTimeoutId);
+    gameStore.highlightTimeoutId = null;
+  }
+  gameStore.highlightedPlayerId = null;
+
+  if (newLength <= oldLength) return;
+
+  const lastEvent = gameStore.events[newLength - 1];
+
+  if (lastEvent.eventType === MatchEventType.FOUL) {
+    if (lastEvent.playerId && (lastEvent.foulType === FoulType.EXCL || lastEvent.foulType === FoulType.PEN)) {
+      gameStore.highlightedPlayerId = lastEvent.playerId;
+      gameStore.highlightTimeoutId = setTimeout(() => {
+        gameStore.highlightedPlayerId = null;
+      }, 18000);
+    }
+  }
+});
 
 const toggleTimeOut = (payload : { number: number, teamName: string}) => {
   gameStore.toggleTimeOut(payload.number, payload.teamName);

@@ -6,14 +6,14 @@ import { useSettingsStore } from './settingsStore'
 import type { Team } from '@/interfaces/Team';
 import type { Player } from '@/interfaces/Player';
 import { MatchEventType } from '@/enum/MatchEventDescription';
-import { ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
+import { ShotOutcome } from '@/enum/ShotDescription';
 import { convertDbEventToUI } from '@/utils/converter';
 import { useTimerStore } from './timerStore'
 import type { MatchPeriod } from '@/enum/MatchPeriod'
 import { matchPeriodToNumber } from '@/const/consts'
 import type { MatchStatus } from '@/enum/MatchStatus'
 import { getLiveEvents, getLiveMatchDetails } from '@/services/publicService'
-import { getMatchDetails, getMatchSettings, joinMatch } from '@/services/matchService'
+import { getMatchDetails, getMatchSettings, joinMatch, updateMatchSettings } from '@/services/matchService'
 import { getEvents } from '@/services/eventService'
 import type { MatchRole } from '@/enum/RoleType'
 
@@ -42,15 +42,10 @@ export const useMatchStateStore = defineStore('matchState', {
             this.matchId = matchId;
             localStorage.setItem("match_id", matchId);
 
-            await this.getMatchDetails();
             await this.getMatchSettings();
+            await this.getMatchDetails();
             await this.getEvents();
 
-            const data ={
-                user_role: 'owner'
-            }// TODO: Sostituire con il ruolo reale recuperato dal BE
-            localStorage.setItem("user_role", data.user_role);
-            useTimerStore().setTimerMaster(data);
         },
 
         async getMatchDetails() {
@@ -58,6 +53,10 @@ export const useMatchStateStore = defineStore('matchState', {
                 // 1. Chiamata al BE per recuperare la partita
                 const res = await getMatchDetails(this.matchId);
                 const dbMatch = await res.json();
+                
+                this.userRole = dbMatch.user_role as MatchRole;
+                localStorage.setItem("user_role", this.userRole);
+                useTimerStore().setTimerMaster(this.userRole);
                 
                 this._processMatchDetails(dbMatch, false);
 
@@ -76,17 +75,69 @@ export const useMatchStateStore = defineStore('matchState', {
                 const dbMatch = await res.json();
                 const settingsStore = useSettingsStore();
                 settingsStore.updateSettings({
-                    periodDuration: dbMatch.default_period_length,
-                    totalPeriods: dbMatch.default_periods_count,
-                    enableFouls: dbMatch.enable_fouls,
-                    enableShots: dbMatch.enable_shots,
-                    enableAwayPlayersTime: dbMatch.enable_away_players_timer,
-                    enableHomePlayersTime: dbMatch.enable_home_players_timer,
-                    maxPlayers: dbMatch.max_players,
-                    allowFinalPenalties: dbMatch.allow_final_penalties
+                    periodDuration: dbMatch.default_period_length ?? settingsStore.periodDuration,
+                    totalPeriods: dbMatch.default_periods_count ?? settingsStore.totalPeriods,
+                    enableFouls: dbMatch.enable_fouls ?? settingsStore.enableFouls,
+                    enableShots: dbMatch.enable_shots ?? settingsStore.enableShots,
+                    enableAwayPlayersTime: dbMatch.enable_away_players_timer ?? settingsStore.enableAwayPlayersTime,
+                    enableHomePlayersTime: dbMatch.enable_home_players_timer ?? settingsStore.enableHomePlayersTime,
+                    maxPlayers: dbMatch.max_players ?? settingsStore.maxPlayers,
+                    allowFinalPenalties: dbMatch.allow_final_penalties ?? settingsStore.allowFinalPenalties,
+                    enableSubstitutions: dbMatch.enable_substitutions ?? settingsStore.enableSubstitutions,
+                    enableTimekeeping: dbMatch.enable_timekeeping ?? settingsStore.enableTimekeeping
                 });
             } catch (error) {
                 console.error("Errore durante il recupero delle impostazioni del match:", error);
+            }
+        },
+
+        /**
+         * Invia le impostazioni correnti al backend per salvarle su DB.
+         */
+        async updateMatchSettings() {
+            try {
+                const settingsStore = useSettingsStore();
+                const gameStore = useGameStore();
+                
+                const payload = {
+                    enable_fouls: settingsStore.enableFouls,
+                    enable_shots: settingsStore.enableShots,
+                    enable_home_players_timer: settingsStore.enableHomePlayersTime,
+                    enable_away_players_timer: settingsStore.enableAwayPlayersTime,
+                    enable_substitutions: settingsStore.enableSubstitutions,
+                    enable_timekeeping: settingsStore.enableTimekeeping
+                };
+
+                await updateMatchSettings(this.matchId, payload);
+
+                // Sincronizza la proprietà activatedTimer nel gameStore dopo il salvataggio con successo
+                if (gameStore.match.homeTeam) {
+                    gameStore.match.homeTeam.activatedTimer = settingsStore.enableHomePlayersTime;
+                    if (!settingsStore.enableHomePlayersTime && !settingsStore.enableSubstitutions) {
+                        gameStore.actualPlayers.forEach((p: Player) => {
+                            gameStore.togglePlayerActive(p, true, true);
+                        });
+                    } else {
+                        gameStore.actualPlayers.forEach((p: Player) => {
+                            gameStore.togglePlayerActive(p, true, false);
+                        });
+                    }
+                }
+                if (gameStore.match.awayTeam) {
+                    gameStore.match.awayTeam.activatedTimer = settingsStore.enableAwayPlayersTime;
+                    if (!settingsStore.enableAwayPlayersTime && !settingsStore.enableSubstitutions) {
+                        gameStore.actualOpponents.forEach((p: Player) => {
+                            gameStore.togglePlayerActive(p, true, true);
+                        });
+                    } else {
+                        gameStore.actualOpponents.forEach((p: Player) => {
+                            gameStore.togglePlayerActive(p, true, false);
+                        });
+                    }
+                }
+
+            } catch (error) {
+                throw new Error("Impossibile salvare le impostazioni sul server.");
             }
         },
 
@@ -104,6 +155,7 @@ export const useMatchStateStore = defineStore('matchState', {
             this.matchId = matchId;
             localStorage.setItem("match_id", matchId);
             
+            await this.getMatchSettings();
             await this.getLiveMatchDetails();
             await this.getLiveEvents();
         },
@@ -149,7 +201,6 @@ export const useMatchStateStore = defineStore('matchState', {
             timerStore.currentPeriod = matchPeriodToNumber[dbMatch.current_period as MatchPeriod]
             timerStore.countdown = dbMatch.current_time
             timerStore.isTimerRunning = dbMatch.is_timer_running
-            this.userRole = dbMatch.user_role as MatchRole;
 
             const mappedHomePlayers = dbMatch.home_players.map(mapPlayerToFE);
             const mappedAwayPlayers = dbMatch.away_players.map(mapPlayerToFE);
@@ -169,7 +220,7 @@ export const useMatchStateStore = defineStore('matchState', {
                     players: padRosterToMax(
                         mappedHomePlayers, 
                         settings.maxPlayers, 
-                        settings.enableHomePlayersTime
+                        settings.enableHomePlayersTime || settings.enableSubstitutions
                     )
                 },
                 awayTeam: {
@@ -183,7 +234,7 @@ export const useMatchStateStore = defineStore('matchState', {
                     players: padRosterToMax(
                         mappedAwayPlayers, 
                         settings.maxPlayers, 
-                        settings.enableAwayPlayersTime
+                        settings.enableAwayPlayersTime || settings.enableSubstitutions
                     )
                 }
             };
@@ -202,14 +253,6 @@ export const useMatchStateStore = defineStore('matchState', {
             gameStore.match.homeTeam.score = 0;
             gameStore.match.awayTeam.score = 0;
             gameStore.events = [];
-
-            const clearTeamStats = (team: Team, isHome: boolean) => {
-                team.players.forEach((p: Player) => {
-                    p.active = p.active ? p.active : !isHome;
-                });
-            };
-            clearTeamStats(gameStore.match.homeTeam, true);
-            clearTeamStats(gameStore.match.awayTeam, false);
             
             const sortedEvents = eventsData.sort((a: { quarter: number; time: number }, b: { quarter: number; time: number }) => {
                 if (a.quarter !== b.quarter) return a.quarter - b.quarter;
@@ -221,21 +264,24 @@ export const useMatchStateStore = defineStore('matchState', {
 
             for (const beEvent of sortedEvents) {
                 let isHome = true;
-                let player = gameStore.match.homeTeam.players.find((p: any) => p.id === beEvent.player_id);
-                
-                if (!player) {
-                    player = gameStore.match.awayTeam.players.find((p: any) => p.id === beEvent.player_id);
-                    isHome = false;
-                }
 
-                if (!player) {
-                    console.warn(`Giocatore ID ${beEvent.player_id} non trovato nel Match! Salto l'evento.`);
-                    continue;
-                }
+                if (beEvent.event_category === MatchEventType.SHOT || beEvent.event_category === MatchEventType.FOUL) {
+                    let player = gameStore.match.homeTeam.players.find((p: any) => p.id === beEvent.player_id);
+                    
+                    if (!player) {
+                        player = gameStore.match.awayTeam.players.find((p: any) => p.id === beEvent.player_id);
+                        isHome = false;
+                    }
 
-                if (beEvent.event_category === MatchEventType.SHOT && beEvent.shot_outcome === ShotOutcome.GOAL) {
-                    if (isHome) currentHomeScore++;
-                    else currentAwayScore++;
+                    if (!player) {
+                        console.warn(`Giocatore ID ${beEvent.player_id} non trovato nel Match! Salto l'evento.`);
+                        continue;
+                    }
+
+                    if (beEvent.event_category === MatchEventType.SHOT && beEvent.shot_outcome === ShotOutcome.GOAL) {
+                        if (isHome) currentHomeScore++;
+                        else currentAwayScore++;
+                    }
                 }
 
                 const currentMatchData = { homeScore: currentHomeScore, awayScore: currentAwayScore };
@@ -243,6 +289,14 @@ export const useMatchStateStore = defineStore('matchState', {
                 
                 if (uiEvent) {
                     gameStore.events.push(uiEvent);
+                }
+
+                if (uiEvent && uiEvent.eventType === MatchEventType.TIME_OUT) {
+                    if (uiEvent.team === gameStore.match.homeTeam.name) {
+                        gameStore.match.homeTeam.timeOut1 === false ? gameStore.match.homeTeam.timeOut1 = true : gameStore.match.homeTeam.timeOut2 = true;
+                    } else if (uiEvent.team === gameStore.match.awayTeam.name) {
+                        gameStore.match.awayTeam.timeOut1 === false ? gameStore.match.awayTeam.timeOut1 = true : gameStore.match.awayTeam.timeOut2 = true;
+                    }
                 }
             }
 

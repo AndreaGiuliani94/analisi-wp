@@ -25,10 +25,26 @@
 
     <!-- Timer & Parziali (solo quando non ridotto) -->
     <div v-if="!isShrinked" class="p-6 flex flex-row items-center justify-around gap-8 bg-slate-50">
-      <div class="flex flex-col items-center">
+      <template v-if="!settingsStore.enableTimekeeping">
+        <div class="flex flex-col items-center">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Periodo di gioco</span>
+          <div class="text-4xl md:text-5xl font-black tabular-nums text-blue-950 tracking-tighter">{{ currentPeriod }}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <TimerPulseIndicator :is-running="timerStore.isTimerRunning" size="md" />
+          <div class="text-base md:text-lg font-black tabular-nums text-blue-950 tracking-tighter uppercase">{{ timerStore.isTimerRunning ? 'Now playing...' : 'Paused' }}</div>
+        </div>
+      </template>
+      <div v-else
+        class="flex flex-col items-center"
+      >
         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tempo di gioco</span>
-        <div class="text-4xl md:text-5xl font-black tabular-nums text-blue-950 tracking-tighter">{{ formattedTime }}</div>
+        <div class="flex items-center gap-2 mb-1">
+          <TimerPulseIndicator :is-running="timerStore.isTimerRunning" size="md" />
+          <div class="text-4xl md:text-5xl font-black tabular-nums text-blue-950 tracking-tighter">{{ formattedTime }}</div>
+        </div>
       </div>
+
       <div class="flex flex-col items-center">
         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Parziali</span>
         <PartialsItem
@@ -53,13 +69,26 @@
 
     <!-- Header Ridotto (quando isShrinked è true) -->
     <div v-else class="bg-linear-to-br from-blue-950 to-blue-800 backdrop-blur-md p-2 rounded-lg shadow-lg mb-0.5 transition-all duration-300 grid grid-cols-3 items-center text-white">
-      <!-- Nome Squadra Casa -->
+      <!-- Timer / Periodo -->
       <div class="flex gap-4 items-center justify-center">
-          <div class="text-xl font-bold tabular-nums">{{ formattedTime }}</div>
+        <div v-if="settingsStore.enableTimekeeping" 
+          class="text-xl text-white font-bold tabular-nums flex items-center gap-2 transition-colors duration-500"
+        >
+          <div class="flex items-center gap-2 mb-1">
+            <TimerPulseIndicator :is-running="timerStore.isTimerRunning" size="sm" />
+            {{ formattedTime }}
+          </div>
+        </div>
+        <div v-else class="text-xl font-bold tabular-nums">
+          <div class="flex items-center gap-2 mb-1">
+            <TimerPulseIndicator :is-running="timerStore.isTimerRunning" size="sm" />
+            {{ currentPeriod }} T
+          </div>
+        </div>
       </div>
 
       <!-- Punteggio, Timer, Periodo -->
-      <div class="flex items-center flex-col justify-center gap-3">
+      <div class="flex items-center flex-col justify-center gap-1">
         <MatchBadgeScore
             :theme="'dark'"
             :home-team="{ name: homeTeam?.name, score: homeTeam?.score, category: homeTeam?.category }"
@@ -91,6 +120,9 @@ import PenaltySummary from '@/components/match/PenaltySummary.vue';
 import { MatchPeriod } from '@/enum/MatchPeriod';
 import { matchPeriodToNumber } from '@/const/consts';
 import type { MatchStatus } from '@/enum/MatchStatus';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useTimerStore } from '@/stores/timerStore';
+import TimerPulseIndicator from '../TimerPulseIndicator.vue';
 
 
 interface TeamData {
@@ -113,4 +145,7 @@ defineProps<{
 }>();
 
 const penaltyPeriodNumber = matchPeriodToNumber[MatchPeriod.PENALTIES];
+
+const settingsStore = useSettingsStore();
+const timerStore = useTimerStore();
 </script>

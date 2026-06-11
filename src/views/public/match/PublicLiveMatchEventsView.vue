@@ -73,8 +73,8 @@
                         </td>
                         
                         <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="font-bold mr-1">{{ event.player.number }}.</span>
-                            <span class="font-medium">{{ event.player.name }}</span>
+                            <span class="font-bold mr-1">{{ event.player?.number }}.</span>
+                            <span class="font-medium">{{ event.player?.name }}</span>
                         </td>
                         
                         <td class="px-4 py-3">

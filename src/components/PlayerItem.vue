@@ -1,27 +1,15 @@
 <template>
-  <div :class="[
-    player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
-  ]"
+  <div   
+    :class="[
+      player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
+      gameStore.highlightedPlayerId === player.id ? 'animate-foul-alert ring-4 ring-red-500 z-20' : ''
+    ]"
     class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg select-none"
     @click.stop="handleClick(team.name == gameStore.match?.homeTeam.name ? 0 : 1)" 
-    @mousedown="startHold" 
-    @mouseup="stopHold" 
-    @touchstart.passive="startHold" 
-    @touchend="stopHold"
-    @touchcancel="stopHold"
-    @touchmove="stopHold"
-    >
-    <template v-if="isEditing">
-      <input v-model="editableName" class="bg-transparent border-none outline-none w-full flex-1 min-w-0"
-        @blur="saveEdit(team.name == gameStore.match?.homeTeam.name ? 0 : 1)" 
-        @keyup.enter="saveEdit(team.name == gameStore.match?.homeTeam.name ? 0 : 1)"
-        ref="inputField" />
-    </template>
-    <template v-else>
-      <span class="truncate flex-1 min-w-0">
-        {{ player.number }}. {{ player.name }}
-      </span>
-    </template>
+  >
+    <span class="truncate flex-1 min-w-0">
+      {{ player.number }}. {{ player.name }}
+    </span>
 
     <div class="flex items-center gap-1.5 ml-auto shrink-0">
       <div 
@@ -127,7 +115,7 @@
 
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
-import { ref, nextTick, type PropType, computed } from "vue";
+import { ref, type PropType, computed } from "vue";
 import type { Player } from "@/interfaces/Player";
 import type { Team } from "../interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
@@ -156,12 +144,7 @@ const props = defineProps({
 
 const gameStore = useGameStore();
 const settings = useSettingsStore();
-const holdTimeout = ref<NodeJS.Timeout | null>(null);
-const isEditing = ref<boolean>(false);
 const isPlayerDetailOpen = ref<boolean>(false);
-const editableName = ref<string>(props.player.name);
-const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
-const inputField = ref<HTMLInputElement | null>(null);
 const matchStateStore = useMatchStateStore();
 const { canEditMatch } = usePermissions();
 const userRole = computed(() => matchStateStore.userRole);
@@ -178,47 +161,9 @@ const playerShotsFaced = computed(() => {
   }
 );
 
-
-const startHold = () => {
-  isHolding.value = false; // Reset del flag prima di iniziare
-  holdTimeout.value = setTimeout(() => {
-    isHolding.value = true; // Imposta il flag se la pressione dura abbastanza
-    isEditing.value = true;
-    nextTick(() => {
-      inputField.value?.focus();
-    });
-  }, 1000); // 1.0s di pressione
-};
-
-const stopHold = () => {
-  if (holdTimeout.value) {
-    clearTimeout(holdTimeout.value);
-    holdTimeout.value = null;
-  }
-  // Usiamo un piccolo delay per resettare isHolding, 
-  // così handleClick ha il tempo di vedere che era TRUE e bloccarsi
-  setTimeout(() => {
-    isHolding.value = false;
-  }, 200);
-};
-
 const handleClick = (team: number) => {
   if (!canEditMatch(userRole.value)) return;
-  
-  // Se stiamo editando o abbiamo appena finito una pressione lunga, NON triggheriamo il toggle
-  if (isHolding.value || isEditing.value) {
-    return;
-  }
-
   gameStore.toggleElement(props.player.number, team);
-};
-
-const saveEdit = (team: number) => {
-  if(canEditMatch(userRole.value)){
-    isEditing.value = false;
-    isHolding.value = false;
-    //store.updatePlayerName(props.player.number, editableName.value, team);
-  }
 };
 
 const addFoul = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {

@@ -70,16 +70,20 @@
       
             <!-- Centro: Cronometro -->
             <div class="flex flex-col items-center justify-center">
-              <div class="font-black tabular-nums text-blue-950 leading-none transition-all duration-300"
+              <div v-if="settingsStore.enableTimekeeping" 
+                class="font-black tabular-nums text-blue-950 leading-none transition-all duration-300"
                 :class="isShrinked ? 'text-5xl' : 'text-6xl'">
                 {{ formattedTime }}
+              </div>
+              <div v-else>
+                <ClockManager :shrink="isShrinked" />
               </div>
             </div>
       
             <!-- Destra: Area Azioni Dinamica -->
             <div class="flex justify-end items-center">
               <!-- Stato Rimpicciolito: Mostra badge punteggio e controlli rapidi -->
-              <div v-if="isShrinked" class="flex flex-col items-end gap-1.5 duration-300">
+              <div v-if="isShrinked" class="flex flex-col items-center gap-1.5 duration-300">
                 <MatchBadgeScore
                   :home-team="{ name: match.homeTeam.name, score: match.homeTeam.score, category: match.homeTeam.category }"
                   :away-team="{ name: match.awayTeam.name, score: match.awayTeam.score, category: match.awayTeam.category }"
@@ -114,11 +118,12 @@
           </div>
           
           <!-- Controlli del Timer (ClockManager) -->
-          <div v-if="isTimerMaster" class="pt-2 transition-all duration-300 overflow-hidden" >
+          <div v-if="isTimerMaster && settingsStore.enableTimekeeping" class="pt-2 transition-all duration-300 overflow-hidden" >
                <!-- :class="isShrinked ? 'max-h-16 opacity-90 scale-95 origin-top' : 'max-h-32 opacity-100'"> -->
             <ClockManager :shrink="isShrinked" />
           </div>
         </div>
+
         <div v-else 
           class="sticky bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border transition-all duration-300 z-50"
           :class="[isShrinked ? 'shadow-xl border-slate-300 top-2' : 'border-transparent top-0']">
@@ -130,9 +135,13 @@
       
             <!-- Centro: Cronometro -->
             <div class="flex flex-col items-center justify-center">
-              <div class="font-black tabular-nums text-blue-950 leading-none transition-all duration-300"
+              <div v-if="settingsStore.enableTimekeeping" 
+                class="font-black tabular-nums text-blue-950 leading-none transition-all duration-300"
                 :class="isShrinked ? 'text-5xl' : 'text-6xl'">
                 {{ formattedTime }}
+              </div>
+              <div v-else>
+                <ClockManager :shrink="isShrinked" />
               </div>
             </div>
       
@@ -175,6 +184,7 @@ import MatchStatusBadge from '@/components/badges/MatchStatusBadge.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { usePermissions } from '@/composables/usePermissions';
 import type { MatchRole } from '@/enum/RoleType';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 defineProps<{
   match: Match;
@@ -191,6 +201,7 @@ defineProps<{
 defineEmits(['removeQuarter', 'restartMatch', 'endMatch', 'suspendMatch', 'cancelMatch', 'startPublicLive', 'endPublicLive']);
 
 const windowWidth = ref(window.innerWidth);
+const settingsStore = useSettingsStore();
 const isMd = computed(() => windowWidth.value >= 900);
 
 const handleResize = () => {

@@ -51,11 +51,6 @@ const sortedPlayers = computed(() => {
   });
 });
 </script>
-<style scoped>
-.roster-move {
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-</style>
 
 <template>
   <div class="p-2.5 border border-gray-300 rounded-md mb-2.5 flex flex-col font-medium text-lg w-full">
@@ -94,13 +89,11 @@ const sortedPlayers = computed(() => {
           :number="1"
           :teamName="teamKey"
           :used="team.timeOut1"
-          :disabled="true"
         />
         <TimeOutButton
           :number="2"
           :teamName="teamKey"
           :used="team.timeOut2"
-          :disabled="true"
         />
       </div>
     </div>

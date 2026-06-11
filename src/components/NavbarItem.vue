@@ -32,7 +32,7 @@
             <div>
                 <router-link to="settings" class="flex items-center space-x-1 px-2 py-1 rounded-md transition-colors"
                     active-class="font-bold bg-blue-600 text-white">
-                    <WrenchScrewdriverIcon class="size-5"></WrenchScrewdriverIcon>
+                    <Cog6ToothIcon class="size-5"></Cog6ToothIcon>
                     <span class="hidden sm:inline">Impostazioni</span>
                 </router-link>
             </div>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { WrenchScrewdriverIcon, ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 
 
 </script>

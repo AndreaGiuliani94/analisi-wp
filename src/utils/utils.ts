@@ -75,6 +75,9 @@ export const getEventDescription = (event: MatchEvent): string => {
     case MatchEventType.FOUL:
       return getFoulDescription(event);
 
+    case MatchEventType.TIME_OUT:
+      return 'Time-out per la squadra ' + event.team;
+
     default:
       return 'Azione di gioco';
   }
@@ -136,9 +139,10 @@ export function formatDateTime(dateStr: string) {
 };
 
 export function resetTeam (team: Team, isHome: boolean) {
+  const settingsStore = useSettingsStore();
   team.category = '';
   team.id = '';
-  team.activatedTimer = isHome ? useSettingsStore().enableHomePlayersTime : useSettingsStore().enableAwayPlayersTime;
+  team.activatedTimer = isHome ? settingsStore.enableHomePlayersTime : settingsStore.enableAwayPlayersTime;
   team.name = '';
   team.score = 0;
   team.timeOut1 = false;
@@ -147,7 +151,7 @@ export function resetTeam (team: Team, isHome: boolean) {
     p.id = '';
     p.name = '';
     p.isGK = p.number === 1 || p.number === 13;
-    p.active = p.active ? p.active : !isHome;
+    p.active = !( (isHome ? settingsStore.enableHomePlayersTime : settingsStore.enableAwayPlayersTime) || settingsStore.enableSubstitutions);
     p.activeTime = 0;
     p.actualTime = 0;
     p.benchTime = 0;
@@ -155,11 +159,12 @@ export function resetTeam (team: Team, isHome: boolean) {
 };
 
 export function clearTeam (team: Team, isHome: boolean) {
+  const settingsStore = useSettingsStore();
   team.score = 0;
   team.timeOut1 = false;
   team.timeOut2 = false;
   team.players.forEach((p: Player) => {
-    p.active = !isHome;
+    p.active = !( (isHome ? settingsStore.enableHomePlayersTime : settingsStore.enableAwayPlayersTime) || settingsStore.enableSubstitutions);
     p.activeTime = 0;
     p.actualTime = 0;
     p.benchTime = 0;

@@ -7,9 +7,10 @@ export interface MatchEvent {
 // --- CAMPI PER LA UI (Frontend) ---
   id?: string;
   team: string;
-  player: Player;
+  player?: Player;
   homeScore: number;
   awayScore: number;
+  teamId?: string;
 
   // --- CAMPI STRUTTURATI (Database) ---
   matchId: string;

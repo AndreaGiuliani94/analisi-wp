@@ -12,8 +12,7 @@
       :penalty-partial="penaltyScorePartial"
       :penalty-events="penaltyEvents"
       :class="{ 
-        'ring-4 ring-blue-500 animate-pulse transition-all duration-300': flashingTeam === 'home',
-        'ring-4 ring-red-700 animate-pulse transition-all duration-300': flashingTeam === 'away'
+        'ring-4 animate-pulse transition-all duration-300': flashingTeam === 'home' || flashingTeam === 'away'
       }"
       class="rounded-3xl"
     />
@@ -44,6 +43,15 @@
     :is-home="isHomeFoul" 
     :team-name="foulTeamName"
   />
+
+  <!-- Notifica Generica (es. Timeout) -->
+  <NotificationToast
+    v-model="showNotificationToast"
+    :title="notificationTitle"
+    :message="notificationMessage"
+    :is-home="isHomeNotification"
+    :icon="notificationIcon"
+  />
 </template>
 
 <script setup lang="ts">
@@ -57,9 +65,11 @@ import QuickReportModal from '@/components/modals/QuickReportModal.vue';
 import { MatchPeriod } from '@/enum/MatchPeriod';
 import { matchPeriodToNumber } from '@/const/consts';
 import { MatchEventType } from "@/enum/MatchEventDescription";
-import { ShotOutcome } from '@/enum/ShotDescription';
 import ShotToast from '@/components/toasts/ShotToast.vue';
 import FoulToast from '@/components/toasts/FoulToast.vue';
+import NotificationToast from './NotificationToast.vue';
+import { ClockIcon } from '@heroicons/vue/24/outline';
+import { FoulType } from '@/enum/ExclutionDescription';
 
 const gameStore = useGameStore();
 const timerStore = useTimerStore();
@@ -67,7 +77,7 @@ const timerStore = useTimerStore();
 const isShrinked = ref(false);
 const showConfirmModal = ref(false);
 const team = ref<Team | null>(null);
-
+  
 // Stati per Animazione Gol
 const showGoalToast = ref(false);
 const lastGoalEvent = ref<any>(null);
@@ -81,11 +91,24 @@ const lastFoulEvent = ref<any>(null);
 const isHomeFoul = ref(false);
 const foulTeamName = ref('');
 
+// Stati per Notifiche Generiche
+const showNotificationToast = ref(false);
+const notificationTitle = ref('');
+const notificationMessage = ref('');
+const isHomeNotification = ref(false);
+const notificationIcon = ref<any>(null);
+
 /**
  * Monitora i nuovi eventi per rilevare i gol in tempo reale
  */
 watch(() => gameStore.events.length, (newLength, oldLength) => {
-  // Evitiamo di triggerare l'animazione al caricamento iniziale della pagina
+  // Interrompiamo sempre l'animazione del giocatore all'arrivo di un nuovo evento
+  if (gameStore.highlightTimeoutId) {
+    clearTimeout(gameStore.highlightTimeoutId);
+    gameStore.highlightTimeoutId = null;
+  }
+  gameStore.highlightedPlayerId = null;
+
   if (newLength < oldLength) return;
 
   const lastEvent = gameStore.events[newLength - 1];
@@ -110,6 +133,16 @@ watch(() => gameStore.events.length, (newLength, oldLength) => {
     lastFoulEvent.value = lastEvent;
     isHomeFoul.value = lastEvent.team === gameStore.match?.homeTeam?.name;
     foulTeamName.value = lastEvent.team || '';
+
+    // Se è un fallo grave (EXCL o PEN), attiva l'animazione sul giocatore
+    if (lastEvent.playerId && (lastEvent.foulType === FoulType.EXCL || lastEvent.foulType === FoulType.PEN)) {
+      gameStore.highlightedPlayerId = lastEvent.playerId;
+      
+      // Timer di 18 secondi per rimuovere l'evidenziazione
+      gameStore.highlightTimeoutId = setTimeout(() => {
+        gameStore.highlightedPlayerId = null;
+      }, 18000);
+    }
     
     // Avvia il Toast dei falli
     showFoulToast.value = true;
@@ -119,6 +152,20 @@ watch(() => gameStore.events.length, (newLength, oldLength) => {
 
     setTimeout(() => {
       showFoulToast.value = false;
+      flashingTeam.value = null;
+    }, 5000);
+  } else if (lastEvent.eventType === MatchEventType.TIME_OUT) {
+    // Imposta i valori per la notifica di timeout
+    notificationTitle.value = 'TIME OUT';
+    notificationMessage.value = `${lastEvent.team} ha richiesto un timeout.`;
+    isHomeNotification.value = lastEvent.team === gameStore.match?.homeTeam?.name;
+    notificationIcon.value = ClockIcon;
+
+    // Avvia il Toast della notifica
+    showNotificationToast.value = true;
+
+    setTimeout(() => {
+      showNotificationToast.value = false;
       flashingTeam.value = null;
     }, 5000);
   }

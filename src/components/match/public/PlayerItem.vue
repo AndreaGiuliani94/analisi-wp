@@ -2,6 +2,7 @@
   <div 
     :class="[
       player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
+      gameStore.highlightedPlayerId === player.id ? 'animate-foul-alert ring-4 ring-red-500 z-20' : ''
     ]"
     class="p-2 w-2/5 lg:w-1/3 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg select-none"
     >
@@ -25,7 +26,7 @@
     </div>
   </div>
 
-  <div v-if="settings.enableExclution" class="inline-flex items-start ml-2 gap-1 " role="group">
+  <div v-if="settings.enableFouls" class="inline-flex items-start ml-2 gap-1 " role="group">
     <ExclutionButton 
       :disabled="true"
       :team="team.name == gameStore.match?.homeTeam.name ? 0 : 1"
@@ -43,7 +44,7 @@
       />
   </div>
 
-  <template v-if="settings.enableShoot">
+  <template v-if="settings.enableShots">
     <div class=" items-center ml-2 gap-1 text-blue-950 hidden xl:inline-flex" role="group">
       <div class="h-6 w-8 flex items-center justify-end">PARI</div>
       <div class="h-6 w-8 flex items-center"> {{ playerShots?.even.filter(shot => shot.shotOutcome === ShotOutcome.GOAL ).length + '/' + playerShots?.even.length }}</div>

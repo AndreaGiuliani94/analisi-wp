@@ -11,6 +11,8 @@ export const useSettingsStore = defineStore('settings', {
     enableAwayPlayersTime: false,
     enableHomePlayersTime: true,
     allowFinalPenalties: false,
+    enableSubstitutions: true,
+    enableTimekeeping: true,
   }),
   actions: {
     updateSettings(newSettings: Partial<SettingsState>) {
@@ -28,6 +30,8 @@ export interface SettingsState {
   enableAwayPlayersTime: boolean
   enableHomePlayersTime: boolean
   allowFinalPenalties: boolean
+  enableSubstitutions: boolean
+  enableTimekeeping: boolean
 }
 
 export type SettingsStore = ReturnType<typeof useSettingsStore>

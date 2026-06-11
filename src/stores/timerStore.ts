@@ -7,6 +7,7 @@ import { useToast } from 'vue-toastification';
 import { matchPeriodToNumber, numberToMatchPeriod } from '@/const/consts';
 import { MatchPeriod } from '@/enum/MatchPeriod';
 import { useTimeFormat } from '@/composables/useTimeFormat';
+import { MatchRole } from '@/enum/RoleType';
 const { formatMsToTimer } = useTimeFormat();
 
 export const useTimerStore = defineStore('timerStore', {
@@ -28,11 +29,11 @@ export const useTimerStore = defineStore('timerStore', {
 
   actions: {
 
-    setTimerMaster(data: any) {
+    setTimerMaster(userRole: MatchRole) {
       let isMaster = false;
-      if(data.user_role === 'timekeeper') {
+      if(userRole === MatchRole.TIMEKEEPER) {
           isMaster = true;
-      } else if(data.user_role === 'owner') {
+      } else if(userRole === MatchRole.OWNER) {
           isMaster = true
       }
       this.isTimerMaster = isMaster;
@@ -68,8 +69,11 @@ export const useTimerStore = defineStore('timerStore', {
     },
 
     async masterPlay() {
+      const settingsStore = useSettingsStore();
       if (this.isTimerRunning) return;
-      this.runLocalTimer();
+      if(settingsStore.enableTimekeeping) this.runLocalTimer();
+      else this.isTimerRunning = true;
+      
       const gameStore = useGameStore();
       const matchStateStore = useMatchStateStore();
       const payload = {
@@ -82,8 +86,10 @@ export const useTimerStore = defineStore('timerStore', {
     },
 
     async masterStop() {
+      const settingsStore = useSettingsStore();
       if (!this.isTimerRunning) return;
-      this.stopLocalTimer();
+      if(settingsStore.enableTimekeeping) this.stopLocalTimer() 
+      else this.isTimerRunning = false;
       const gameStore = useGameStore();
       const matchStateStore = useMatchStateStore();
       const payload = {
@@ -99,51 +105,34 @@ export const useTimerStore = defineStore('timerStore', {
       const settingsStore = useSettingsStore();
       const gameStore = useGameStore();
       
-      this.countdown = Math.min(settingsStore.periodDuration * 60 * 1000, this.countdown + seconds * 1000);
+      this.countdown = Math.min(settingsStore.periodDuration, this.countdown + seconds * 1000);
       gameStore.adjustPlayerTimes(-(seconds * 1000)); // Togliamo secondi alle stats
     },
 
     async masterForward(seconds: number) {
       const gameStore = useGameStore();
 
-      this.countdown = Math.max(0, this.countdown - seconds * 100);
-      gameStore.adjustPlayerTimes(seconds * 100); // Aggiungiamo secondi alle stats
+      this.countdown = Math.max(0, this.countdown - seconds * 1000);
+      gameStore.adjustPlayerTimes(seconds * 1000); // Aggiungiamo secondi alle stats
     },
 
     removeQuarter() {
         this.currentPeriod = Math.min(1, this.currentPeriod - 1)
     },
 
-    // --- LOGICA CONDIVISA (L'intervallo locale) ---
-    // runLocalTimer() {
-    //   this.isTimerRunning = true;
-    //   const gameStore = useGameStore();
-
-    //   this.timerInterval = window.setInterval(() => {
-    //     if (this.countdown > 0) {
-    //       this.countdown--;
-          
-    //       // Diciamo al gameStore di avanzare le stats di 1 secondo
-    //       gameStore.adjustPlayerTimes(1); 
-    //     } else {
-    //       this.handleEndOfQuarter();
-    //     }
-    //   }, 1000);
-    // },
-
     runLocalTimer() {
       this.isTimerRunning = true;
       const gameStore = useGameStore();
       
       // Registriamo il momento esatto in cui parte il timer
-      this.lastTickTime = performance.now();
+      this.lastTickTime = Math.round(performance.now());
 
       // Definiamo la funzione di loop
       const tick = () => {
         if (!this.isTimerRunning) return;
 
         // 1. Calcolo del Delta Time (quanto tempo REALE è passato dall'ultimo ciclo?)
-        const now = performance.now();
+        const now = Math.round(performance.now());
         const delta = now - this.lastTickTime;
         this.lastTickTime = now;
 
@@ -160,7 +149,6 @@ export const useTimerStore = defineStore('timerStore', {
         } else {
           // Fine del tempo!
           this.countdown = 0; // Evita che il tempo vada in negativo
-          this.isTimerRunning = false;
           this.handleEndOfQuarter();
         }
       };
@@ -177,24 +165,29 @@ export const useTimerStore = defineStore('timerStore', {
     async handleEndOfQuarter() {
       const settingsStore = useSettingsStore();
       
+      // Evitiamo di andare oltre i tempi prestabiliti
+      if (this.currentPeriod > settingsStore.totalPeriods) return;
+      else if (this.currentPeriod === settingsStore.totalPeriods) this.countdown = 0;
+      else {
+        this.currentPeriod++;
+        this.countdown = settingsStore.periodDuration;
+      }
+      
       if (this.isTimerMaster) {
         await this.masterStop();
       } else {
-        this.stopLocalTimer();
+        if (settingsStore.enableTimekeeping) this.stopLocalTimer();
+        else this.isTimerRunning = false;
       }
       
-      // Evitiamo di andare oltre i tempi prestabiliti
-      if (this.currentPeriod >= settingsStore.totalPeriods) return;
-      
-      this.currentPeriod++;
-      this.countdown = settingsStore.periodDuration * 60 * 1000;
     },
 
     resetTimer() {
       const settingsStore = useSettingsStore();
-      this.stopLocalTimer();
+      if(settingsStore.enableTimekeeping) this.stopLocalTimer();
+      else this.isTimerRunning = false;
       this.currentPeriod = 1;
-      this.countdown = settingsStore.periodDuration * 60 * 1000;
+      this.countdown = settingsStore.periodDuration;
       this.isTimerRunning = true;
       if(this.isTimerMaster)
         this.masterStop();

@@ -415,3 +415,17 @@ export const removePlayerfromRoster = async (teamId: string, playerId: string) =
   }
   return response.json(); // Assuming it returns the created player
 };
+
+export const updateMatchSettings = async (matchId: string, settingsPayload: any) => {
+  const response = await fetch(`${BE_URL}/matches/${matchId}/settings`, {
+    method: "PATCH", 
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settingsPayload),
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Errore durante l'aggiornamento delle impostazioni della partita.");
+  }
+  return response.json(); 
+};

@@ -61,13 +61,13 @@ export const useRealtimeStore = defineStore('realtime', {
                 gameStore.match.isLive = false;
               } 
               else if (broadcastData.payload_json.action === 'TIMER_PLAY') {
-                //timerStore.setTimeFromString(broadcastData.payload_json.time);
                 timerStore.currentPeriod = matchPeriodToNumber[broadcastData.payload_json.period as MatchPeriod];
+                timerStore.countdown = broadcastData.payload_json.time;
                 timerStore.runLocalTimer();
               } 
               else if (broadcastData.payload_json.action === 'TIMER_STOP') {
                 timerStore.stopLocalTimer();
-                //timerStore.setTimeFromString(broadcastData.payload_json.time);
+                timerStore.countdown = broadcastData.payload_json.time;
                 timerStore.currentPeriod = matchPeriodToNumber[broadcastData.payload_json.period as MatchPeriod];
                 
                 // Sincronizziamo i tempi dei giocatori dal database
