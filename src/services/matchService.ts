@@ -387,7 +387,7 @@ export const restartMatch = async (matchId: string, requestBody: any) => {
   return response;
 };
 
-export const addPlayerToTeamRoster = async (teamId: string, playerDetails: { name: string; isGK: boolean; dateOfBirth: string }) => {
+export const addPlayerToTeamRoster = async (teamId: string, playerDetails: { playerId?: string; name: string; isGK: boolean; dateOfBirth: string }) => {
   const response = await fetch(`${BE_URL}/teams/${teamId}/players`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

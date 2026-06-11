@@ -19,7 +19,7 @@
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Numero Massimo di Giocatori</p>
             <p class="text-lg font-bold text-blue-950">{{ tournament.max_players }}</p>
           </div>
-          <div class="col-span-2">
+          <div>
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Rigori in caso di pareggio</p>
             <p class="text-lg font-bold text-blue-950">{{ tournament.allow_final_penalties ? 'Abilitati' : 'Disabilitati' }}</p>
           </div>
@@ -62,13 +62,13 @@
           <template v-if="canEdit">
             <template v-if="!isEditing">
               <ActionButton
-                size="lg"
+                size="md"
                 color="gray"
                 label="Chiudi"
                 @click="closeModal"
               />
               <ActionButton
-                size="lg"
+                size="md"
                 color="blue"
                 label="Modifica"
                 @click="isEditing = true"
@@ -76,14 +76,14 @@
             </template>
             <template v-else>
               <ActionButton
-                size="lg"
+                size="md"
                 color="gray"
                 label="Annulla"
                 :solid="false"
                 @click="isEditing = false"
               />
               <ActionButton
-                size="lg"
+                size="md"
                 color="green"
                 :label="loading ? 'Salvataggio...' : 'Salva'"
                 @click="handleUpdate"
@@ -93,7 +93,7 @@
           </template>
           <ActionButton
             v-else
-            size="lg"
+            size="md"
             color="gray"
             label="Chiudi"
             @click="closeModal"
