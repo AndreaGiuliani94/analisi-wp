@@ -223,7 +223,7 @@ export async function exportEventsToExcel(events: MatchEvent[], match: Match) {
             tempo: `${event.quarter}°`,
             minuto: event.time,
             squadra: event.team,
-            giocatore: `${event.player.number}. ${event.player.name}`,
+            giocatore: `${event.player?.number}. ${event.player?.name}`,
             evento: getEventDescription(event),
             punteggio: punteggio
         };
