@@ -7,6 +7,7 @@ import { useGameStore } from "@/stores/gameStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import type { Team } from "@/interfaces/Team";
 import { useTimeFormat } from "@/composables/useTimeFormat";
+import { ShotOutcome } from "@/enum/ShotDescription";
 
 export function getExclution (exclution: MatchEvent) {
     var str: string = '';
@@ -115,7 +116,7 @@ function getShotDescription(event: MatchEvent) {
     (event.team === useGameStore().match?.homeTeam.name 
       ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name
       : useGameStore().match.homeTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name) : '';
-  return `${outcome} - ${category}${pos ? ', ' + pos : ''}${gk ? ', portiere: ' + gk : ''}`.trim();
+  return `${event.shotOutcome === ShotOutcome.GOAL ? outcome : ('Tiro ' + outcome)} - ${category}${pos ? ', ' + pos : ''}${gk ? ', portiere: ' + gk : ''}`.trim();
 }
 
 

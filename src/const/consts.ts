@@ -24,7 +24,7 @@ export const shotFacedCategories: Category[] = [
 ]
 
 export const shotOutcomeLabels: Record<string, string> = {
-  [ShotOutcome.GOAL]: 'Gol',
+  [ShotOutcome.GOAL]: 'Goal',
   [ShotOutcome.SAVED]: 'Parato',
   [ShotOutcome.MISSED]: 'Fuori',
   [ShotOutcome.BLOCKED]: 'Stoppato',

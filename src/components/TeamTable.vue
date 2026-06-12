@@ -5,8 +5,8 @@
                 <tr>
                     <th scope="col" class="w-14 p-2 text-center"></th>
                     <th scope="col" class="w-36 p-2">Nome</th>
-                    <th scope="col" class="w-20 p-2">Dentro</th>
-                    <th scope="col" class="w-20 p-2">Fuori</th>
+                    <th v-if="settingsStore.enableTimekeeping" scope="col" class="w-20 p-2">Dentro</th>
+                    <th v-if="settingsStore.enableTimekeeping" scope="col" class="w-20 p-2">Fuori</th>
                     <th scope="col" class="w-16 p-2">Pari</th>
                     <th scope="col" class="w-16 p-2">Sup</th>
                     <th scope="col" class="w-16 p-2">Rigori</th>
@@ -41,8 +41,8 @@
                                 {{ player.name }}
                             </span>
                         </td>
-                        <td class="p-2 font-mono">{{ useTimeFormat().formatMsToTimer(player.activeTime) }}</td>
-                        <td class="p-2 font-mono">{{ useTimeFormat().formatMsToTimer(player.benchTime) }}</td>
+                        <td v-if="settingsStore.enableTimekeeping" class="p-2 font-mono">{{ useTimeFormat().formatMsToTimer(player.activeTime) }}</td>
+                        <td v-if="settingsStore.enableTimekeeping" class="p-2 font-mono">{{ useTimeFormat().formatMsToTimer(player.benchTime) }}</td>
                         <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'even') }}</td>
                         <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'sup') }}</td>
                         <td class="p-2 font-mono font-semibold">{{ getShotStats(player.id, 'penalty') }}</td>
@@ -85,8 +85,10 @@ import { formatTime, getExclution } from '@/utils/utils';
 import { ShotOutcome } from '@/enum/ShotDescription';
 import FoulBadge from './badges/FoulBadge.vue';
 import { useTimeFormat } from '@/composables/useTimeFormat';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 const gameStore = useGameStore();
+const settingsStore = useSettingsStore();
 
 const props = defineProps<{
     team: Team;

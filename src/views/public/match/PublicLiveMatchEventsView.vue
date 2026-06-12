@@ -46,7 +46,7 @@
                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold border-b border-slate-200">
                     <tr>
                         <th scope="col" class="px-4 py-3 whitespace-nowrap text-center">Tempo</th>
-                        <th scope="col" class="px-4 py-3 whitespace-nowrap text-center">Minuto</th>
+                        <th v-if="settingsStore.enableTimekeeping" scope="col" class="px-4 py-3 whitespace-nowrap text-center">Minuto</th>
                         <th scope="col" class="px-4 py-3 whitespace-nowrap">Squadra</th>
                         <th scope="col" class="px-4 py-3 whitespace-nowrap">Giocatore</th>
                         <th scope="col" class="px-4 py-3 w-full">Evento</th>
@@ -64,7 +64,7 @@
                             {{ numberToMatchPeriod[event.quarter] }}
                         </td>
                         
-                        <td class="px-4 py-3 whitespace-nowrap text-center font-mono tabular-nums opacity-75">
+                        <td v-if="settingsStore.enableTimekeeping" class="px-4 py-3 whitespace-nowrap text-center font-mono tabular-nums opacity-75">
                             {{ useTimeFormat().formatMsToTimer(event.time) }}
                         </td>
                         
@@ -128,8 +128,10 @@ import QuarterFilter from '@/components/filters/QuarterFilter.vue';
 import { computed, ref } from 'vue';
 import { numberToMatchPeriod } from '@/const/consts';
 import { useTimeFormat } from '@/composables/useTimeFormat';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 const gameStore = useGameStore();
+const settingsStore = useSettingsStore();
 
 const selectedQuarter = ref<number | null>(null);
 
