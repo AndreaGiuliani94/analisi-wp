@@ -1,18 +1,17 @@
 <script lang="ts" setup>
 import PlayerItem from './PlayerItem.vue';
-import { ArrowRightIcon } from '@heroicons/vue/20/solid';
 import type { Team } from '../interfaces/Team';
 import TimeOutButton from './buttons/TimeOutButton.vue';
 import type { Player } from '../interfaces/Player';
-import { useSessionStore } from '@/stores/sessionStore';
-import { useUserRole } from '@/composables/useUserRole';
 import { useGameStore } from '@/stores/gameStore';
 import { ShotCategory } from '@/enum/ShotDescription';
 import { computed } from 'vue';
 import { InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { useMatchStateStore } from '@/stores/matchStateStore';
+import { usePermissions } from '@/composables/usePermissions';
 
-const sessionStore = useSessionStore()
-const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
+const matchStateStore = useMatchStateStore();
+const userRole = computed(() => matchStateStore.userRole);
 const gameStore = useGameStore()
 
 const stats = computed(() => ({
@@ -34,7 +33,7 @@ const emit = defineEmits<{
 }>()
 
 const handleTimeOutToggle = (number: 1 | 2) => {
-  if(userRole && userRole.value !== 'viewer'){
+  if(userRole && usePermissions().canEditMatch(userRole.value)){
     emit('toggleTimeOut', { teamName: props.teamKey, number })
   }
 }
@@ -49,14 +48,15 @@ const handleOpenModal = () => {
     <div class="ms-2.5 mb-1.5 grid grid-cols-[max-content_auto_max-content] items-center">
       <div
         class="text-red-800 flex justify-start items-center cursor-pointer"
+        @click="handleOpenModal"
       >
         <span class="font-semibold">{{ team.name }}</span>
         <div class="h-6 w-6 flex justify-center items-center ms-2">
-          <InformationCircleIcon class="size-6 text-red-800" @click="handleOpenModal"/>
+          <InformationCircleIcon class="size-6 text-red-800"/>
         </div>
       </div>
       <div class="flex justify-center gap-5 text-base text-blue-950">
-        <div class="inline-flex items-center gap-1" role="group">
+        <div class="inline-flex items-baseline gap-1" role="group">
           <div class="text-sm font-semibold">PARI</div>
           <span class="tabular-nums font-bold">{{ stats.even.goals.length }}/{{ stats.even.shots.length }}</span>
         </div>

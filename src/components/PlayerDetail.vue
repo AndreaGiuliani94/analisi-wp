@@ -1,155 +1,206 @@
 <template>
-    <div class="flex flex-col lg:flex-row gap-4 w-full"
-        :class="isModal? '': 'bg-slate-50 shadow-inner p-2'">
+    <div :class="isModal ? 'mb-2' : 'bg-slate-50 shadow-inner'">
+        <div class="flex flex-col sm:flex-row justify-between items-center border-b border-slate-200"
+            :class="isModal ? 'mb-2 pb-2' : 'mx-2'">
         
-        <div class="flex-1">
-
-            <div v-if="player.isGK" :class="isModal? '': 'mb-4'">
-                <div class="flex items-center justify-between mb-2 ">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Subiti (Portiere)</h4>
-                    
-                    <div class="flex items-center gap-2">
-                        <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
-                            {{ gameStore.getAllSaves(player).saves }}/{{ gameStore.getAllSaves(player).shots }}
-                        </span>
-                    </div>
+            <div class="flex items-center gap-2 text-lg text-blue-950">
+                <div class="font-bold">
+                    {{ player.number }}.
                 </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-2 gap-4">                    
-                    <ShotAnalysisCard 
-                        title="Pari"
-                        shotType="evens"
-                        :successCount="totalShotsFaced.evens.parati.length"
-                        :totalCount="totalShotsFaced.evens.shots.length"
-                        :zones="evenZones"
-                        :categories="shotFacedCategories"
-                        :getShotsLengthByType="getShotsFacedLengthByType"
-                        :getZoneValue="getFacedZoneValue"
-                        />
-
-                    <ShotAnalysisCard 
-                        title="Superiorità"
-                        shotType="sup"
-                        :successCount="totalShotsFaced.sup.parati.length"
-                        :totalCount="totalShotsFaced.sup.shots.length"
-                        :zones="supZones"
-                        :categories="shotFacedCategories"
-                        :getShotsLengthByType="getShotsFacedLengthByType"
-                        :getZoneValue="getFacedZoneValue"
-                        />
+                <div class="font-bold">{{ player.name }}</div>
+                <div v-if="team.activatedTimer" class="text-sm text-gray-600 flex gap-3 ml-2 border-l border-blue-200 pl-3">
+                    <span>{{isModal ? 'In: ' : 'Dentro: '}}<strong class="font-mono text-blue-950">{{ useTimeFormat().formatMsToTimer(player.activeTime) }}</strong></span>
+                    <span>{{isModal ? 'Out: ' : 'Fouri: '}}<strong class="font-mono text-blue-950">{{ useTimeFormat().formatMsToTimer(player.benchTime) }}</strong></span>
                 </div>
             </div>
 
-            <div v-if="!player.isGK || props.showGKShots" :class="isModal? '': ''">
-
-                <div class="flex items-center justify-between mb-2 ">
-                    <div class="flex items-center gap-2">
-                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Effettuati</h4>
+            <QuarterFilter
+                v-model="selectedQuarter" 
+                :is-modal="isModal" 
+            />
+    
+        </div>
+        
+        <div class="flex gap-4 w-full"
+            :class="{
+                        'p-2 flex-col md:flex-row': (viewMode === 'map' && isModal) || (viewMode === 'stats' && !isModal ) || (viewMode === 'map' && !isModal), 
+                        'flex-col': (viewMode === 'stats' && isModal), 
+                    }" >
+    
+            <div class="flex-1">
+    
+                <div v-if="player.isGK" :class="isModal? '': 'mb-4'">
+                    <div class="flex items-center justify-between mb-2 ">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Subiti (Portiere)</h4>
                         
                         <div class="flex items-center gap-2">
                             <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
-                                {{ gameStore.getAllPlayerShots(player).goals }}/{{ gameStore.getAllPlayerShots(player).shots }}
+                                {{ playerShotsFaced.saves.length }}/{{ playerShotsFaced.shots.length }}
                             </span>
                         </div>
                     </div>
-
-                    <div class="flex bg-slate-200 p-0.5 rounded-lg">
-                        <button 
-                            @click="viewMode = 'map'"
-                            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
-                            :class="viewMode === 'map' ? 'bg-white text-blue-950 shadow-sm' : 'text-slate-500 hover:text-blue-900'"
-                        >
-                            Mappa
-                        </button>
-                        <button 
-                            @click="viewMode = 'stats'"
-                            class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
-                            :class="viewMode === 'stats' ? 'bg-white text-blue-950 shadow-sm' : 'text-slate-500 hover:text-blue-900'"
-                        >
-                            Stats
-                        </button>
-                    </div>
-                </div>
-                
-                <Transition name="fade" mode="out-in">
-                    <div v-if="viewMode === 'stats'" class="grid grid-cols-2 md:grid-cols-2 gap-4">
-
+    
+                    <div class="grid grid-cols-3 gap-4">                    
                         <ShotAnalysisCard 
                             title="Pari"
                             shotType="evens"
-                            :successCount="totalShots.evens.goals.length"
-                            :totalCount="totalShots.evens.shots.length"
+                            :successCount="totalShotsFaced.evens.parati.length"
+                            :totalCount="totalShotsFaced.evens.shots.length"
                             :zones="evenZones"
-                            :categories="shotCategories"
-                            :getShotsLengthByType="getShotsLengthByType"
-                            :getZoneValue="getZoneValue"
+                            :categories="shotFacedCategories"
+                            :getShotsLengthByType="getShotsFacedLengthByType"
+                            :getZoneValue="getFacedZoneValue"
                             />
-
+    
                         <ShotAnalysisCard 
                             title="Superiorità"
                             shotType="sup"
-                            :successCount="totalShots.sup.goals.length"
-                            :totalCount="totalShots.sup.shots.length"
+                            :successCount="totalShotsFaced.sup.parati.length"
+                            :totalCount="totalShotsFaced.sup.shots.length"
                             :zones="supZones"
-                            :categories="shotCategories"
-                            :getShotsLengthByType="getShotsLengthByType"
-                            :getZoneValue="getZoneValue"
+                            :categories="shotFacedCategories"
+                            :getShotsLengthByType="getShotsFacedLengthByType"
+                            :getZoneValue="getFacedZoneValue"
                             />
-                        
+
+                        <ShotAnalysisCard 
+                            title="Rigori"
+                            shotType="penalties"
+                            :successCount="totalShotsFaced.penalties.goals.length"
+                            :totalCount="totalShotsFaced.penalties.shots.length"
+                            :categories="penaltyCategories"
+                            :getShotsLengthByType="getShotsFacedLengthByType"
+                            :getZoneValue="getFacedZoneValue"
+                            />
                     </div>
-
-                    <div v-else>
-                        <ShotMap :player="player" :stats="totalShots" />
+                </div>
+    
+                <div v-if="!player.isGK || props.showGKShots" :class="isModal? '': ''">
+    
+                    <div class="flex items-center justify-between mb-2 ">
+                        <div class="flex items-center gap-2">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tiri Effettuati</h4>
+                            
+                            <div class="flex items-center gap-2">
+                                <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
+                                    {{ gameStore.getAllPlayerShots(player, selectedQuarter).goals }}/{{ gameStore.getAllPlayerShots(player, selectedQuarter).shots }}
+                                </span>
+                            </div>
+                        </div>
+    
+                        <div v-if="!player.isGK" class="flex bg-slate-200 p-0.5 rounded-lg">
+                            <button 
+                                @click="viewMode = 'map'"
+                                class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+                                :class="viewMode === 'map' ? 'bg-white text-blue-950 shadow-sm' : 'text-slate-500 hover:text-blue-900'"
+                            >
+                                Mappa
+                            </button>
+                            <button 
+                                @click="viewMode = 'stats'"
+                                class="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+                                :class="viewMode === 'stats' ? 'bg-white text-blue-950 shadow-sm' : 'text-slate-500 hover:text-blue-900'"
+                            >
+                                Stats
+                            </button>
+                        </div>
                     </div>
-                </Transition>
-            </div>
+                    
+                    <Transition name="fade" mode="out-in">
+                        <div v-if="viewMode === 'stats'" class="grid grid-cols-3 gap-4">
+    
+                            <ShotAnalysisCard 
+                                title="Pari"
+                                shotType="evens"
+                                :successCount="totalShots.evens.goals.length"
+                                :totalCount="totalShots.evens.shots.length"
+                                :zones="evenZones"
+                                :categories="shotCategories"
+                                :getShotsLengthByType="getShotsLengthByType"
+                                :getZoneValue="getZoneValue"
+                                />
+    
+                            <ShotAnalysisCard 
+                                title="Superiorità"
+                                shotType="sup"
+                                :successCount="totalShots.sup.goals.length"
+                                :totalCount="totalShots.sup.shots.length"
+                                :zones="supZones"
+                                :categories="shotCategories"
+                                :getShotsLengthByType="getShotsLengthByType"
+                                :getZoneValue="getZoneValue"
+                                />
 
+                            <ShotAnalysisCard 
+                                title="Rigori"
+                                shotType="penalties"
+                                :successCount="totalShots.penalties.goals.length"
+                                :totalCount="totalShots.penalties.shots.length"
+                                :categories="penaltyCategories"
+                                :getShotsLengthByType="getShotsLengthByType"
+                                :getZoneValue="getZoneValue"
+                                />
+                            
+                        </div>
+    
+                        <div v-else>
+                            <ShotMap :player="player" :stats="totalShots" />
+                        </div>
+                    </Transition>
+                </div>
+    
+            </div>
+    
+            <div class="border-slate-200"
+                    :class="{
+                        'border rounded-lg p-2 shadow-sm lg:p-4 w-full ': isModal,
+                        'md:px-4 pt-2 md:border-l border-t md:border-t-0': !isModal,
+                        'md:w-1/3': (viewMode === 'map' && isModal) || (viewMode === 'stats' && !isModal ), 
+                        'md:w-1/2': (viewMode === 'map' && !isModal),
+                        'w-full': (viewMode === 'stats' && isModal)
+                    }" >
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Disciplina</h4>
+                
+                <div v-if="mappedCommessi.length + mappedGuadagnati.length > 0" class="flex flex-col gap-4">
+                    <FoulAccordionCard 
+                        title="Falli Commessi"
+                        :items="mappedCommessi"
+                        theme="red"
+                        emptyMessage="Nessun fallo commesso"
+                    />
+                    <FoulAccordionCard 
+                        title="Falli Guadagnati"
+                        :items="mappedGuadagnati"
+                        theme="green"
+                    />
+                </div>
+                <div v-else class="text-xs text-slate-400 italic bg-white p-2 rounded-md border border-dashed border-slate-200">
+                    Nessun fallo commesso o guadagnato
+                </div>
+            </div>
+    
         </div>
-
-        <div class="border-slate-200"
-                :class="[isModal? 'border rounded-lg p-2 shadow-sm lg:p-4 w-full ': 'lg:px-4 pt-2 lg:border-l border-t lg:border-t-0',
-                (viewMode === 'map' && !isModal) ? 'lg:w-1/2' : 'lg:w-1/3']" >
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Disciplina</h4>
-            
-            <div v-if="mappedCommessi.length + mappedGuadagnati.length > 0" class="flex flex-col gap-4">
-                <FoulAccordionCard 
-                    title="Falli Commessi"
-                    :items="mappedCommessi"
-                    theme="red"
-                    emptyMessage="Nessun fallo commesso"
-                />
-                <FoulAccordionCard 
-                    title="Falli Guadagnati"
-                    :items="mappedGuadagnati"
-                    theme="green"
-                />
-            </div>
-            <div v-else class="text-xs text-slate-400 italic bg-white p-2 rounded-md border border-dashed border-slate-200">
-                Nessun fallo commesso o guadagnato
-            </div>
-        </div>
-
     </div>
 
 </template>
 
 <script setup lang="ts">
 import type { Player } from '../interfaces/Player';
-import type { Exclution } from '../interfaces/Exclution';
-import { shotCategories,shotFacedCategories } from '@/const/consts';
+import { penaltyCategories, shotCategories,shotFacedCategories } from '@/const/consts';
 import { evenZones, supZones } from '../interfaces/shot/Zone';
 import { EvenShot, MenUpShot, ShotCategory, ShotOutcome } from '@/enum/ShotDescription';
 import { computed, ref } from 'vue';
 import type { CategoryKey } from '../interfaces/shot/Category';
-import type { Shot } from '../interfaces/Shot';
 import { useGameStore } from '@/stores/gameStore';
 import type { Team } from '../interfaces/Team';
 import ShotMap from './ShotMap.vue';
 import ShotAnalysisCard from './cards/ShotAnalysisCard.vue';
 import type { ShotKey } from '../interfaces/shot/ShotKey';
-import { ChevronDownIcon } from '@heroicons/vue/24/outline';
-import { getExclution } from '@/utils/utils';
+import { formatTime, getExclution } from '@/utils/utils';
 import FoulAccordionCard from './cards/FoulAccordionCard.vue';
+import type { MatchEvent } from '@/interfaces/MatchEvent';
+import QuarterFilter from './filters/QuarterFilter.vue';
+import { useTimeFormat } from '@/composables/useTimeFormat';
 
 const gameStore = useGameStore()
 
@@ -158,58 +209,90 @@ const props = defineProps<{
     player: Player;
     align: 'row' | 'col';
     showGKShots: boolean;
-    getExclution: (excl: Exclution) => string;
+    getExclution: (excl: MatchEvent) => string;
     isModal: boolean;
 }>();
 
-const viewMode = ref('map');
+const selectedQuarter = ref<number | null>(null);
+
+const userSelectedViewMode = ref('map');
+const viewMode = computed({
+  get() {
+    return props.player.isGK ? 'stats' : userSelectedViewMode.value;
+  },
+  set(newValue) {
+    userSelectedViewMode.value = newValue;
+  }
+});
+
+const exclEarned = computed(() => props.player.id ? gameStore.getFoulsEarnedByPlayer(props.player.id, selectedQuarter.value) : []);
+
+const playerShots = computed(() => {
+  if(props.player.id) {
+    return gameStore.getPlayerShotsByCategory(props.player.id, selectedQuarter.value) 
+  } 
+  else {
+    return{ even: [], sup: [], penalty: [] }
+  }
+}
+);
+
+const playerShotsFaced = computed(() => {
+    if(props.player.id && props.player.isGK) 
+        return gameStore.getGoalkeeperShotsFaced(props.player.id, selectedQuarter.value)
+    else
+        return {saves: [], shots: []}
+  }
+);
 
 const totalShots = computed(() => ({
-  evens: getShotsByType(props.player.shotsEven),
-  sup: getShotsByType(props.player.shotsSup)
+  evens: getShotsByType(playerShots.value.even),
+  sup: getShotsByType(playerShots.value.sup),
+  penalties: getShotsByType(playerShots.value.penalty)
 }))
-
-const exclEarned = computed( () => gameStore.getAllExclutionsEarned(props.team, props.player));
 
 const totalShotsFaced = computed(() => ({
   evens: { 
-    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
-    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && shot.outcome === ShotOutcome.GOAL),
-    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.EVEN && shot.outcome === ShotOutcome.SAVED),
+    shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
+    goals: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && shot.shotOutcome === ShotOutcome.GOAL),
+    parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.EVEN && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
+    annullati: [],
   },
   sup: {
-    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
-    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.GOAL),
-    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.SUP && shot.outcome === ShotOutcome.SAVED),
+    shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
+    goals: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && shot.shotOutcome === ShotOutcome.GOAL),
+    parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.SUP && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
+    annullati: [],
   },
   penalties: {
-    shots: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && (shot.outcome === ShotOutcome.GOAL || shot.outcome === ShotOutcome.SAVED)),
-    goals: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && shot.outcome === ShotOutcome.GOAL),
-    parati: props.player.shotsFaced.filter(shot => shot.type === ShotCategory.PENALTY && shot.outcome === ShotOutcome.SAVED),
+    shots: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && (shot.shotOutcome === ShotOutcome.GOAL || shot.shotOutcome === ShotOutcome.SAVED)),
+    goals: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && shot.shotOutcome === ShotOutcome.GOAL),
+    parati: playerShotsFaced.value.shots.filter(shot => shot.shotCategory === ShotCategory.PENALTY && shot.shotOutcome === ShotOutcome.SAVED),
     fuori: [],
     stoppati: [],
+    annullati: [],
   }
 }))
 
 
-function getShotsByType(shots: Shot[]): {
-  goals: Shot[]
-  parati: Shot[]
-  fuori: Shot[]
-  stoppati: Shot[]
-  shots: Shot[]
+function getShotsByType(shots: MatchEvent[]): {
+  goals: MatchEvent[]
+  parati: MatchEvent[]
+  fuori: MatchEvent[]
+  stoppati: MatchEvent[]
+  annullati: MatchEvent[]
+  shots: MatchEvent[]
 } {
-  const toUpper = (s: string) => s.toUpperCase()
-
   return {
-    goals: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.GOAL)),
-    parati: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.SAVED)),
-    fuori: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.MISSED)),
-    stoppati: shots.filter(shot => toUpper(shot.outcome) === toUpper(ShotOutcome.BLOCKED)),
+    goals: shots.filter(shot => shot.shotOutcome === ShotOutcome.GOAL),
+    parati: shots.filter(shot => shot.shotOutcome === ShotOutcome.SAVED),
+    fuori: shots.filter(shot => shot.shotOutcome === ShotOutcome.MISSED),
+    stoppati: shots.filter(shot => shot.shotOutcome === ShotOutcome.BLOCKED),
+    annullati: shots.filter(shot => shot.shotOutcome === ShotOutcome.NULL),
     shots
   }
 }
@@ -217,9 +300,9 @@ function getShotsByType(shots: Shot[]): {
 function getShotsByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
     switch (type) {
         case 'evens':
-            return totalShots.value.evens[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShots.value.evens[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         case 'sup':
-            return totalShots.value.sup[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShots.value.sup[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         default:
             return 0;
     }
@@ -236,6 +319,8 @@ function getShotsLengthByType(type: ShotKey, category: CategoryKey): number {
             return totalShots.value.evens[category].length;
         case 'sup':
             return totalShots.value.sup[category].length;
+        case 'penalties':
+            return totalShots.value.penalties[category].length;
         default:
             return 0;
     }
@@ -262,9 +347,9 @@ function getFacedZoneValue(type: ShotKey, category: CategoryKey, values: (EvenSh
 function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions: string[]): number {
     switch (type) {
         case 'evens':
-            return totalShotsFaced.value.evens[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShotsFaced.value.evens[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         case 'sup':
-            return totalShotsFaced.value.sup[category].filter(shot => positions.includes(shot.position)).length;
+            return totalShotsFaced.value.sup[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length;
         default:
             return 0;
     }
@@ -272,17 +357,20 @@ function getShotsFacedByPosition(type: ShotKey, category: CategoryKey, positions
 
 // Mappiamo i falli commessi
 const mappedCommessi = computed(() => {
-    return props.player.exclutions.map(ex => ({
-        primaryText: getExclution(ex),
-        secondaryText: ex.earnedBy ? `su ${gameStore.getOpponentsPlayerName(props.team, ex.earnedBy)}` : undefined
-    }));
+    if(props.player.id)
+        return gameStore.getPlayerFouls(props.player.id, selectedQuarter.value).map(ex => ({
+            primaryText: getExclution(ex),
+            secondaryText: ex.earnedByPlayerId ? `su ${gameStore.getOpponentsPlayerName(ex.earnedByPlayerId, props.team)}` : undefined
+        }));
+    else
+        return []
 });
 
 // Mappiamo i falli guadagnati
 const mappedGuadagnati = computed(() => {
-    return exclEarned.value.map(ex => ({
+    return exclEarned.value.map((ex: MatchEvent) => ({
         primaryText: getExclution(ex),
-        secondaryText: ex.earnedOn ? `su ${ex.earnedOn}` : undefined
+        secondaryText: ex.playerId ? `su ${gameStore.getOpponentsPlayerName(ex.playerId, props.team)}` : undefined
     }));
 });
 

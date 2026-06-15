@@ -12,8 +12,8 @@ import TeamTable from '@/components/TeamTable.vue';
 import TeamStatistics from '@/components/TeamStatistics.vue';
 
 const props = defineProps<{
-  team: Team;
-  getAllShoots: (player: Player) => string;
+    team: Team;
+    getAllShoots: (player: Player) => string;
 }>();
 
 </script>

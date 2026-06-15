@@ -3,14 +3,16 @@ import { defineStore } from 'pinia'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    homeTeamName: 'SC QUINTO',
-    periodDuration: 8,
+    periodDuration: 480000,
     totalPeriods: 4,
     maxPlayers: 15,
-    enableExclution: true,
-    enableShoot: true,
-    enableOppPlayersTime: false,
+    enableFouls: true,
+    enableShots: true,
+    enableAwayPlayersTime: false,
     enableHomePlayersTime: true,
+    allowFinalPenalties: false,
+    enableSubstitutions: true,
+    enableTimekeeping: true,
   }),
   actions: {
     updateSettings(newSettings: Partial<SettingsState>) {
@@ -20,14 +22,16 @@ export const useSettingsStore = defineStore('settings', {
 })
 
 export interface SettingsState {
-  homeTeamName: string
   periodDuration: number
   totalPeriods: number
   maxPlayers: number
-  enableExclution: boolean
-  enableShoot: boolean
-  enableOppPlayersTime: boolean
+  enableFouls: boolean
+  enableShots: boolean
+  enableAwayPlayersTime: boolean
   enableHomePlayersTime: boolean
+  allowFinalPenalties: boolean
+  enableSubstitutions: boolean
+  enableTimekeeping: boolean
 }
 
 export type SettingsStore = ReturnType<typeof useSettingsStore>

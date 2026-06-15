@@ -1,4 +1,4 @@
-export type CategoryKey = 'goals' | 'parati' | 'fuori' | 'stoppati';
+export type CategoryKey = 'goals' | 'parati' | 'fuori' | 'stoppati' | 'annullati';
 
 export interface Category {
   key: CategoryKey

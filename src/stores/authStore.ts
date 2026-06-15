@@ -2,8 +2,22 @@ import { logout, refresh } from '@/services/authService';
 import { defineStore } from 'pinia';
 
 interface User {
+  id: string;
+  orgId: string;
+  orgRole: string;
   email: string;
   name: string;
+  isSystemAdmin: boolean;
+  organization: Organization;
+}
+
+interface Organization {
+  id: string
+  logo_url: string
+  name: string
+  plan_type: string
+  slug: string
+  subscription_status: string
 }
 
 export const useAuthStore = defineStore('auth', {

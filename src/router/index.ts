@@ -1,36 +1,170 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ElementManager from '../views/ScoreboardView.vue';
-import NameManager from '../views/NameManager.vue';
-import ReportView from '@/views/ReportView.vue';
-import EventView from '@/views/EventView.vue';
+import ScoreboardView from '../views/match/ScoreboardView.vue';
 import DashboardView from '@/views/DashboardView.vue';
 import AnalysisView from '@/views/AnalysisView.vue';
-import LoginView from '@/views/LoginView.vue';
+import LoginView from '@/views/login/LoginView.vue';
 import ProfileView from '@/views/ProfileView.vue';
-import CallbackView from '@/views/CallbackView.vue';
+import CallbackView from '@/views/login/CallbackView.vue';
 import { useAuthStore } from '@/stores/authStore';
-import SettingsView from '@/views/SettingsView.vue';
-import SessionCreate from '@/components/SessionsItem.vue';
-import JoinSession from '@/views/session/JoinSession.vue';
-import SessionDetail from '@/views/session/SessionDetail.vue';
+import SettingsView from '@/views/match/SettingsView.vue';
+import AppLayout from '@/views/AppLayout.vue';
+import LandingView from '@/views/public/LandingView.vue';
+import OnboardView from '@/views/backoffice/OnboardView.vue';
+import BackofficeView from '@/views/backoffice/BackofficeView.vue';
+import OrganizationDetailView from '@/views/backoffice/OrganizationDetailView.vue';
+import RostersView from '@/views/RostersView.vue';
+import MatchDetail from '@/views/match/MatchDetail.vue';
+import JoinMatch from '@/views/match/JoinMatch.vue';
+import MatchSetupView from '@/views/match/MatchSetupView.vue';
+import EventView from '@/views/match/EventView.vue';
+import ReportView from '@/views/match/ReportView.vue';
+import StatsView from '@/views/StatsView.vue';
+import PublicLiveMatchView from '@/views/public/match/PublicLiveMatchView.vue';
+import PublicLiveLayout from '@/views/public/match/PublicLiveLayout.vue';
+import MatchesView from '@/views/MatchesView.vue';
+import TournamentsView from '@/views/tournament/TournamentsView.vue';
+import TournamentDetailView from '@/views/tournament/TournamentDetailView.vue';
+import PublicLiveMatchEventsView from '@/views/public/match/PublicLiveMatchEventsView.vue';
+import AnalysisView2 from '@/views/AnalysisView2.vue';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/login", name: 'Login', component: LoginView },
+    { 
+      path: "/", 
+      name: "Landing", 
+      component: LandingView
+    },
+    { 
+      path: "/login", 
+      name: "Login", 
+      component: LoginView 
+    },
     { path: "/auth/callback", component: CallbackView },
-    { path: "/profile", component: ProfileView , meta: { requiresAuth: true }},
-    { path: "/dashboard", component: DashboardView },
-    { path: "/:pathMatch(.*)*", redirect: "/login" },
-    { path: '/game', component: NameManager, meta: { requiresAuth: true } },
-    { path: '/game/live', component: ElementManager, meta: { requiresAuth: true } },
-    { path: '/game/report', component: ReportView, meta: { requiresAuth: true } },
-    { path: '/game/events', component: EventView, meta: { requiresAuth: true } },
-    { path: '/analysis', component: AnalysisView, meta: { requiresAuth: true } },
-    { path: '/settings', component: SettingsView, meta: { requiresAuth: true } },
-    { path: '/session', component: SessionCreate, meta: { requiresAuth: true } },
-    { path: '/session/:id', component: SessionDetail, meta: { requiresAuth: true } },
-    { path: '/session/join/:id', component: JoinSession, meta: { requiresAuth: true } }
+    {
+      path: '/live/:slug',
+      name: 'ClubLiveHub',
+      component: () => import('@/views/public/ClubLiveHub.vue')
+    },
+    {
+      path: '/live/:slug/match/:matchId',
+      component: PublicLiveLayout,
+      children: [
+        {
+          path: '',
+          name: 'PublicMatchLive',
+          component: PublicLiveMatchView
+        },
+        {
+          path: 'events',
+          name: 'PublicMatchEvents',
+          component: PublicLiveMatchEventsView
+        }
+      ]
+    },
+    { 
+      path: "/workspace", 
+      component: AppLayout,
+      meta: { requiresAuth: true },
+      children: [
+        { 
+          path: '', 
+          redirect: '/workspace/dashboard' 
+        },
+        { 
+          path: 'backoffice', 
+          name: 'Backoffice',
+          component: BackofficeView,
+        },
+        {
+          path:'backoffice/onboard',
+          name:'Registrazione società',
+          component: OnboardView
+        },
+        {
+          path:'backoffice/organization/:id',
+          name: 'Società',
+          component: OrganizationDetailView
+        },
+        {
+          path: 'profile', 
+          name: 'Profilo',
+          component: ProfileView
+        },
+        { 
+          path: 'dashboard', 
+          name: 'Dashboard',
+          component: DashboardView
+        },
+        { path: 'analysis', 
+          name: 'Analisi video',
+          component: AnalysisView2
+        },
+        { path: 'rosters', 
+          name: 'Roster',
+          component: RostersView
+        },
+        { path: 'stats', 
+          name: 'Statistiche',
+          component: StatsView
+        },
+        { 
+          path: 'matches/:id', 
+          component: MatchDetail
+        },
+        {
+          path: 'tournaments',
+          name: 'Tornei',
+          component: TournamentsView
+        },
+        {
+          path: 'tournaments/:id',
+          name: 'Dettagli Torneo',
+          component: TournamentDetailView
+        },
+        {
+          path: 'matches',
+          name: 'Storico partite',
+          component: MatchesView
+        }
+      ]
+    },
+    {
+      path: '/match/:id',
+      component: JoinMatch,
+      meta: { requiresAuth: true },
+      children: [
+        { 
+          path: 'setup', 
+          name: 'MatchSetup',
+          component: MatchSetupView
+        },
+        { 
+          path: 'live', 
+          name: 'MatchLive',
+          component: ScoreboardView 
+        },
+        { 
+          path: 'events', 
+          name: 'MatchEvents',
+          component: EventView
+        },
+        { 
+          path: 'report', 
+          name: 'MatchReport',
+          component: ReportView
+        },
+        { 
+          path: 'settings', 
+          name: 'MatchSettings',
+          component: SettingsView 
+        },
+        {
+          path: '',
+          redirect: { name: 'MatchLive' }
+        }
+      ]
+    }    
   ]
 });
 

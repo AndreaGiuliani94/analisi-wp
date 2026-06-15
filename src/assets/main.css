@@ -5,6 +5,10 @@ button {
   touch-action: manipulation;
 }
 
+.roster-move {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Animazione personalizzata per il lampeggio sportivo */
 @keyframes sport-blink {
   0%, 100% {
@@ -17,4 +21,32 @@ button {
 
 .animate-sport-blink {
   animation: sport-blink 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+/* Stili globali per animazioni */
+
+@keyframes foul-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(249, 115, 22, 0);
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.5; /* Applica la trasparenza richiesta a metà ciclo */
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.5); /* Mantiene un leggero alone di allerta */
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 0 rgba(249, 115, 22, 0);
+  }
+}
+
+.animate-foul-alert {
+  /* Durata passata da 0.2s a 1.2s per renderla molto più morbida */
+  animation: foul-pulse 1.0s infinite ease-in-out;
+  position: relative;
+  /* Rimossi background-color e color forzati */
 }

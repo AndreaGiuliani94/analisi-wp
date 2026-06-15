@@ -1,0 +1,301 @@
+<template>
+    <div class="w-full grid grid-cols-3 items-center mb-4">
+        <div></div>
+        <h1 class="text-3xl text-center font-bold text-blue-950">Distinta</h1>
+        <div v-if="usePermissions().canEditMatch(userRole)" class="flex justify-between items-center justify-self-end">
+            <NavButton
+                :color="'red'"
+                :label="'Pulisci'"
+                :icon="TrashIcon"
+                :onClick="resetAll">
+            </NavButton>
+        </div>
+    </div>
+  
+
+    <div class="mb-2.5 flex flex-col md:flex-row justify-between gap-3">
+
+        <TeamRosterEditor
+            :team="gameStore.match.homeTeam"
+            :isHome="true"
+            :userRole="userRole"
+            theme="blue"
+            :availableTeams="availableHomeTeams"
+            :available-players="homeTeamRoster"
+            :suggestedTeams="suggestedTeams"
+            :isLoading="isLoadingHomeRosters"
+            :is-game-started="isGameStarted"
+            @edit-player="handleUpdatePlayerName($event)"
+            @fetch-available="fetchAvailableTeams(gameStore.match.homeTeam.name, true)"
+            @load-last="loadLastRoster(true)"
+            @confirm-team="handleTeamConfirm(true)"
+        />
+
+        <TeamRosterEditor
+            :team="gameStore.match.awayTeam"
+            :isHome="false" 
+            :userRole="userRole"
+            theme="blue"
+            :availableTeams="availableAwayTeams"
+            :available-players="awayTeamRoster"
+            :suggestedTeams="suggestedTeams"
+            :isLoading="isLoadingAwayRosters"
+            :is-game-started="isGameStarted"
+            @edit-player="handleUpdatePlayerName($event)"
+            @fetch-available="fetchAvailableTeams(gameStore.match.awayTeam.name, false)"
+            @load-last="loadLastRoster(false)"
+            @confirm-team="handleTeamConfirm(false)"
+        />
+    </div>
+
+    <ActionButton 
+        :icon="PlayIcon" 
+        label="Live!" 
+        @click="startLiveMatch"
+        :disabled="gameStore.actualPlayers?.length < 7 || gameStore.actualOpponents?.length < 7 || gameStore.match.awayTeam?.name == '' || isGameStarted" 
+        color="green"
+        :loading="isStarting"
+    />
+  
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import { useGameStore } from '@/stores/gameStore';
+import { PlayIcon, TrashIcon } from '@heroicons/vue/20/solid';
+import NavButton from '@/components/buttons/NavButton.vue';
+import ActionButton from '@/components/buttons/ActionButton.vue';
+import type { TeamInfo } from '@/interfaces/TeamInfo';
+import TeamRosterEditor from '@/components/TeamRosterEditor.vue';
+import { useRouter } from 'vue-router';
+import type { Team } from '@/interfaces/Team';
+import { useToast } from 'vue-toastification';
+import { useTimerStore } from '@/stores/timerStore';
+import { MatchStatus } from '@/enum/MatchStatus';
+import { useMatchStateStore } from '@/stores/matchStateStore';
+import { usePermissions } from '@/composables/usePermissions';
+
+const gameStore = useGameStore();
+const matchStateStore = useMatchStateStore();
+const userRole = matchStateStore.userRole;
+
+const router = useRouter();
+const toast = useToast();
+const isStarting = ref(false);
+const isGameStarted = (computed(() => gameStore.match.status !== MatchStatus.SCHEDULED && gameStore.match.status !== MatchStatus.WARMUP))
+
+const availableHomeTeams = ref<TeamInfo[]>([]);
+const availableAwayTeams = ref<TeamInfo[]>([]);
+const suggestedTeams = ref<TeamInfo[]>([]);
+
+const isLoadingHomeRosters = ref(false);
+const isLoadingAwayRosters = ref(false);
+
+const lastLoadedHomeTeam = ref("");
+const lastLoadedAwayTeam = ref("");
+
+const homeTeamRoster = ref([]);
+const awayTeamRoster = ref([]);
+
+// Teniamo traccia dell'ultimo ID confermato per capire se è cambiata una squadra
+const lastConfirmedHomeId = ref(gameStore.match.homeTeam.id);
+const lastConfirmedAwayId = ref(gameStore.match.awayTeam.id);
+
+const fetchAvailableTeams = async (teamName: string, isHome: boolean) => {
+    // 1. Evitiamo chiamate a vuoto se il nome non è ancora stato inserito
+    if (!teamName || teamName.trim() === '') return;
+
+    // 2. Puntiamo dinamicamente alle Ref corrette in base a isHome
+    const targetLoading = isHome ? isLoadingHomeRosters : isLoadingAwayRosters;
+    const targetLastLoaded = isHome ? lastLoadedHomeTeam : lastLoadedAwayTeam;
+    const targetList = isHome ? availableHomeTeams : availableAwayTeams;
+
+    // 3. Controllo cache: se abbiamo GIÀ caricato le distinte per QUESTO SPECIFICO nome, ci fermiamo
+    if (targetLastLoaded.value === teamName) return;
+
+    // 4. Esecuzione
+    targetLoading.value = true;
+    try {
+        const response = await gameStore.getTeamsByName(teamName);
+        targetList.value = response;
+        
+        // Salviamo il nome appena cercato per la cache
+        targetLastLoaded.value = teamName; 
+    } catch (error) {
+        console.error(`Errore nel caricamento delle categorie per ${teamName}:`, error);
+        toast.error(`Errore nel caricamento delle categorie per ${teamName}`);
+        // In caso di errore svuotiamo la lista
+        targetList.value = [];
+    } finally {
+        targetLoading.value = false;
+    }
+};
+
+const loadLastRoster = async (isHome: boolean) => {
+  const team = isHome ? gameStore.match.homeTeam : gameStore.match.awayTeam;
+
+    if (!team.id) {
+        useToast().warning("Attenzione: Seleziona e conferma prima l'intestazione della squadra!");
+        return;
+    }
+
+    try {
+        // Chiamata al BE
+        const response = gameStore.getLastTeamRoster(team.id);
+        const lastRosterData = await response;
+
+        if (!lastRosterData || lastRosterData.length === 0) {
+            console.log("Nessuna distinta precedente trovata per questa squadra.");
+            return;
+        }
+
+        // 1. Pulizia preventiva: Svuotiamo la distinta attuale in memoria
+        // Questo serve se l'utente aveva già scritto nomi a mano e poi decide di premere "Ricarica"
+        team.players.forEach(p => {
+            p.id = ''; // Resettiamo l'ID
+            p.name = '';
+            p.isGK = (p.number === 1 || p.number === 13);
+        });
+
+        // 2. Idratazione corretta con l'ID globale
+        lastRosterData.roster.forEach((bePlayer: any) => {
+            const localPlayer = team.players.find(p => p.number === bePlayer.cap_number);
+            
+            if (localPlayer) {
+                localPlayer.id = bePlayer.player_id; 
+                localPlayer.name = bePlayer.name;
+                localPlayer.isGK = bePlayer.is_gk;
+            }
+        });
+
+        console.log(`Distinta ${team.name} caricata con successo!`);
+
+    } catch (error) {
+        console.error("Errore durante il recupero dell'ultima distinta:", error);
+        toast.error("Errore durante il recupero dell'ultima distinta");
+    }
+
+};
+
+const loadSuggestedTeams = async () => {
+    try {
+        console.log("Chiamata BE per tutti i team...");
+        const response = await gameStore.getAllTeams();
+        suggestedTeams.value = response;
+        console.log(suggestedTeams.value);
+        // Qui andrà la logica per ricaricare l'ultima distinta
+    } catch (error) {
+        console.error("Errore nel caricamento delle squadre", error);
+        toast.error("Errore nel caricamento delle squadre");
+    }
+};
+
+const handleTeamConfirm = async (isHome: boolean) => {
+    const team = isHome ? gameStore.match.homeTeam : gameStore.match.awayTeam;
+    const previousId = isHome ? lastConfirmedHomeId.value : lastConfirmedAwayId.value;
+
+    // 1. CONTROLLO CAMBIO SQUADRA
+    if (team.id !== previousId) {
+        console.log(`Cambio squadra rilevato (da ${previousId || 'Nuova'} a ${team.id || 'Nuova'}). Svuoto la distinta...`);
+        
+        // Svuotiamo i giocatori 
+        team.players.forEach((p: any) => {
+            p.id = '';
+            p.name = '';
+            p.isGK = (p.number === 1 || p.number === 13);
+        });
+
+        // Aggiorniamo la nostra memoria con il nuovo ID temporaneo
+        if (isHome) lastConfirmedHomeId.value = team.id;
+        else lastConfirmedAwayId.value = team.id;
+    }
+    try {
+        // 2. CREAZIONE NUOVA SQUADRA (Se ID vuoto)
+        if(team.id === '') {
+            console.log("Crea nuova squadra: name: " + team.name + ", category: " + team.category )
+
+            const response = await gameStore.createNewTeam(team);
+            team.id = response.id;
+
+            if (isHome) lastConfirmedHomeId.value = team.id;
+            else lastConfirmedAwayId.value = team.id;
+        }
+        console.log("Team confermato")
+        
+        // 3. CARICAMENTO ROSTER
+        await loadTeamRoaster(team, isHome);
+    } catch (error) {
+        console.error("Errore nel caricamento del roster", error);
+        toast.error("Errore nel caricamento del roster");
+    }
+};
+
+const loadTeamRoaster = async (team: Team, isHome: boolean) => {
+    const response = await gameStore.getTeamRoster(team.id);
+    if(isHome) homeTeamRoster.value = response.players
+    else awayTeamRoster.value = response.players
+}
+
+const startLiveMatch = async () => {
+    // 1. Attiviamo lo spinner sul bottone "Live!"
+    isStarting.value = true;
+
+    try {
+        // 2. CHIAMATE AL BACKEND (Bulk Save)
+        await gameStore.savePregameData();
+
+        // 3. NAVIGAZIONE ALLA PARTITA
+        router.push('live');
+
+    } catch (error) {
+        console.error("Errore fatale durante il salvataggio pre-partita:", error);
+        toast.error("Errore fatale durante il salvataggio pre-partita");
+    } finally {
+        // 4. Spegniamo lo spinner (anche se in caso di successo l'utente ha già cambiato pagina)
+        isStarting.value = false;
+    }
+};
+
+const handleUpdatePlayerName = async (payload: any) => {
+    try {
+        console.log(`Modifica globale richiesta per il giocatore ${payload.id}`);
+        
+        // 1. Chiamata al Backend
+        await gameStore.updatePlayer(payload);
+        
+        if(payload.name) {
+            // 2. Aggiorniamo la "rosa" (availablePlayers)        
+            const updateRosterList = (roster: any[]) => {
+                const playerInList = roster.find(p => p.id === payload.id);
+                if (playerInList) {
+                    playerInList.name = payload.name;
+                }
+            };
+            if (homeTeamRoster.value) updateRosterList(homeTeamRoster.value);
+            if (awayTeamRoster.value) updateRosterList(awayTeamRoster.value);
+        }
+
+    } catch (error) {
+        console.error("Errore critico durante l'aggiornamento dell'anagrafica:", error);
+        toast.error("Impossibile aggiornare l'anagrafica");
+    }
+};
+
+const resetAll = async() => {
+    gameStore.clearDistinta();
+    useTimerStore().resetTimer();
+}
+
+onMounted(async () => {
+  gameStore.loadStore();
+  await loadSuggestedTeams();
+  await fetchAvailableTeams(gameStore.match.homeTeam.name, true);
+  await fetchAvailableTeams(gameStore.match.awayTeam.name, false);
+  if(gameStore.match.homeTeam.id) {
+    loadTeamRoaster(gameStore.match.homeTeam, true)
+  }
+  if(gameStore.match.awayTeam.id) {
+    loadTeamRoaster(gameStore.match.awayTeam, false)
+  }
+});
+</script>

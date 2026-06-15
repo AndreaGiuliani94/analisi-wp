@@ -2,7 +2,8 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import type { Player } from "@/interfaces/Player"; 
 import type { Match } from "@/interfaces/Match";
-import type { Event } from "@/interfaces/event/Event";
+import type { MatchEvent } from "@/interfaces/MatchEvent";
+import { getEventDescription } from './utils';
 
 interface ExportOptions {
   match: Match;
@@ -186,7 +187,7 @@ export async function exportTeamsToExcel({
     saveAs(blob, fileName);
 }
 
-export async function exportEventsToExcel(events: Event[], match: Match) {
+export async function exportEventsToExcel(events: MatchEvent[], match: Match) {
     // 1. Inizializzazione del foglio di lavoro
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Eventi');
@@ -222,8 +223,8 @@ export async function exportEventsToExcel(events: Event[], match: Match) {
             tempo: `${event.quarter}°`,
             minuto: event.time,
             squadra: event.team,
-            giocatore: `${event.player.number}. ${event.player.name}`,
-            evento: event.description,
+            giocatore: `${event.player?.number}. ${event.player?.name}`,
+            evento: getEventDescription(event),
             punteggio: punteggio
         };
     });

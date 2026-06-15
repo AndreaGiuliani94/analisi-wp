@@ -1,11 +1,173 @@
-import type { Exclution } from "@/interfaces/Exclution";
+import { edcsCategoryLabels, foulCategoryLabels, foulPositionLabels, shotCategoryLabels, shotOutcomeLabels, shotPositionLabels } from "@/const/consts";
+import { FoulType } from "@/enum/ExclutionDescription";
+import { MatchEventType } from "@/enum/MatchEventDescription";
+import type { MatchEvent } from "@/interfaces/MatchEvent";
+import type { Player } from "@/interfaces/Player";
+import { useGameStore } from "@/stores/gameStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import type { Team } from "@/interfaces/Team";
+import { useTimeFormat } from "@/composables/useTimeFormat";
+import { ShotOutcome } from "@/enum/ShotDescription";
 
-export function getExclution (exclution: Exclution) {
+export function getExclution (exclution: MatchEvent) {
     var str: string = '';
-    str += exclution.quarter + 'T ' + exclution.time + ' ' + (exclution.type + ' ' + exclution.position);
-    if(exclution.type !== 'EDCS') {
-        str += ' ';
-        str += exclution.ball ? 'Con palla' : 'Senza palla';
+    str += exclution.quarter + 'T ' + useTimeFormat().formatMsToTimer(exclution.time) + ' ' + getLabel(exclution.foulType, foulCategoryLabels) + ' ';
+    if(exclution.foulType !== FoulType.EDCS) {
+      str += getLabel(exclution.foulPosition, foulPositionLabels) + ' ' + (exclution.foulWithBall ? 'Con palla' : 'Senza palla');
+    } else {
+      str += getLabel(exclution.edcsType, edcsCategoryLabels);
     }
     return str;
 }
+
+// Funzione helper interna per mappare un singolo giocatore dal BE al FE
+export const mapPlayerToFE = (bePlayer: any): Player => {
+    return {
+        id: bePlayer.player_info.id,
+        number: bePlayer.cap_number,
+        name: bePlayer.player_info.name,
+        activeTime: bePlayer.active_time,
+        benchTime: bePlayer.bench_time,
+        actualTime: 0,
+        active: bePlayer.is_playing, 
+        isGK: bePlayer.player_info.is_gk,
+    };
+};
+
+/**
+ * Prende un array di giocatori dal DB e garantisce che l'array finale 
+ * abbia sempre `maxPlayers` elementi (es. 15), mantenendo l'ordine dei calottini.
+ */
+export const padRosterToMax = (
+    fetchedPlayers: Player[], 
+    maxPlayers: number = 15,
+    enablePlayersTime: boolean = false
+): Player[] => {
+    return Array.from({ length: maxPlayers }, (_, i) => {
+        const playerNumber = i + 1;
+        
+        // 1. Cerchiamo se il DB ci ha restituito questo specifico numero di calottino
+        const existingPlayer = fetchedPlayers?.find(p => p.number === playerNumber);
+
+        // 2. Se esiste, restituiamo il giocatore del DB
+        if (existingPlayer) {
+            return existingPlayer;
+        }
+
+        // 3. Se non esiste, creiamo uno slot vuoto di default (esattamente come nel gameStore)
+        return {
+            id: '',
+            number: playerNumber,
+            name: "",
+            activeTime: 0,
+            benchTime: 0,
+            actualTime: 0,
+            active: !enablePlayersTime,
+            isGK: (playerNumber === 1 || playerNumber === 13),
+        } as Player;
+    });
+};
+
+export const getEventDescription = (event: MatchEvent): string => {
+  switch (event.eventType) {
+    case MatchEventType.SHOT:
+      return getShotDescription(event);
+
+    case MatchEventType.FOUL:
+      return getFoulDescription(event);
+
+    case MatchEventType.TIME_OUT:
+      return 'Time-out per la squadra ' + event.team;
+
+    default:
+      return 'Azione di gioco';
+  }
+};
+
+/**
+ * Traduce una stringa tecnica in una label leggibile usando un dizionario.
+ * Se la traduzione non esiste, ritorna il valore originale.
+ */
+export const getLabel = (value: string | undefined, mapping: Record<string, string>): string => {
+  if (!value) return '';
+  return mapping[value] || value;
+};
+
+function getFoulDescription(event: MatchEvent) {
+  const fType = foulCategoryLabels[event.foulType || ''] || event.foulType || '';
+  if(event.foulType === FoulType.EDCS) {
+    const fEdcsCat = (edcsCategoryLabels[event.edcsType || ''] || event.edcsType || '')
+    return `${fType}${fEdcsCat ? ' - ' + fEdcsCat : ''}`.trim();
+  }
+  const fPos = foulPositionLabels[event.foulPosition || ''] || event.foulPosition || '';
+  const fBall = event.foulWithBall ? 'con palla' : 'senza palla';
+  const fEarnedBy = event.earnedByPlayerId ?
+    (event.team === useGameStore().match?.homeTeam.name 
+      ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.earnedByPlayerId)?.name
+      : useGameStore().match.homeTeam.players.find(pl => pl.id === event.earnedByPlayerId)?.name) : '';
+  return `${fType}${fPos ? ' - ' + fPos : ''}, ${fBall}${fEarnedBy ? ', guadagnata da ' + fEarnedBy : ''}`.trim();
+}
+
+function getShotDescription(event: MatchEvent) {
+  const outcome = shotOutcomeLabels[event.shotOutcome || ''] || event.shotOutcome || '';
+  const category = shotCategoryLabels[event.shotCategory || ''] || event.shotCategory || '';
+  const pos = shotPositionLabels[event.shotPosition || ''] || event.shotPosition || '';
+  const gk = event.defendingGoalkeeperId ?
+    (event.team === useGameStore().match?.homeTeam.name 
+      ? useGameStore().match.awayTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name
+      : useGameStore().match.homeTeam.players.find(pl => pl.id === event.defendingGoalkeeperId)?.name) : '';
+  return `${event.shotOutcome === ShotOutcome.GOAL ? outcome : ('Tiro ' + outcome)} - ${category}${pos ? ', ' + pos : ''}${gk ? ', portiere: ' + gk : ''}`.trim();
+}
+
+
+export function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds,
+  ).padStart(2, "0")}`;
+}
+
+export function formatDateTime(dateStr: string) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleString([], {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+export function resetTeam (team: Team, isHome: boolean) {
+  const settingsStore = useSettingsStore();
+  team.category = '';
+  team.id = '';
+  team.activatedTimer = isHome ? settingsStore.enableHomePlayersTime : settingsStore.enableAwayPlayersTime;
+  team.name = '';
+  team.score = 0;
+  team.timeOut1 = false;
+  team.timeOut2 = false;
+  team.players.forEach((p: Player) => {
+    p.id = '';
+    p.name = '';
+    p.isGK = p.number === 1 || p.number === 13;
+    p.active = !( (isHome ? settingsStore.enableHomePlayersTime : settingsStore.enableAwayPlayersTime) || settingsStore.enableSubstitutions);
+    p.activeTime = 0;
+    p.actualTime = 0;
+    p.benchTime = 0;
+  });
+};
+
+export function clearTeam (team: Team, isHome: boolean) {
+  const settingsStore = useSettingsStore();
+  team.score = 0;
+  team.timeOut1 = false;
+  team.timeOut2 = false;
+  team.players.forEach((p: Player) => {
+    p.active = !( (isHome ? settingsStore.enableHomePlayersTime : settingsStore.enableAwayPlayersTime) || settingsStore.enableSubstitutions);
+    p.activeTime = 0;
+    p.actualTime = 0;
+    p.benchTime = 0;
+  });
+};

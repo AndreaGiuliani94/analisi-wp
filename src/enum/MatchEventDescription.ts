@@ -1,5 +1,5 @@
 export enum MatchEventType {
-  GOAL = 'Goal',
-  FOUL = 'Fallo grave',
-  SHOT = 'Tiro'
+  FOUL = 'FOUL',
+  SHOT = 'SHOT',
+  TIME_OUT = 'TIME_OUT',
 }

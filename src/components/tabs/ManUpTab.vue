@@ -1,13 +1,14 @@
 <template>
     <div class="rounded-b-xl p-2 w-full">
-        
-        <div class="flex items-center justify-between mb-2 border-b border-slate-200 pb-2">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
-            
+        <div class="flex justify-between mb-2 border-b border-slate-200 pb-2">
             <div class="flex items-center gap-2">
-                <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
-                    {{ totals.goals }}/{{ totals.shots }}
-                </span>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Riepilogo Totali</h4>
+                
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-950 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm font-mono">
+                        {{ totals.goals }}/{{ totals.shots }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -44,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type PropType } from 'vue';
+import { computed, inject, ref, type PropType, type Ref } from 'vue';
 import type { Team } from '../../interfaces/Team';
 import { MenUpShot, ShotCategory } from '@/enum/ShotDescription';
 import { shotCategories } from '@/const/consts';
@@ -60,23 +61,22 @@ const props = defineProps({
     }
 });
 
+const reportQuarter = inject<Ref<number | null>>('reportQuarter', ref(null));
+
 const totals = computed(() => ({
   goals: menUps.value.goals.length,
   shots: menUps.value.shots.length,
   parati: menUps.value.parati.length,
   fuori: menUps.value.fuori.length,
-  stoppati: menUps.value.stoppati.length
+  stoppati: menUps.value.stoppati.length,
+  annullati: menUps.value.annullati.length
 }))
 
-const menUps = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP))
-
-function getShotsByCategory(category: CategoryKey, positions: string[]): number {
-  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP)[category].filter(shot => positions.includes(shot.position)).length
-}
+const menUps = computed(() => gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP, reportQuarter.value))
 
 function getZoneValue(category: CategoryKey, values: (MenUpShot | string)[]): number {
-  const stringPositions = values.map(v => v.toString())
-  return getShotsByCategory(category, stringPositions)
+  const positions = values.map(v => v.toString())
+  return gameStore.getAllTeamShotsByType(props.team, ShotCategory.SUP, reportQuarter.value)[category].filter(shot => shot.shotPosition ? positions.includes(shot.shotPosition) : false ).length
 }
 
 </script>

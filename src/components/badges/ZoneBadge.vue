@@ -24,7 +24,7 @@
                     class="transition-all duration-500 ease-out"
                     :class="[
                         total === 0 ? 'text-slate-300' : 'text-emerald-500',
-                        highlight ? 'stroke-[4]' : 'stroke-[3]'
+                        highlight ? 'stroke-4' : 'stroke-3'
                     ]"
                     stroke="currentColor"
                     fill="none"
@@ -55,10 +55,6 @@
         >
             <div v-if="isPopoverOpen" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-white/95 backdrop-blur-md shadow-xl rounded-lg border border-slate-200 p-2.5 z-50 cursor-default">
                 
-                <!-- <div class="text-xs font-bold text-slate-700 border-b border-slate-100 pb-1.5 mb-1.5 text-center uppercase tracking-wider">
-                    Dettaglio {{ name }}
-                </div> -->
-                
                 <div class="flex flex-col gap-0.5 text-[11px]">
                     <div class="flex justify-between items-center" :class="goals > 0 ? 'text-emerald-600 font-bold' : 'text-slate-400'">
                         <span>Goal</span> <span class="font-mono">{{ goals }}</span>
@@ -69,8 +65,11 @@
                     <div class="flex justify-between items-center" :class="missed > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
                         <span>Fuori / Pali</span> <span class="font-mono">{{ missed }}</span>
                     </div>
-                    <div class="flex justify-between items-center" :class="blocked > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
+                    <div v-if="blocked != undefined" class="flex justify-between items-center" :class=" blocked > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
                         <span>Stoppati</span> <span class="font-mono">{{ blocked }}</span>
+                    </div>
+                    <div v-if="nulled != undefined" class="flex justify-between items-center" :class="nulled > 0 ? 'text-blue-950 font-semibold' : 'text-slate-400'">
+                        <span>Annullati</span> <span class="font-mono">{{ nulled }}</span>
                     </div>
                 </div>
 
@@ -88,7 +87,8 @@ const props = defineProps<{
     goals: number;
     saved: number;
     missed: number;
-    blocked: number;
+    blocked?: number;
+    nulled?: number;
     highlight?: boolean; // Es. per evidenziare le Ripartenze
 }>();
 
@@ -96,7 +96,7 @@ const props = defineProps<{
 const isPopoverOpen = ref(false);
 
 // Il totale si calcola in automatico dalla somma delle props!
-const total = computed(() => props.goals + props.saved + props.missed + props.blocked);
+const total = computed(() => props.goals + props.saved + props.missed + (props.blocked ? props.blocked : 0) + (props.nulled ? props.nulled : 0));
 
 // Calcolo della Percentuale e dell'Offset per l'SVG
 const strokeOffset = computed(() => {

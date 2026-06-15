@@ -1,18 +1,11 @@
 <template>
-  <NavbarItem />
-  <div class="px-2 md:px-4 py-2 md:py-4 bg-white w-full min-h-full">
+  <!-- <NavbarItem /> -->
+  <!-- <div class="px-2 md:px-4 py-2 md:py-4 bg-white w-full min-h-full"> -->
     <router-view></router-view>
-  </div>
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
 import NavbarItem from './components/NavbarItem.vue';
-import { useSessionStateStore } from './stores/sessionStateStore';
-
-const sessionStateStore = useSessionStateStore()
-
-if (sessionStateStore.sessionId) {
-  sessionStateStore.subscribe() // riapre il canale se c’è sessionId
-}
 
 </script>
