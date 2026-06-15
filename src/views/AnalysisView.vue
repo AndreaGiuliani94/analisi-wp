@@ -77,7 +77,7 @@ const confirmCleanup = async () => {
 };
 
 const hasErrors = computed(() =>
-  videoStore.intervals.some(interval => interval.errors.start || interval.errors.end)
+  videoStore.intervals.some(interval => interval.errors?.start || interval.errors?.end)
 );
 
 const isIntervalEmpy = computed(()=>

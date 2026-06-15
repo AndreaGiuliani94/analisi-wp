@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
-import type { VideoInterval } from "@/interfaces/VideoInterval";
+import type { VideoInterval, VideoIntervalNew } from "@/interfaces/VideoInterval";
 import type { TacticsData } from "@/interfaces/TacticsData";
 import type { Interval } from "@/interfaces/Interval";
 
@@ -9,10 +9,11 @@ interface VideoStoreState {
   selectedFile: File | null;
   videoName: string;
   videoUploaded: boolean;
-  videoURL: string | null;
+  videoURL: string;
   videoDuration: number;
   tsUrls: string [];
   intervals: VideoInterval[];
+  intervalsNew: VideoIntervalNew[];
   downloadProgress: number;
   isDownloading: boolean;
   isUploading: boolean;
@@ -25,10 +26,11 @@ export const useVideoStore = defineStore("video", {
     selectedFile: null,
     videoName: '',
     videoUploaded: false,
-    videoURL: null,
+    videoURL: '',
     videoDuration: 0,
     tsUrls: [],
     intervals: [],
+    intervalsNew: [],
     downloadProgress: 0,
     isDownloading: false,
     isUploading: false,
@@ -40,8 +42,8 @@ export const useVideoStore = defineStore("video", {
       var reqInt: Interval[] = [];
       state.intervals.map(
         (interval) => (reqInt.push({ 
-          start: timeStringToSeconds(interval.start),
-          end: timeStringToSeconds(interval.end),
+          start: interval.start ? timeStringToSeconds(interval.start) : 0,
+          end: interval.end ? timeStringToSeconds(interval.end) : 0,
           category: interval.category,
           title: interval.title
          }))
@@ -73,6 +75,18 @@ export const useVideoStore = defineStore("video", {
       });
     },
 
+    addIntervalNew(): void {
+      this.intervalsNew.push({
+        category: "",
+        anchorTime: 0,
+        offsetStart: 0,
+        offsetEnd: 0,
+        teamId: null,
+        playerNumber: null,
+        title: ""
+      });
+    },
+
     removeInterval(index: number): void {
       this.intervals.splice(index, 1);
     },
@@ -81,27 +95,65 @@ export const useVideoStore = defineStore("video", {
       const value = this.intervals[index][field];
       const timeRegex = /^[0-5]?[0-9]:[0-5][0-9]$/;
 
-      if (!value.match(timeRegex)) {
-        this.intervals[index].errors[field] = "Formato non valido (mm:ss)";
-        return;
+      if (value && !value.match(timeRegex)) {
+        if(this.intervals[index].errors?.[field]) {
+          this.intervals[index].errors[field] = "Formato non valido (mm:ss)";
+          return;
+        }
       } else {
-        this.intervals[index].errors[field] = ""; // Nessun errore
+        if(this.intervals[index].errors?.[field]) {
+          this.intervals[index].errors[field] = ""; // Nessun errore
+        }
       }
 
-      if (timeStringToSeconds(value) > this.videoDuration) {
-        this.intervals[index].errors[field] = "Inserisci un tempo più breve";
+      if (value && timeStringToSeconds(value) > this.videoDuration) {
+        if(this.intervals[index].errors?.[field]) {
+          this.intervals[index].errors[field] = "Inserisci un tempo più breve";
+        }
       }
     },
 
     validateTitle(index: number): void {
-      if(!this.intervals[index].title.trim())
-        this.intervals[index].errors['title'] = 'Inserire un titolo'
+      if(!this.intervals[index].title.trim()) {
+        if (this.intervals[index].errors) {
+          this.intervals[index].errors['title'] = 'Inserire un titolo';
+        }
+      }
     },
 
     async loadVideo(): Promise<void> {
-      await this.uploadVideo();
+      if (true) {
+        await this.mockUploadVideo();
+      } else {
+        await this.uploadVideo();
+      }
       await this.fetchTactics();
       this.addInterval();
+    },
+
+    async mockUploadVideo(): Promise<void> {
+      if (!this.selectedFile) {
+        console.warn("No file selected for mock upload.");
+        return;
+      }
+
+      this.isUploading = true;
+      this.clipJobStatusMessage = 'Simulazione caricamento video...';
+
+      // For mock, directly use the selected file
+      this.setVideoName(this.selectedFile.name.replace(/\.[^/.]+$/, ""));
+      this.videoURL = URL.createObjectURL(this.selectedFile);
+      this.videoUploaded = true;
+      this.tsUrls = []; // Not applicable for direct MP4 playback
+      this.videoDuration = 300; // Mock duration for 5 minutes (300 seconds)
+
+      this.clipJobStatusMessage = 'Video caricato e pronto per la riproduzione (mock)!';
+      console.log("Mock video uploaded:", this.videoURL);
+      this.isUploading = false;
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
     },
 
     async uploadVideo(): Promise<void> {
@@ -377,7 +429,9 @@ export const useVideoStore = defineStore("video", {
     resetStore(): void {
       this.selectedFile = null;
       this.videoUploaded = false;
-      this.videoURL = null;
+      this.videoURL = '';
+      this.videoDuration = 0;
+      this.tsUrls = []
       this.intervals = [];
       this.downloadProgress = 0;
       this.isUploading = false;
