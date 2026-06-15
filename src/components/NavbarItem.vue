@@ -55,5 +55,5 @@ const user = toRef(authStore, 'user');
 
 const { initials } = useInitials(user)
 
-const userRole = sessionStore.currentSession.user_role
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 </script>

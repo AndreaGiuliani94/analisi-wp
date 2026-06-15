@@ -93,7 +93,7 @@ import { useSessionStore } from '@/stores/sessionStore';
 
 const store = useGameStore();
 const sessionStore = useSessionStore();
-const userRole = sessionStore.currentSession.user_role
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants);
 
 onMounted(() => {
   store.loadStore();

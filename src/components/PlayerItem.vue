@@ -1,6 +1,6 @@
 <template>
   <div :class="[
-    isPlayerActive ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
+    player.active ? 'bg-red-800 text-white' : 'bg-gray-200 text-gray-400',
   ]"
     class="p-2 w-1/5 transition-colors duration-300 flex justify-start items-center border border-gray-300 rounded-lg select-none"
     @click.stop="handleClick(team.name == settings.homeTeamName ? 0 : 1)" 
@@ -27,7 +27,7 @@
       <div 
         v-if="player.isGK" 
         class="px-1.5 py-0.5 border rounded-2xl text-xs  transition-all duration-300"
-        :class="[isPlayerActive ? 'bg-white border-white text-red-700' : '']"
+        :class="[player.active ? 'bg-white border-white text-red-700' : '']"
       >
         GK
       </div>
@@ -39,10 +39,10 @@
     </div>
   </div>
 
-  <div v-if="activatedTimer" class="flex flex-col gap-1">
+  <div v-if="team.activatedTimer" class="flex flex-col gap-1">
     <div class="flex items-center gap-1.5 text-blue-950">
       
-      <BoltIcon v-if="isPlayerActive" class="w-5 h-5 text-red-800" />
+      <BoltIcon v-if="player.active" class="w-5 h-5 text-red-800" />
       <EllipsisHorizontalCircleIcon v-else class="w-5 h-5 text-gray-400" />
       
       <span class="tabular-nums">{{ store.formatTime(player.actualTime) }}</span>
@@ -74,7 +74,7 @@
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">PARI</div>
       <ShotButton 
-        :disabled="!isPlayerActive || userRole === 'viewer'" 
+        :disabled="!player.active || userRole === 'viewer'" 
         :type="ShotCategory.EVEN" 
         @handleShot="addShot"
         @remove-shot="removeShot"/>
@@ -83,7 +83,7 @@
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">SUP</div>
       <ShotButton 
-        :disabled="!isPlayerActive || userRole === 'viewer'" 
+        :disabled="!player.active || userRole === 'viewer'" 
         :type="ShotCategory.SUP" 
         :is-goal="false" 
         @handleShot="addShot"
@@ -93,7 +93,7 @@
     <div class="inline-flex items-start ml-2 gap-1 text-blue-950" role="group">
       <div class="h-6 w-8 flex items-center justify-end">RIG</div>
       <ShotButton 
-        :disabled="!isPlayerActive || userRole === 'viewer'"
+        :disabled="!player.active || userRole === 'viewer'"
         :type="ShotCategory.PENALTY" 
         :is-goal="false" 
         @handleShot="addShot"
@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 import { useGameStore } from "@/stores/gameStore";
-import { ref, nextTick, type PropType, computed } from "vue";
+import { ref, nextTick, type PropType } from "vue";
 import type { Player } from "@/interfaces/Player";
 import type { Team } from "../interfaces/Team";
 import ExclutionButton from "./buttons/ExclutionButton.vue";
@@ -156,13 +156,7 @@ const isPlayerDetailOpen = ref<boolean>(false);
 const editableName = ref<string>(props.player.name);
 const isHolding = ref<boolean>(false); // Flag per evitare interferenze con il click
 const inputField = ref<HTMLInputElement | null>(null);
-const userRole = sessionStore.currentSession.user_role
-
-const isHomeTeam = computed(() => props.team.name === settings.homeTeamName)
-
-const activatedTimer = computed(() => isHomeTeam.value ? settings.enableHomePlayersTime : settings.enableOppPlayersTime)
-
-const isPlayerActive = computed(() => props.player.active || !activatedTimer.value);
+const { role: userRole } = useUserRole(sessionStore.currentSession.participants)
 
 const startHold = () => {
   isHolding.value = false; // Reset del flag prima di iniziare
@@ -189,7 +183,7 @@ const stopHold = () => {
 
 const handleClick = (team: number) => {
   console.log("Click triggerato! isEditing:", isEditing.value, "isHolding:", isHolding.value);
-  if (!userRole || userRole === 'viewer') return;
+  if (userRole?.value === 'viewer') return;
   
   // Se stiamo editando o abbiamo appena finito una pressione lunga, NON triggheriamo il toggle
   if (isHolding.value || isEditing.value) {
@@ -200,7 +194,7 @@ const handleClick = (team: number) => {
 };
 
 const saveEdit = (team: number) => {
-  if(userRole && userRole !== 'viewer'){
+  if(userRole && userRole.value !== 'viewer'){
     isEditing.value = false;
     isHolding.value = false;
     store.updatePlayerName(props.player.number, editableName.value, team);
@@ -208,19 +202,19 @@ const saveEdit = (team: number) => {
 };
 
 const addExclution = (payload : { type: string, position: string, ball: boolean, earnedBy: number}, exclNumber: number) => {
-  store.addExclution(props.player.number, (isHomeTeam.value ? 0 : 1), payload.type, payload.position, payload.ball, payload.earnedBy, exclNumber);
+  store.addExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.ball, payload.earnedBy, exclNumber);
 };
 
 const addShot = (payload : { type: ShotCategory, position: string, outcome: ShotOutcome }) => {
-  store.addShoot(props.player.number, (isHomeTeam.value ? 0 : 1), payload.type, payload.position, payload.outcome)
+  store.addShoot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type, payload.position, payload.outcome)
 };
 
 const removeShot = (payload : { type: ShotCategory }) => {
-  store.removeShot(props.player.number, (isHomeTeam.value ? 0 : 1), payload.type)
+  store.removeShot(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), payload.type)
 };
 
 const removeExclution = (exclNumber: number) => {
-  store.removeExclution(props.player.number, (isHomeTeam.value ? 0 : 1), exclNumber);
+  store.removeExclution(props.player.number, (props.team.name == 'SC QUINTO' ? 0 : 1), exclNumber);
 };
 
 const getExclutionState = (index: number) => {
