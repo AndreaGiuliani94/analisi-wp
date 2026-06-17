@@ -10,6 +10,10 @@ import SettingsView from '@/views/match/SettingsView.vue';
 import AppLayout from '@/views/AppLayout.vue';
 import LandingView from '@/views/public/LandingView.vue';
 import OnboardView from '@/views/backoffice/OnboardView.vue';
+import PublicLayout from '@/views/public/PublicLayout.vue';
+import AboutView from '@/views/public/AboutView.vue';
+import CookiePolicyView from '@/views/public/CookiePolicyView.vue';
+import PrivacyPolicyView from '@/views/public/PrivacyPolicyView.vue';
 import BackofficeView from '@/views/backoffice/BackofficeView.vue';
 import OrganizationDetailView from '@/views/backoffice/OrganizationDetailView.vue';
 import RostersView from '@/views/RostersView.vue';
@@ -30,22 +34,43 @@ import AnalysisView2 from '@/views/AnalysisView2.vue';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { 
-      path: "/", 
-      name: "Landing", 
-      component: LandingView
-    },
-    { 
-      path: "/login", 
-      name: "Login", 
-      component: LoginView 
+    {
+      path: '/',
+      component: PublicLayout,
+      children: [
+        {
+          path: '',
+          name: 'Landing',
+          component: LandingView
+        },
+        {
+          path: 'about',
+          name: 'About',
+          component: AboutView
+        },
+        {
+          path: 'cookies',
+          name: 'Cookies',
+          component: CookiePolicyView
+        },
+        {
+          path: 'privacy',
+          name: 'Privacy',
+          component: PrivacyPolicyView
+        },
+        { 
+          path: "login", 
+          name: "Login", 
+          component: LoginView 
+        },
+        {
+          path: '/live/:slug',
+          name: 'ClubLiveHub',
+          component: () => import('@/views/public/ClubLiveHub.vue')
+        },
+      ]
     },
     { path: "/auth/callback", component: CallbackView },
-    {
-      path: '/live/:slug',
-      name: 'ClubLiveHub',
-      component: () => import('@/views/public/ClubLiveHub.vue')
-    },
     {
       path: '/live/:slug/match/:matchId',
       component: PublicLiveLayout,
@@ -171,12 +196,14 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
+  // Prova a recuperare la sessione se non è ancora stato fatto (es. refresh pagina)
+  if (!authStore.isInitialized && !authStore.accessToken) {
+    await authStore.refresh()
+  }
+
   if (to.meta.requiresAuth) {
-    if (!authStore.accessToken) {
-      const ok = await authStore.refresh()
-      if (!ok) {
-        return next({ name: 'Login' })
-      }
+    if (!authStore.isLoggedIn) {
+      return next({ name: 'Login' })
     }
   }
 

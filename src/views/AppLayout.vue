@@ -8,7 +8,7 @@
       <div class="h-16 flex items-center px-4 border-b border-blue-900" :class="isCollapsed ? 'justify-center' : 'justify-between'">
         <icon v-if="!isCollapsed" name="logo" size="w-8 h-8" ></icon>
         <span v-if="!isCollapsed" class="text-lg font-bold tracking-wider whitespace-nowrap overflow-hidden">
-          MATCH LIVE
+          WPStudio
         </span>
         
         <button @click="isCollapsed = !isCollapsed" class="p-2 rounded-lg hover:bg-blue-800 transition-colors text-blue-200 hover:text-white">

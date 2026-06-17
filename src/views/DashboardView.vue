@@ -60,7 +60,7 @@
 
       <!-- Colonna Laterale: Stats & Info -->
       <div class="space-y-6">
-        <div class="bg-linear-to-br from-blue-900 to-blue-950 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
+        <!-- <div class="bg-linear-to-br from-blue-900 to-blue-950 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
           <TrophyIcon class="absolute -right-4 -bottom-4 size-32 opacity-10 rotate-12" />
           <h3 class="text-xs font-bold uppercase tracking-widest opacity-70 mb-4">Statistiche Stagione</h3>
           <div class="grid grid-cols-2 gap-4 relative z-10">
@@ -73,7 +73,7 @@
               <p class="text-[10px] font-bold uppercase opacity-80">Vittorie</p>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- <section class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-blue-950 mb-4 flex items-center gap-2">

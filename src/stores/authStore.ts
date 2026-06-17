@@ -24,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     accessToken: null as string | null,
+    isInitialized: false,
   }),
 
   getters: {
@@ -39,8 +40,7 @@ export const useAuthStore = defineStore('auth', {
       const res = await logout();
       console.log(res);
       localStorage.removeItem("token");
-      this.accessToken = null;
-      this.user = null;
+      this.clearAuth();
     },
     async refresh() {
       try {
@@ -58,11 +58,14 @@ export const useAuthStore = defineStore('auth', {
         console.error('Errore durante il refresh', e);
         this.clearAuth();
         return false;
+      } finally {
+        this.isInitialized = true;
       }
     },
     clearAuth() {
       this.accessToken = null;
       this.user = null;
+      this.isInitialized = false;
     }
   },
 });
