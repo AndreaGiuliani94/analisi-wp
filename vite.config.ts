@@ -15,20 +15,20 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate', // Aggiorna automaticamente la PWA
       manifest: {
-        name: 'MatchLive WP',
-        short_name: 'ML WP',
-        description: 'Una fantastica Progressive Web App con Vue e Vite',
+        name: 'WPStudio',
+        short_name: 'WPStudio',
+        description: 'L\'app definitiva per l\'analisi della pallanuoto. Dimentica i fogli Excel e i taccuini: con WPStudio hai tutto a portata di mano, in tempo reale, direttamente sul tuo dispositivo.',
         theme_color: '#42b883',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
           {
-            src: '/img/icons/android-chrome-192x192.png',
+            src: '/img/icons/logo-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/img/icons/android-chrome-512x512.png',
+            src: '/img/icons/logo-512.png',
             sizes: '512x512',
             type: 'image/png'
           }
