@@ -123,9 +123,9 @@ export const useVideoStore = defineStore("video", {
 
     async loadVideo(): Promise<void> {
       if (true) {
-        await this.mockUploadVideo();
-      } else {
         await this.uploadVideo();
+      } else {
+        await this.mockUploadVideo();
       }
       await this.fetchTactics();
       this.addInterval();
