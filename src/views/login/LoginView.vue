@@ -32,18 +32,18 @@
           :disabled="loading"
         ></ActionButton>
 
-        <ActionButton 
+        <!-- <ActionButton 
           :label="'Registrati'"
           color="blue"
           width="half"
           justify="center"
           :disabled="loading"
           @click="showRegisterModal = true"
-        ></ActionButton>
+        ></ActionButton> -->
 
       </form>
 
-      <div class="my-4 text-center text-gray-500">oppure</div>
+      <!-- <div class="my-4 text-center text-gray-500">oppure</div>
 
       <div class="flex justify-center">
         <button @click="loginWithGoogle" 
@@ -53,7 +53,7 @@
         <Icon name="google" size="w-5 h-5" viewBox="0 0 48 48"></Icon>
           Accedi con Google
         </button>
-      </div>
+      </div> -->
 
       <RegisterModal :isOpen="showRegisterModal" @close="showRegisterModal = false"/>
 
