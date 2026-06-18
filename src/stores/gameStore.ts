@@ -118,7 +118,7 @@ export const useGameStore = defineStore("gameStore", {
      */
     getGoalkeeperShotsFaced: (state) => {
       return (goalkeeperId: string, quarter?: number | null) => {
-        let totalShotsFaced = state.events.filter(e => e.defendingGoalkeeperId === goalkeeperId);
+        let totalShotsFaced = state.events.filter(e => e.defendingGoalkeeperId === goalkeeperId && (e.shotOutcome === ShotOutcome.GOAL || e.shotOutcome === ShotOutcome.SAVED));
 
         if (quarter !== null && quarter !== undefined) {
           totalShotsFaced = totalShotsFaced.filter(e => e.quarter === quarter);
