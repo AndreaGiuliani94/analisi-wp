@@ -108,7 +108,7 @@ const props = defineProps<{
 }>()
 
 const matchEnded = computed(() => {
-  return (timerStore.currentPeriod === settingsStore.totalPeriods && !timerStore.isTimerRunning);
+  return (timerStore.currentPeriod === settingsStore.totalPeriods && !timerStore.isTimerRunning && timerStore.countdown === 0);
 });
 
 /**
