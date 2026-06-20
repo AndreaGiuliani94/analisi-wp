@@ -29,7 +29,7 @@ import MatchesView from '@/views/MatchesView.vue';
 import TournamentsView from '@/views/tournament/TournamentsView.vue';
 import TournamentDetailView from '@/views/tournament/TournamentDetailView.vue';
 import PublicLiveMatchEventsView from '@/views/public/match/PublicLiveMatchEventsView.vue';
-import AnalysisView2 from '@/views/AnalysisView2.vue';
+// import AnalysisView2 from '@/views/AnalysisView2.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -58,10 +58,10 @@ const router = createRouter({
           name: 'Privacy',
           component: PrivacyPolicyView
         },
-        { 
-          path: "login", 
-          name: "Login", 
-          component: LoginView 
+        {
+          path: "login",
+          name: "Login",
+          component: LoginView
         },
         {
           path: '/live/:slug',
@@ -87,54 +87,57 @@ const router = createRouter({
         }
       ]
     },
-    { 
-      path: "/workspace", 
+    {
+      path: "/workspace",
       component: AppLayout,
       meta: { requiresAuth: true },
       children: [
-        { 
-          path: '', 
-          redirect: '/workspace/dashboard' 
+        {
+          path: '',
+          redirect: '/workspace/dashboard'
         },
-        { 
-          path: 'backoffice', 
+        {
+          path: 'backoffice',
           name: 'Backoffice',
           component: BackofficeView,
         },
         {
-          path:'backoffice/onboard',
-          name:'Registrazione società',
+          path: 'backoffice/onboard',
+          name: 'Registrazione società',
           component: OnboardView
         },
         {
-          path:'backoffice/organization/:id',
+          path: 'backoffice/organization/:id',
           name: 'Società',
           component: OrganizationDetailView
         },
         {
-          path: 'profile', 
+          path: 'profile',
           name: 'Profilo',
           component: ProfileView
         },
-        { 
-          path: 'dashboard', 
+        {
+          path: 'dashboard',
           name: 'Dashboard',
           component: DashboardView
         },
-        { path: 'analysis', 
+        {
+          path: 'analysis',
           name: 'Analisi video',
-          component: AnalysisView2
+          component: AnalysisView
         },
-        { path: 'rosters', 
+        {
+          path: 'rosters',
           name: 'Roster',
           component: RostersView
         },
-        { path: 'stats', 
+        {
+          path: 'stats',
           name: 'Statistiche',
           component: StatsView
         },
-        { 
-          path: 'matches/:id', 
+        {
+          path: 'matches/:id',
           component: MatchDetail
         },
         {
@@ -159,37 +162,37 @@ const router = createRouter({
       component: JoinMatch,
       meta: { requiresAuth: true },
       children: [
-        { 
-          path: 'setup', 
+        {
+          path: 'setup',
           name: 'MatchSetup',
           component: MatchSetupView
         },
-        { 
-          path: 'live', 
+        {
+          path: 'live',
           name: 'MatchLive',
-          component: ScoreboardView 
+          component: ScoreboardView
         },
-        { 
-          path: 'events', 
+        {
+          path: 'events',
           name: 'MatchEvents',
           component: EventView
         },
-        { 
-          path: 'report', 
+        {
+          path: 'report',
           name: 'MatchReport',
           component: ReportView
         },
-        { 
-          path: 'settings', 
+        {
+          path: 'settings',
           name: 'MatchSettings',
-          component: SettingsView 
+          component: SettingsView
         },
         {
           path: '',
           redirect: { name: 'MatchLive' }
         }
       ]
-    }    
+    }
   ]
 });
 
