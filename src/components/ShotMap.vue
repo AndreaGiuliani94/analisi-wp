@@ -76,10 +76,10 @@
             <div v-else-if="viewMode=='sup'" class="absolute inset-0 z-10">
 
                 <div class="absolute top-[10%] left-[35%]">
-                    <ZoneBadge name="P5" v-bind="getSupZoneStats('P5')" />
+                    <ZoneBadge name="P5" v-bind="getSupZoneStats('5')" />
                 </div>
                 <div class="absolute top-[10%] right-[35%]">
-                    <ZoneBadge name="P6" v-bind="getSupZoneStats('P6')" />
+                    <ZoneBadge name="P6" v-bind="getSupZoneStats('6')" />
                 </div>
                 <div class="absolute top-[10%] right-[10%]">
                     <ZoneBadge name="1" v-bind="getSupZoneStats('1')" />
