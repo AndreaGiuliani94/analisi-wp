@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col w-full">
     <Listbox :modelValue="modelValue" @update:modelValue="updateSelection" >
-      <ListboxLabel class="text-sm font-medium">*Categoria:</ListboxLabel>
+      <ListboxLabel class="text-sm font-medium">Categoria:</ListboxLabel>
       <div class="relative">
         <ListboxButton
           class="relative z-5 h-8 w-full rounded-md bg-white border border-gray-300 pl-3 pr-10 text-left sm:text-sm active:ring-2 active:ring-blue-300 active:border-blue-400">
@@ -68,6 +68,28 @@
                 </span>
               </li>
             </ListboxOption>
+            
+            <div class="py-2 px-4 font-bold">Altro</div>
+            <ListboxOption v-slot="{ active, selected }" value="Altro">
+              <li :class="[
+                'relative cursor-pointer select-none py-2 pl-10 pr-4 rounded',
+                active ? 'bg-slate-500 text-white' : ''
+              ]">
+                <span
+                  :class="[
+                    selected ? 'font-medium' : 'font-normal',
+                    'truncate',
+                  ]"
+                  >Altro</span
+                >
+                <span
+                  v-if="selected"
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-green-500"
+                >
+                  <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                </span>
+              </li>
+            </ListboxOption>
           </ListboxOptions>
         </transition>
       </div>
@@ -79,6 +101,7 @@
 import { useVideoStore } from "@/stores/videoStore";
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption, ListboxLabel } from "@headlessui/vue";
+import { onMounted } from "vue";
 
 const props = defineProps<{
   modelValue: string;
@@ -94,7 +117,11 @@ const updateSelection = (selectedTactic: string) => {
 };
 
 const videoStore = useVideoStore();
-
 const tactics = videoStore.tactics;
 
+onMounted(async () => {
+  if (videoStore.tactics === null) {
+    await videoStore.fetchTactics();
+  }
+})
 </script>

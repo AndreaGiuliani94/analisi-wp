@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
+import { supabase } from '@/lib/supabase';
+import * as videoService from '@/services/videoService';
 import type { VideoInterval, VideoIntervalNew } from "@/interfaces/VideoInterval";
 import type { TacticsData } from "@/interfaces/TacticsData";
 import type { Interval } from "@/interfaces/Interval";
@@ -8,10 +10,11 @@ import type { Interval } from "@/interfaces/Interval";
 interface VideoStoreState {
   selectedFile: File | null;
   videoName: string;
+  videoId: string;
   videoUploaded: boolean;
   videoURL: string;
   videoDuration: number;
-  tsUrls: string [];
+  tsUrls: string[];
   intervals: VideoInterval[];
   intervalsNew: VideoIntervalNew[];
   downloadProgress: number;
@@ -19,12 +22,18 @@ interface VideoStoreState {
   isUploading: boolean;
   tactics: TacticsData | null;
   clipJobStatusMessage: string;
+  activeChannel: any;
+  videoList: any[];
+  isFetchingVideos: boolean;
+  exportedClips: string[];
+  isExporting: boolean;
 }
 
 export const useVideoStore = defineStore("video", {
   state: (): VideoStoreState => ({
     selectedFile: null,
     videoName: '',
+    videoId: '',
     videoUploaded: false,
     videoURL: '',
     videoDuration: 0,
@@ -35,18 +44,23 @@ export const useVideoStore = defineStore("video", {
     isDownloading: false,
     isUploading: false,
     tactics: null,
-    clipJobStatusMessage: ''
+    clipJobStatusMessage: '',
+    activeChannel: null,
+    videoList: [],
+    isFetchingVideos: false,
+    exportedClips: [],
+    isExporting: false
   }),
   getters: {
     requestIntervals: (state) => {
       var reqInt: Interval[] = [];
       state.intervals.map(
-        (interval) => (reqInt.push({ 
+        (interval) => (reqInt.push({
           start: interval.start ? timeStringToSeconds(interval.start) : 0,
           end: interval.end ? timeStringToSeconds(interval.end) : 0,
           category: interval.category,
           title: interval.title
-         }))
+        }))
       );
       return reqInt;
     },
@@ -71,12 +85,13 @@ export const useVideoStore = defineStore("video", {
         end: "",
         category: "",
         title: "",
-        errors: { start: "", end: "", title: ""},
+        errors: { start: "", end: "", title: "" },
       });
     },
 
     addIntervalNew(): void {
       this.intervalsNew.push({
+        type: "",
         category: "",
         anchorTime: 0,
         offsetStart: 0,
@@ -96,25 +111,25 @@ export const useVideoStore = defineStore("video", {
       const timeRegex = /^[0-5]?[0-9]:[0-5][0-9]$/;
 
       if (value && !value.match(timeRegex)) {
-        if(this.intervals[index].errors?.[field]) {
+        if (this.intervals[index].errors?.[field]) {
           this.intervals[index].errors[field] = "Formato non valido (mm:ss)";
           return;
         }
       } else {
-        if(this.intervals[index].errors?.[field]) {
+        if (this.intervals[index].errors?.[field]) {
           this.intervals[index].errors[field] = ""; // Nessun errore
         }
       }
 
       if (value && timeStringToSeconds(value) > this.videoDuration) {
-        if(this.intervals[index].errors?.[field]) {
+        if (this.intervals[index].errors?.[field]) {
           this.intervals[index].errors[field] = "Inserisci un tempo più breve";
         }
       }
     },
 
     validateTitle(index: number): void {
-      if(!this.intervals[index].title.trim()) {
+      if (!this.intervals[index].title.trim()) {
         if (this.intervals[index].errors) {
           this.intervals[index].errors['title'] = 'Inserire un titolo';
         }
@@ -129,6 +144,161 @@ export const useVideoStore = defineStore("video", {
       }
       await this.fetchTactics();
       this.addInterval();
+    },
+
+    unsubscribeVideoUpdates() {
+      if (this.activeChannel) {
+        supabase.removeChannel(this.activeChannel);
+        this.activeChannel = null;
+        console.log("Disconnesso dagli eventi video");
+      }
+    },
+
+    subscribeToVideoUpdates() {
+      if (this.activeChannel) {
+        supabase.removeChannel(this.activeChannel);
+      }
+
+      this.activeChannel = supabase
+        .channel(`video_channel_${this.videoId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'videos',
+            filter: `id=eq.${this.videoId}`
+          },
+          async (payload) => {
+            console.log("Video update ricevuto dal DB!", payload);
+            const videoData: any = payload.new;
+            if (videoData) {
+              if (videoData.status?.toUpperCase() === 'READY') {
+                this.clipJobStatusMessage = 'Terminata l\'elaborazione per lo streaming!';
+                console.log('Video processed successfully!');
+                await this.getStreamingVideoInfo();
+              } else if (videoData.status?.toUpperCase() === 'ERROR') {
+                this.videoUploaded = false;
+                console.error('Il processo di conversione è fallito');
+              } else if (videoData.status) {
+                this.clipJobStatusMessage = `Stato elaborazione: ${videoData.status}`;
+                console.log(`Stato elaborazione: ${videoData.status}`);
+              }
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log(`In ascolto sul video ${this.videoId}`);
+          }
+        });
+    },
+
+    async fetchVideoList(): Promise<void> {
+      this.isFetchingVideos = true;
+      try {
+        const response = await videoService.getVideoList();
+        const data = await response.json();
+        const rawData = Array.isArray(data) ? data : data.videos || [];
+        this.videoList = rawData.map((v: any) => ({
+          id: v.id || v.video_id,
+          name: v.name || v.file_name || v.title || 'Video Sconosciuto'
+        }));
+      } catch (error) {
+        console.error("Errore nel recupero della lista video:", error);
+      } finally {
+        this.isFetchingVideos = false;
+      }
+    },
+
+    async loadExistingVideo(videoId: string): Promise<void> {
+      if (!videoId) return;
+      this.videoId = videoId;
+      await this.getStreamingVideoInfo();
+      await this.getClipsReadyToDownload()
+    },
+
+    async exportVideoClips(): Promise<void> {
+      if (!this.videoId || this.intervalsNew.length === 0) return;
+      this.isExporting = true;
+      try {
+        const response = await videoService.exportClips(this.videoId, this.intervalsNew);
+        const data = await response.json();
+        // Presumiamo che data sia un array di link
+        this.exportedClips = Array.isArray(data) ? data : data.clips || [];
+      } catch (error) {
+        console.error("Errore durante l'esportazione delle clip:", error);
+        alert("Si è verificato un errore durante l'esportazione delle clip.");
+      } finally {
+        this.isExporting = false;
+      }
+    },
+
+    async getStreamingVideoInfo(): Promise<void> {
+      if (!this.videoId) return;
+
+      this.isUploading = true;
+      this.clipJobStatusMessage = 'Recupero streaming...';
+
+      try {
+        const response = await videoService.getVideoInfo(this.videoId);
+        const data = await response.json();
+        if (data.error) {
+          console.error("Errore: " + data.error)
+          alert("Errore nel caricamento del video")
+        } else {
+          this.videoURL = data.video_url;
+          this.tsUrls = data.ts_urls;
+          this.videoDuration = data.duration;
+          this.videoUploaded = true;
+        }
+      } catch (error) {
+        this.clipJobStatusMessage = 'Errore nel recupero video pre-firmato.';
+        console.error("Error in pre-signed URL fetch:", error);
+        throw error;
+      } finally {
+        this.isUploading = false;
+      }
+    },
+
+    async getClipsReadyToDownload(): Promise<void> {
+      if (!this.videoId) return;
+
+      this.isUploading = true;
+      this.clipJobStatusMessage = 'Recupero clip pronte...';
+
+      try {
+        const response = await videoService.getClipsReadyToDownload(this.videoId);
+        const data = await response.json();
+        if (data.error) {
+          console.error("Errore: " + data.error)
+          alert("Errore nel recupero delle clip")
+        } else {
+          this.exportedClips = data;
+        }
+      } catch (error) {
+        this.clipJobStatusMessage = 'Errore nel recupero video pre-firmato.';
+        console.error("Error in pre-signed URL fetch:", error);
+        throw error;
+      } finally {
+        this.isUploading = false;
+      }
+    },
+
+    async getDownloadUrl(key: string) {
+      try {
+        const response = await videoService.getDownloadUrl(key);
+        const data = await response.json();
+        if (data.error) {
+          console.error("Errore: " + data.error)
+          alert("Errore nel recupero del link di download")
+        } else {
+          return data;
+        }
+      } catch (error) {
+        console.error("Error in pre-signed URL fetch:", error);
+        throw error;
+      }
     },
 
     async mockUploadVideo(): Promise<void> {
@@ -166,52 +336,54 @@ export const useVideoStore = defineStore("video", {
       this.isUploading = true; // Mostra lo spinner
 
       try {
-        const response = await axios.get(import.meta.env.VITE_BE_URL + `/video/link/?file_name=${this.selectedFile.name}`);
-        const presignedUrl = response.data.url;
-        const jobId = response.data.job_id;
+        const response = await videoService.getVideoLink(this.selectedFile.name);
+        const data = await response.json();
+        const presignedUrl = data.url;
+        this.videoId = data.video_id;
+
+        this.subscribeToVideoUpdates();
 
         // Carica il file direttamente su S3 usando l'URL pre-firmato
-        const uploadResponse = await this.uploadFileWithProgress(this.selectedFile, presignedUrl, (percent) => {
+        await this.uploadFileWithProgress(this.selectedFile, presignedUrl, (percent) => {
           this.clipJobStatusMessage = `Upload... (${percent}%)`;
         });
 
-        this.clipJobStatusMessage='Sto elaborando il video...'
-        await this.waitForCompletion(jobId, 1800000); // 30min
+        this.clipJobStatusMessage = 'Sto elaborando il video...'
+        // await this.waitForCompletion(jobId, 1800000); // 30min
 
-        if (uploadResponse.status === 200 && this.videoUploaded) {
-          console.log('File caricato con successo su S3!');
-          const response = await axios.get(import.meta.env.VITE_BE_URL + `/video/info/?file_name=${this.videoName}`);
-          if(response.data.error){
-            console.error("Errore: " + response.data.error)
-            alert("Errore nel caricamento del video")
-          } else {
-            this.videoURL = response.data.video_url;
-            this.tsUrls = response.data.ts_urls;
-            this.videoDuration = response.data.duration;
-          }
-        } else {
-          throw new Error("Errore in upload")
-        }
+        // if (uploadResponse.status === 200 && this.videoUploaded) {
+        //   console.log('File caricato con successo su S3!');
+        //   const response = await axios.get(import.meta.env.VITE_BE_URL + `/video/info/?file_name=${this.videoName}`);
+        //   if (response.data.error) {
+        //     console.error("Errore: " + response.data.error)
+        //     alert("Errore nel caricamento del video")
+        //   } else {
+        //     this.videoURL = response.data.video_url;
+        //     this.tsUrls = response.data.ts_urls;
+        //     this.videoDuration = response.data.duration;
+        //   }
+        // } else {
+        //   throw new Error("Errore in upload")
+        // }
       } catch (error) {
         console.error("Errore nell'upload del video", error);
         alert("Errore nell'upload del video");
-      } finally {
-        this.clipJobStatusMessage='';
+        this.clipJobStatusMessage = '';
         this.isUploading = false; // Nasconde lo spinner
       }
     },
 
-    async waitForCompletion(jobId:string, timeout: number) {
+    async waitForCompletion(jobId: string, timeout: number) {
       return new Promise<void>((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           reject(new Error('Timeout di attesa superato.'));
         }, timeout);
 
         const intervalId = setInterval(async () => {
-          await this.getConversionStatus(jobId);  
+          await this.getConversionStatus(jobId);
           // Se la conversione è completata, ferma il ciclo
           if (this.videoUploaded) {
-            this.clipJobStatusMessage='Terminata l\'elaborazione per lo streaming!'
+            this.clipJobStatusMessage = 'Terminata l\'elaborazione per lo streaming!'
             clearInterval(intervalId); // Ferma l'intervallo
             clearTimeout(timeoutId);
             resolve(); // Risolve la Promise, terminando l'attesa
@@ -220,7 +392,7 @@ export const useVideoStore = defineStore("video", {
       });
     },
 
-    async getConversionStatus(jobId:string): Promise<void> {
+    async getConversionStatus(jobId: string): Promise<void> {
       try {
         const statusResponse = await axios.get(import.meta.env.VITE_BE_URL + `/status/check/?job_id=${jobId}`);
         const status = statusResponse.data.status;
@@ -239,7 +411,7 @@ export const useVideoStore = defineStore("video", {
         console.error('Errore durante il polling dello stato', error);
         this.videoUploaded = false;
       }
-      
+
     },
 
     async uploadFileWithProgress(
@@ -299,7 +471,7 @@ export const useVideoStore = defineStore("video", {
           if (status.status === 'failed') {
             throw new Error(status.error || 'Elaborazione fallita');
           }
-    
+
           if (status.status === 'completed' && status.download_url) {
             this.downloadProgress = 90;
             this.clipJobStatusMessage = 'Creazione zip completata. Avvio download...';
@@ -309,14 +481,14 @@ export const useVideoStore = defineStore("video", {
             });
             break;
           }
-    
+
           if (status.status === 'zipping') {
             if (status.processed_clips) {
               currentClip = status.processed_clips;
               this.clipJobStatusMessage = `Zip clip (${currentClip}/${totalClips})`;
               this.downloadProgress = 60 + Math.round((currentClip / totalClips) * 30); // Dal 60 al 90%
             }
-          } 
+          }
           if (status.status === 'processing') {
             if (status.processed_clips) {
               // Simula avanzamento basato sul numero di clip
@@ -325,7 +497,7 @@ export const useVideoStore = defineStore("video", {
               this.downloadProgress = Math.round((currentClip / totalClips) * 60); // Fino al 60%
             }
           }
-    
+
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
 
@@ -349,19 +521,19 @@ export const useVideoStore = defineStore("video", {
     ): Promise<void> {
       try {
         const response = await fetch(downloadUrl);
-    
+
         if (!response.ok || !response.body) {
           throw new Error(`Errore durante il download: ${response.statusText}`);
         }
-    
+
         const contentLength = response.headers.get("Content-Length");
         if (!contentLength) throw new Error("Impossibile determinare la dimensione del file");
-    
+
         const total = parseInt(contentLength, 10);
         let loaded = 0;
         const reader = response.body.getReader();
         const chunks: Uint8Array[] = [];
-    
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -374,16 +546,16 @@ export const useVideoStore = defineStore("video", {
             }
           }
         }
-    
+
         const blob = new Blob(chunks);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
-    
+
         link.href = url;
         link.setAttribute("download", fileName);
         document.body.appendChild(link);
         link.click();
-    
+
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } catch (error) {
@@ -391,14 +563,14 @@ export const useVideoStore = defineStore("video", {
       }
     },
 
-    async cleanupVideos(): Promise<void> {
+    async cleanupBucket(): Promise<void> {
       try {
-        if (!this.selectedFile) return;
+        if (!this.videoId) return;
         this.isUploading = true; // Mostra lo spinner
-        await axios.delete(import.meta.env.VITE_BE_URL + "/video/clean-bucket/" + "?file_name=" + this.selectedFile.name);
+        await videoService.cleanBucket(this.videoId);
         this.isUploading = false; // Nasconde lo spinner
         this.resetStore();
-        alert("Cartelle pulite con successo!");
+        alert("Video rimosso con successo!");
       } catch (error) {
         console.error("Errore nella pulizia dei video", error);
       }
@@ -416,25 +588,29 @@ export const useVideoStore = defineStore("video", {
     },
 
     async testS3Connection(): Promise<void> {
-      try{
+      try {
         const response = await axios.get<TacticsData>(
           import.meta.env.VITE_BE_URL + "/test-s3"
         );
         console.log("connesso a S3", response);
-      } catch(error) {
+      } catch (error) {
         console.error("Errore nella connessione a S3", error);
       }
     },
 
     resetStore(): void {
-      this.selectedFile = null;
+      this.intervalsNew = [];
       this.videoUploaded = false;
+      this.selectedFile = null;
+      this.isUploading = false;
+      this.clipJobStatusMessage = '';
+      this.exportedClips = [];
+      this.isExporting = false;
       this.videoURL = '';
       this.videoDuration = 0;
       this.tsUrls = []
       this.intervals = [];
       this.downloadProgress = 0;
-      this.isUploading = false;
       this.tactics = null;
     },
   },

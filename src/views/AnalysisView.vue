@@ -73,7 +73,7 @@ const videoStore = useVideoStore();
 const showConfirmModal = ref(false);
 const confirmCleanup = async () => {
   showConfirmModal.value = false;
-  await videoStore.cleanupVideos();
+  await videoStore.cleanupBucket();
 };
 
 const hasErrors = computed(() =>

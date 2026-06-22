@@ -29,7 +29,7 @@ import MatchesView from '@/views/MatchesView.vue';
 import TournamentsView from '@/views/tournament/TournamentsView.vue';
 import TournamentDetailView from '@/views/tournament/TournamentDetailView.vue';
 import PublicLiveMatchEventsView from '@/views/public/match/PublicLiveMatchEventsView.vue';
-// import AnalysisView2 from '@/views/AnalysisView2.vue';
+import AnalysisView2 from '@/views/AnalysisView2.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -124,7 +124,7 @@ const router = createRouter({
         {
           path: 'analysis',
           name: 'Analisi video',
-          component: AnalysisView
+          component: AnalysisView2
         },
         {
           path: 'rosters',

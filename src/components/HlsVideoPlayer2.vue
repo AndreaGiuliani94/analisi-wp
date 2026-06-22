@@ -2,7 +2,6 @@
   <div class="relative bg-black rounded-xl overflow-hidden shadow-lg border border-slate-800">
     <video 
       ref="videoRef"
-      :src="videoUrl" 
       controls 
       class="w-full aspect-video"
       @timeupdate="emitTime"
@@ -17,13 +16,57 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import Hls from 'hls.js';
+import { useVideoStore } from '@/stores/videoStore';
 
-defineProps<{
-  videoUrl: string;
-}>();
+const videoStore = useVideoStore();
+
+const props = defineProps({
+    videoUrl: {
+        type: String,
+        required: true
+    }
+});
 
 const emit = defineEmits(['time-update']);
 const videoRef = ref<HTMLVideoElement | null>(null);
+const hlsInstance = ref<Hls | null>(null);
+const videoUrl = ref<string | null>(null);
+
+const loadHlsVideo = async () => {
+    const video = videoRef.value;
+    if (!video) return;
+
+    const m3u8Response = await fetch(props.videoUrl);
+    let m3u8Content = await m3u8Response.text();
+
+    videoStore.tsUrls.forEach((tsUrl: string, index: number) => {
+      m3u8Content = m3u8Content.replace(new RegExp(`index${index}\\.ts`, 'g'), tsUrl);
+    });
+
+    const blob = new Blob([m3u8Content], { type: 'application/vnd.apple.mpegurl' });
+    videoUrl.value = URL.createObjectURL(blob);
+
+    if (Hls.isSupported()) {
+        hlsInstance.value = new Hls();
+        // Carica il flusso HLS
+        hlsInstance.value.loadSource(videoUrl.value);
+        // Collega HLS.js al tag video
+        hlsInstance.value.attachMedia(video);
+        // Inizia la riproduzione una volta che il flusso è pronto
+        hlsInstance.value.on(Hls.Events.MANIFEST_PARSED, function () {
+            // video.play();
+        });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari e altri browser che supportano nativamente HLS
+        video.src = props.videoUrl;
+        video.addEventListener('loadedmetadata', function () {
+            // video.play();
+        });
+    } else {
+        console.error("Il tuo browser non supporta HLS.");
+    }
+};
 
 const emitTime = () => {
   if (videoRef.value) {
@@ -70,6 +113,16 @@ defineExpose({
   }
 });
 
-onMounted(() => window.addEventListener('keydown', handleKeydown));
-onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
+onMounted(async() => {
+  window.addEventListener('keydown', handleKeydown)
+  if (props.videoUrl && videoStore.tsUrls.length > 0) {
+    await loadHlsVideo()
+  }
+});
+
+onUnmounted(async () => { 
+  window.removeEventListener('keydown', handleKeydown)
+  hlsInstance.value?.destroy();
+});
+
 </script>

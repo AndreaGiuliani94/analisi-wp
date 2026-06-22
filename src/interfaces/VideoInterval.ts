@@ -11,11 +11,13 @@ export interface VideoInterval {
 }
 
 export interface VideoIntervalNew {
-  category: string;
-  anchorTime: number;
+  id?: string
+  category: string
+  anchorTime: number
   title: string
+  type: string
   offsetStart: number
-  offsetEnd: number;
-  teamId?: string | null;
-  playerNumber?: number | null;
+  offsetEnd: number
+  teamId?: string | null
+  playerNumber?: number | null
 }
