@@ -138,7 +138,7 @@ const createTag = (type: string) => {
     type: type,
     category: '',
     anchorTime: anchor,
-    offsetStart: -5, // Default 5s prima
+    offsetStart: 5,
     offsetEnd: 5
   });
 };

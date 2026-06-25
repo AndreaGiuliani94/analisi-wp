@@ -16,7 +16,7 @@
 
     <div class="flex items-center gap-4 shrink-0">
       <div class="text-xs font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">
-        {{ useTimeFormat().formatMsToTimer(interval.anchorTime + interval.offsetStart) }} - {{ useTimeFormat().formatMsToTimer(interval.anchorTime + interval.offsetEnd) }}
+        {{ useTimeFormat().formatMsToTimer(Math.max(0, interval.anchorTime - (interval.offsetStart * 1000))) }} - {{ useTimeFormat().formatMsToTimer(interval.anchorTime + (interval.offsetEnd * 1000)) }}
       </div>
       
       <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -83,10 +83,10 @@
       <div class="flex flex-col gap-1">
         <div class="flex justify-between text-xs font-semibold text-slate-500">
           <span>Inizio (Prima del click)</span>
-          <span class="text-blue-600 font-mono">{{ interval.offsetStart }}s</span>
+          <span class="text-blue-600 font-mono">-{{ interval.offsetStart }}s</span>
         </div>
         <input 
-          type="range" min="-30" max="0" step="1" 
+          type="range" min="0" max="30" step="1" 
           v-model.number="interval.offsetStart"
           class="w-full accent-blue-900 cursor-pointer h-1 bg-slate-200 rounded-lg appearance-none"
         />
@@ -109,7 +109,7 @@
       <div class="flex flex-col text-[10px] text-slate-400 font-mono">
         <span>Ancoraggio: {{ useTimeFormat().formatMsToTimer(interval.anchorTime) }}</span>
         <span class="font-bold text-slate-700">
-          Clip: {{ useTimeFormat().formatMsToTimer(interval.anchorTime + interval.offsetStart) }} - {{ useTimeFormat().formatMsToTimer(interval.anchorTime + interval.offsetEnd) }}
+          Clip: {{ useTimeFormat().formatMsToTimer(Math.max(0, interval.anchorTime - (interval.offsetStart * 1000))) }} - {{ useTimeFormat().formatMsToTimer(interval.anchorTime + (interval.offsetEnd * 1000)) }}
         </span>
       </div>
       
