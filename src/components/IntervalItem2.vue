@@ -1,12 +1,20 @@
 <template>
   <div 
-    v-if="!isEditing" 
-    @click="isEditing = true"
-    class="bg-white border-2 rounded-lg p-3 flex items-center justify-between shadow-sm hover:bg-slate-50 transition-colors group cursor-pointer"
-    :class="categoryBorderColorClass"
-  >
+    v-if="!isEditing || interval.status !== IntervalsStatus.DRAFT" 
+    @click="openEditIfDraft"
+    class="bg-white border-2 rounded-lg p-3 flex items-center justify-between shadow-sm transition-colors group"
+    :class="[
+      categoryBorderColorClass, 
+      interval.status === IntervalsStatus.DRAFT ? 'cursor-pointer hover:bg-slate-50' : 'opacity-90 cursor-default bg-slate-50/50'
+    ]"
+    >
     <div class="flex items-center gap-3 overflow-hidden">
-      <span class="text-sm font-bold text-slate-700 truncate">
+      <span v-if="interval.status === IntervalsStatus.PROCESSING" class="flex h-3 w-3 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+      </span>
+
+      <span class="text-sm font-bold text-slate-700 truncate" :class="{'text-slate-500': interval.status !== IntervalsStatus.DRAFT}">
         {{ interval.title || 'Clip senza titolo' }}
       </span>
       <span v-if="interval.playerNumber" class="text-xs font-semibold text-slate-400 shrink-0">
@@ -15,31 +23,36 @@
     </div>
 
     <div class="flex items-center gap-4 shrink-0">
-      <div class="text-xs font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">
-        {{ useTimeFormat().formatMsToTimer(Math.max(0, interval.anchorTime - (interval.offsetStart * 1000))) }} - {{ useTimeFormat().formatMsToTimer(interval.anchorTime + (interval.offsetEnd * 1000)) }}
+      <div class="text-xs font-mono font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
+        {{ formatTime(Math.max(0, interval.anchorTime - (interval.offsetStart * 1000))) }} - {{ formatTime(interval.anchorTime + (interval.offsetEnd * 1000)) }}
       </div>
       
-      <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button 
-          @click.stop="$emit('remove')"
-          class="p-1.5 text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
-          title="Elimina"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        </button>
+      <div v-if="interval.status === IntervalsStatus.DRAFT" class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button @click.stop="$emit('remove')" class="p-1.5 text-red-600 bg-red-50 rounded hover:bg-red-100"><TrashIcon class="size-4" /></button>
       </div>
-      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+
+      <span v-else-if="interval.status === IntervalsStatus.PROCESSING" class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">
+        Elaborazione...
+      </span>
+
+      <button 
+        v-else-if="interval.status === IntervalsStatus.COMPLETED"
+        @click.stop="downloadSingle(interval.mp4_s3_path)"
+        class="text-xs font-bold text-white bg-slate-800 hover:bg-black p-1.5 rounded shadow-sm transition-colors flex items-center gap-1"
+      >
+        <ArrowDownTrayIcon class="size-4" />
+      </button>
     </div>
   </div>
 
   <div 
-    v-else 
+    v-if="isEditing && interval.status === IntervalsStatus.DRAFT" 
     class="bg-blue-50/50 border border-blue-200 rounded-xl p-4 flex flex-col gap-4 shadow-sm relative group"
   >
     <div class="flex justify-between items-center border-b border-blue-100 pb-2 cursor-pointer" @click="isEditing = false" title="Riduci">
       <h4 class="text-xs font-black text-blue-900 uppercase tracking-wider">Modifica Clip</h4>
       <button class="p-1 text-blue-500 hover:text-blue-700 rounded transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+        <ChevronDownIcon class="size-4" />
       </button>
     </div>
 
@@ -132,10 +145,11 @@
 </template>
 
 <script setup lang="ts">
-import type { VideoIntervalNew } from '@/interfaces/VideoInterval';
+import { IntervalsStatus, type VideoIntervalNew } from '@/interfaces/VideoInterval';
 import { ref, computed } from 'vue';
 import CategoryListbox from './listbox/CategoryListbox.vue';
 import { useTimeFormat } from '@/composables/useTimeFormat.ts';
+import { ArrowDownTrayIcon, ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps<{
   interval: VideoIntervalNew
@@ -146,6 +160,7 @@ defineEmits(['remove']);
 // Lo stato locale che controlla se stiamo modificando o se è ridotto a riga compatta.
 // Quando viene creata una nuova clip, parte aperto in modalità "Editing"
 const isEditing = ref(true);
+const formatTime = useTimeFormat().formatMsToTimer;
 
 // Computed property per dare un colore al bordo in base alla categoria
 const categoryBorderColorClass = computed(() => {
@@ -156,5 +171,14 @@ const categoryBorderColorClass = computed(() => {
     default: return 'border-amber-500'; // Generico
   }
 });
+
+const openEditIfDraft = () => {
+  if (props.interval.status === IntervalsStatus.DRAFT) isEditing.value = true;
+};
+
+const downloadSingle = (url?: string) => {
+  if (!url) return;
+  window.open(url, '_blank'); // Oppure usare la logica del Presigned URL che avevamo fatto prima
+};
 
 </script>

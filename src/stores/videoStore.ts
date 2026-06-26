@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
 import { supabase } from '@/lib/supabase';
 import * as videoService from '@/services/videoService';
-import type { VideoInterval, VideoIntervalNew } from "@/interfaces/VideoInterval";
+import { IntervalsStatus, JobStatus, type ExportJob, type VideoInterval, type VideoIntervalNew } from "@/interfaces/VideoInterval";
 import type { TacticsData } from "@/interfaces/TacticsData";
 import type { Interval } from "@/interfaces/Interval";
 
@@ -27,6 +27,7 @@ interface VideoStoreState {
   isFetchingVideos: boolean;
   exportedClips: string[];
   isExporting: boolean;
+  clipJobs: ExportJob[];
 }
 
 export const useVideoStore = defineStore("video", {
@@ -49,7 +50,8 @@ export const useVideoStore = defineStore("video", {
     videoList: [],
     isFetchingVideos: false,
     exportedClips: [],
-    isExporting: false
+    isExporting: false,
+    clipJobs: []
   }),
   getters: {
     requestIntervals: (state) => {
@@ -98,7 +100,8 @@ export const useVideoStore = defineStore("video", {
         offsetEnd: 0,
         teamId: null,
         playerNumber: null,
-        title: ""
+        title: "",
+        status: IntervalsStatus.DRAFT
       });
     },
 
@@ -231,6 +234,38 @@ export const useVideoStore = defineStore("video", {
         alert("Si è verificato un errore durante l'esportazione delle clip.");
       } finally {
         this.isExporting = false;
+      }
+    },
+
+    // NUOVA ACTION: Invia le clip al backend per l'esportazione
+    async exportDraftClips() {
+      // 1. Prendo solo le clip in bozza
+      const drafts = this.intervalsNew.filter(c => c.status === IntervalsStatus.DRAFT);
+      if (drafts.length === 0) return;
+
+      // 3. Aggiorno la UI: Blocco le clip e le metto in "processing"
+      drafts.forEach(c => {
+        c.status = IntervalsStatus.PROCESSING;
+      });
+
+      // 4. Aggiungo il Job alla lista visibile nella dashboard
+      this.clipJobs.unshift({
+        status: JobStatus.PROCESSING,
+        clipCount: drafts.length
+      });
+
+      try {
+        var res = await videoService.exportClips(this.videoId, drafts);
+        var data = await res.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+      } catch (error) {
+        console.error("Errore esportazione", error);
+        // // const job = this.clipJobs.find(j => j.id === jobId);
+        // if (job) job.status = JobStatus.FAILED;
+        drafts.forEach(c => c.status = IntervalsStatus.DRAFT); // Riporto allo stato iniziale per riprovare
       }
     },
 
