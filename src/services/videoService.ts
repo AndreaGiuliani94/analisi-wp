@@ -33,8 +33,8 @@ export const getVideoList = async () => {
     return res;
 }
 
-export const getClipsReadyToDownload = async (videoId: string) => {
-    const res = await fetch(BE_URL + '/video/clips/processed' + `?video_id=${videoId}`, {
+export const getAllClips = async (videoId: string) => {
+    const res = await fetch(BE_URL + '/video/clips' + `?video_id=${videoId}`, {
         method: 'GET',
         credentials: 'include',
         headers: {

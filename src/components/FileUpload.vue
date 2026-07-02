@@ -64,9 +64,11 @@ import BaseListbox from "./listbox/BaseListbox.vue";
 import { useDropzone, type FileRejectReason } from "vue3-dropzone";
 import { CloudArrowUpIcon } from "@heroicons/vue/24/outline";
 import ActionButton from "./buttons/ActionButton.vue";
+import { useClipStore } from "@/stores/clipStore";
 
 
 const videoStore = useVideoStore();
+const clipStore = useClipStore();
 function onDrop(acceptFiles: File[], rejectReasons: FileRejectReason[]) {
     console.log(acceptFiles);
     console.log(rejectReasons);
@@ -86,6 +88,7 @@ onMounted(() => {
 const loadSelectedExistingVideo = async () => {
     if (selectedExistingVideo.value) {
         await videoStore.loadExistingVideo(selectedExistingVideo.value);
+        await clipStore.getAllClips(videoStore.videoId);
     }
 };
 

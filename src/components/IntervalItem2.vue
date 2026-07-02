@@ -35,13 +35,15 @@
         Elaborazione...
       </span>
 
-      <button 
+      <ActionButton
         v-else-if="interval.status === IntervalsStatus.COMPLETED"
-        @click.stop="downloadSingle(interval.mp4_s3_path)"
-        class="text-xs font-bold text-white bg-slate-800 hover:bg-black p-1.5 rounded shadow-sm transition-colors flex items-center gap-1"
-      >
-        <ArrowDownTrayIcon class="size-4" />
-      </button>
+        :tooltip="'Scarica clip'"
+        :tooltipPosition="'left'"
+        :color="'blue'"
+        :icon-size="'size-4'"
+        :icon="ArrowDownTrayIcon"
+        @click="downloadSingle(interval.s3Path)"
+      />
     </div>
   </div>
 
@@ -150,6 +152,8 @@ import { ref, computed } from 'vue';
 import CategoryListbox from './listbox/CategoryListbox.vue';
 import { useTimeFormat } from '@/composables/useTimeFormat.ts';
 import { ArrowDownTrayIcon, ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import * as videoService from '@/services/videoService';
+import ActionButton from './buttons/ActionButton.vue';
 
 const props = defineProps<{
   interval: VideoIntervalNew
@@ -176,9 +180,22 @@ const openEditIfDraft = () => {
   if (props.interval.status === IntervalsStatus.DRAFT) isEditing.value = true;
 };
 
-const downloadSingle = (url?: string) => {
-  if (!url) return;
-  window.open(url, '_blank'); // Oppure usare la logica del Presigned URL che avevamo fatto prima
+const downloadSingle = async (path?: string) => {
+  if (!path) return;
+  try {
+    const res = await videoService.getDownloadUrl(path);
+    const data = await res.json();
+    
+    // Il BE dovrebbe restituire un oggetto con l'URL o l'URL direttamente.
+    const signed = typeof data === 'string' ? data : (data.url || data.signed_url || data.download_url);
+    
+    if (signed) {
+      window.open(signed, '_blank'); 
+    } else {
+      console.error("URL non trovato nella risposta:", data);
+    }
+  } catch (err) {
+    console.error("Errore durante il recupero del signed URL:", err);
+  }
 };
-
 </script>

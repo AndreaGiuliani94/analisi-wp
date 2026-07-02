@@ -22,7 +22,7 @@ export interface VideoIntervalNew {
   playerNumber?: number | null
   status: IntervalsStatus
   jobId?: string
-  mp4_s3_path?: string
+  s3Path?: string
 }
 
 export interface ExportJob {

@@ -16,7 +16,6 @@ interface VideoStoreState {
   videoDuration: number;
   tsUrls: string[];
   intervals: VideoInterval[];
-  intervalsNew: VideoIntervalNew[];
   downloadProgress: number;
   isDownloading: boolean;
   isUploading: boolean;
@@ -40,7 +39,6 @@ export const useVideoStore = defineStore("video", {
     videoDuration: 0,
     tsUrls: [],
     intervals: [],
-    intervalsNew: [],
     downloadProgress: 0,
     isDownloading: false,
     isUploading: false,
@@ -88,20 +86,6 @@ export const useVideoStore = defineStore("video", {
         category: "",
         title: "",
         errors: { start: "", end: "", title: "" },
-      });
-    },
-
-    addIntervalNew(): void {
-      this.intervalsNew.push({
-        type: "",
-        category: "",
-        anchorTime: 0,
-        offsetStart: 0,
-        offsetEnd: 0,
-        teamId: null,
-        playerNumber: null,
-        title: "",
-        status: IntervalsStatus.DRAFT
       });
     },
 
@@ -218,55 +202,6 @@ export const useVideoStore = defineStore("video", {
       if (!videoId) return;
       this.videoId = videoId;
       await this.getStreamingVideoInfo();
-      await this.getClipsReadyToDownload()
-    },
-
-    async exportVideoClips(): Promise<void> {
-      if (!this.videoId || this.intervalsNew.length === 0) return;
-      this.isExporting = true;
-      try {
-        const response = await videoService.exportClips(this.videoId, this.intervalsNew);
-        const data = await response.json();
-        // Presumiamo che data sia un array di link
-        this.exportedClips = Array.isArray(data) ? data : data.clips || [];
-      } catch (error) {
-        console.error("Errore durante l'esportazione delle clip:", error);
-        alert("Si è verificato un errore durante l'esportazione delle clip.");
-      } finally {
-        this.isExporting = false;
-      }
-    },
-
-    // NUOVA ACTION: Invia le clip al backend per l'esportazione
-    async exportDraftClips() {
-      // 1. Prendo solo le clip in bozza
-      const drafts = this.intervalsNew.filter(c => c.status === IntervalsStatus.DRAFT);
-      if (drafts.length === 0) return;
-
-      // 3. Aggiorno la UI: Blocco le clip e le metto in "processing"
-      drafts.forEach(c => {
-        c.status = IntervalsStatus.PROCESSING;
-      });
-
-      // 4. Aggiungo il Job alla lista visibile nella dashboard
-      this.clipJobs.unshift({
-        status: JobStatus.PROCESSING,
-        clipCount: drafts.length
-      });
-
-      try {
-        var res = await videoService.exportClips(this.videoId, drafts);
-        var data = await res.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-      } catch (error) {
-        console.error("Errore esportazione", error);
-        // // const job = this.clipJobs.find(j => j.id === jobId);
-        // if (job) job.status = JobStatus.FAILED;
-        drafts.forEach(c => c.status = IntervalsStatus.DRAFT); // Riporto allo stato iniziale per riprovare
-      }
     },
 
     async getStreamingVideoInfo(): Promise<void> {
@@ -286,30 +221,6 @@ export const useVideoStore = defineStore("video", {
           this.tsUrls = data.ts_urls;
           this.videoDuration = data.duration;
           this.videoUploaded = true;
-        }
-      } catch (error) {
-        this.clipJobStatusMessage = 'Errore nel recupero video pre-firmato.';
-        console.error("Error in pre-signed URL fetch:", error);
-        throw error;
-      } finally {
-        this.isUploading = false;
-      }
-    },
-
-    async getClipsReadyToDownload(): Promise<void> {
-      if (!this.videoId) return;
-
-      this.isUploading = true;
-      this.clipJobStatusMessage = 'Recupero clip pronte...';
-
-      try {
-        const response = await videoService.getClipsReadyToDownload(this.videoId);
-        const data = await response.json();
-        if (data.error) {
-          console.error("Errore: " + data.error)
-          alert("Errore nel recupero delle clip")
-        } else {
-          this.exportedClips = data;
         }
       } catch (error) {
         this.clipJobStatusMessage = 'Errore nel recupero video pre-firmato.';
@@ -634,7 +545,6 @@ export const useVideoStore = defineStore("video", {
     },
 
     resetStore(): void {
-      this.intervalsNew = [];
       this.videoUploaded = false;
       this.selectedFile = null;
       this.isUploading = false;

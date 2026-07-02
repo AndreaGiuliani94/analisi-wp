@@ -100,13 +100,14 @@
                 <h3 class="text-sm font-black text-blue-950">Timeline Clip</h3>
                 
                 <div class="bg-slate-200 p-1 rounded-md flex text-xs font-bold">
-                  <button @click="showOnlyDrafts = false" :class="!showOnlyDrafts ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-3 py-1 rounded transition-all">Tutte</button>
-                  <button @click="showOnlyDrafts = true" :class="showOnlyDrafts ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-3 py-1 rounded transition-all">Da Esportare</button>
+                  <button @click="clipFilter = 'ALL'" :class="clipFilter === 'ALL' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-3 py-1 rounded transition-all">Tutte</button>
+                  <button @click="clipFilter = 'DRAFTS'" :class="clipFilter === 'DRAFTS' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-3 py-1 rounded transition-all">Da Esportare</button>
+                  <button @click="clipFilter = 'DOWNLOADED'" :class="clipFilter === 'DOWNLOADED' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'" class="px-3 py-1 rounded transition-all">Scaricate</button>
                 </div>
               </div>
 
               <button 
-                @click="videoStore.exportDraftClips()"
+                @click="handleExportDraftClips()"
                 :disabled="draftClipsCount === 0"
                 class="w-full py-2.5 rounded-lg font-black text-sm text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 :class="draftClipsCount > 0 ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-400'"
@@ -117,7 +118,7 @@
 
             <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50/30">
               
-              <div v-if="videoStore.clipJobs.length > 0 && !showOnlyDrafts" class="flex flex-col gap-2 border-b border-slate-200 pb-4 mb-2">
+              <div v-if="videoStore.clipJobs.length > 0 && clipFilter !== 'DRAFTS'" class="flex flex-col gap-2 border-b border-slate-200 pb-4 mb-2">
                 <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Archivio Esportazioni</h4>
                 <div v-for="job in videoStore.clipJobs" :key="job.id" class="bg-blue-50 border border-blue-100 rounded-lg p-3 flex justify-between items-center">
                   <div class="flex flex-col">
@@ -145,7 +146,7 @@
                 v-for="(interval, index) in filteredClips" 
                 :key="interval.id || index"
                 :interval="interval"
-                @remove="videoStore.intervalsNew.splice(videoStore.intervalsNew.indexOf(interval), 1)"
+                @remove="clipStore.clips.splice(clipStore.clips.findIndex(c => c.id === interval.id), 1)"
               />
             </div>
           </div>
@@ -162,8 +163,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useVideoStore } from "@/stores/videoStore";
+import { useClipStore, mapClipToFE, ClipStatus } from "@/stores/clipStore";
 import FileUpload from "@/components/FileUpload.vue";
 import ConfirmModal from "@/components/modals/ConfirmModal.vue";
 import DownloadClipsModal from "@/components/modals/DownloadClipsModal.vue";
@@ -171,9 +173,10 @@ import HlsVideoPlayer2 from '@/components/HlsVideoPlayer2.vue';
 import IntervalItem2 from '@/components/IntervalItem2.vue';
 import ActionButton from '@/components/buttons/ActionButton.vue';
 import { ArrowUturnLeftIcon, TrashIcon } from '@heroicons/vue/24/outline';
-import { IntervalsStatus, JobStatus } from '@/interfaces/VideoInterval';
+import { JobStatus } from '@/interfaces/VideoInterval';
 
 const videoStore = useVideoStore();
+const clipStore = useClipStore();
 const playerRef = ref<InstanceType<typeof HlsVideoPlayer2> | null>(null);
 const currentVideoTime = ref(0);
 const showCleanupModal = ref(false);
@@ -190,33 +193,48 @@ const createTag = (type: string) => {
   playerRef.value.pause();
 
   // 3. Inietta la nuova struttura dati nel tuo store esistente
-  videoStore.intervalsNew.unshift({
+  clipStore.clips.unshift({
     id: crypto.randomUUID(),
+    video_id: videoStore.videoId,
     title: `Azione ${type}`,
     type: type,
     category: '',
-    anchorTime: anchor,
-    offsetStart: 5,
-    offsetEnd: 5,
-    status: IntervalsStatus.DRAFT,
+    anchor_time: anchor,
+    offset_start: 5,
+    offset_end: 5,
+    status: ClipStatus.DRAFT,
   });
 };
 
-const showOnlyDrafts = ref(false);
+const clipFilter = ref<'ALL' | 'DRAFTS' | 'DOWNLOADED'>('ALL');
 
-const draftClipsCount = computed(() => 
-  videoStore.intervalsNew.filter(c => c.status === IntervalsStatus.DRAFT).length
-);
+const draftClipsCount = computed(() => clipStore.draftClips.length);
 
 const filteredClips = computed(() => {
-  if (showOnlyDrafts.value) {
-    return videoStore.intervalsNew.filter(c => c.status === IntervalsStatus.DRAFT);
+  let list = clipStore.clips;
+
+  if (clipFilter.value === 'DRAFTS') {
+    list = clipStore.draftClips;
+  } else if (clipFilter.value === 'DOWNLOADED') {
+    list = clipStore.downloadedClips;
   }
-  return videoStore.intervalsNew;
+
+  return list.map(mapClipToFE);
 });
 
 const downloadZip = (url?: string) => {
   if(url) window.open(url, '_blank');
+};
+
+/**
+ * Wrapper attorno a exportDraftClips:
+ * dopo che la risposta arriva, inizializza il clipStore
+ * per ricevere aggiornamenti realtime dalla tabella clips.
+ */
+const handleExportDraftClips = async () => {
+  await clipStore.exportDraftClips(videoStore.videoId);
+  // Inizializza (o re-inizializza) il channel se non lo è già
+  await clipStore.initForVideo(videoStore.videoId);
 };
 
 const confirmCleanup = async () => {
@@ -230,7 +248,8 @@ const formatTime = (totalSeconds: number): string => {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 };
 
-onUnmounted(()=>{
+onUnmounted(() => {
   videoStore.unsubscribeVideoUpdates();
+  clipStore.unsubscribeClipUpdates();
 })
 </script>
