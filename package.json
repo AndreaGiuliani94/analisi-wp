@@ -38,7 +38,7 @@
     "@vitejs/plugin-vue-jsx": "^4.2.0",
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.27",
-    "npm-run-all2": "^7.0.2",
+    "npm-run-all2": "^9.0.3",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.7.3",
