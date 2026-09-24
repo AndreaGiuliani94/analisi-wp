@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Diciamo a Dependabot di controllare i pacchetti JavaScript/TypeScript.
+  # Nota bene: scriviamo "npm", ma Dependabot userà automaticamente "pnpm" 
+  # perché vedrà il tuo file pnpm-lock.yaml!
+  - package-ecosystem: "npm"
+    
+    # La cartella dove si trova il tuo package.json (la radice del progetto)
+    directory: "/"
+    
+    # Con quale frequenza vuoi che il bot controlli gli aggiornamenti?
+    # "weekly" (settimanale) è l'ideale per non ricevere troppe notifiche.
+    schedule:
+      interval: "weekly"
+      day: "monday" # Controlla ogni lunedì
+      
+    # Assegna delle etichette (labels) alle Pull Request per tenerle ordinate
+    labels:
+      - "aggiornamento-dipendenze"

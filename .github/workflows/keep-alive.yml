@@ -1,0 +1,34 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Esegue il comando ogni giorno alle ore 08:00 UTC
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Permette di avviarlo anche a mano per fare un test
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Codice sorgente del repository
+        uses: actions/checkout@v4
+
+      - name: Imposta Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Installa pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+          run_install: false
+
+      - name: Installa le dipendenze
+        run: pnpm install --frozen-lockfile
+
+      - name: Esegui lo script di Keep-Alive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/keep-alive.js
