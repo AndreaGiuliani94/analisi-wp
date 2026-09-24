@@ -14,6 +14,9 @@ updates:
       interval: "weekly"
       day: "monday" # Controlla ogni lunedì
       
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     # Assegna delle etichette (labels) alle Pull Request per tenerle ordinate
     labels:
-      - "aggiornamento-dipendenze"
+      - "enhancement"
