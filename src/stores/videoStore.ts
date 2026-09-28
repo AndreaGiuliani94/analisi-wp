@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import axios, { type AxiosProgressEvent, type AxiosResponse } from "axios";
 import { supabase } from '@/lib/supabase';
 import * as videoService from '@/services/videoService';
 import { IntervalsStatus, JobStatus, type ExportJob, type VideoInterval, type VideoIntervalNew } from "@/interfaces/VideoInterval";
@@ -340,11 +339,11 @@ export const useVideoStore = defineStore("video", {
 
     async getConversionStatus(jobId: string): Promise<void> {
       try {
-        const statusResponse = await axios.get(import.meta.env.VITE_BE_URL + `/status/check/?job_id=${jobId}`);
-        const status = statusResponse.data.status;
+        const statusResponse = await fetch(import.meta.env.VITE_BE_URL + `/status/check/?job_id=${jobId}`);
+        const status = (await statusResponse.json()).status;
 
         if (status.toUpperCase() === 'COMPLETE'.toUpperCase()) {
-          console.log('Il processo di conversione è completato!' + statusResponse.data);
+          console.log('Il processo di conversione è completato!' + (await statusResponse.json()));
           this.videoUploaded = true;
         } else if (status.toUpperCase() === 'ERROR'.toUpperCase()) {
           console.error('Il processo di conversione è fallito');
@@ -364,23 +363,38 @@ export const useVideoStore = defineStore("video", {
       file: File,
       presignedUrl: string,
       onProgress?: (percent: number) => void
-    ): Promise<AxiosResponse> {
-      try {
-        return await axios.put(presignedUrl, file, {
-          headers: {
-            'Content-Type': file.type,
-          },
-          onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-            if (progressEvent.total && onProgress) {
-              const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-              onProgress(percent);
-            }
-          },
+    ): Promise<void> {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        // 1. Tracciamento del progresso
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress(percent);
+          }
         });
-      } catch (error) {
-        console.error("Errore durante l'upload del file su S3:", error);
-        throw error;
-      }
+
+        // 2. Gestione del completamento (Successo o Errore HTTP)
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(); // Upload completato con successo
+          } else {
+            reject(new Error(`Errore HTTP durante l'upload: ${xhr.status} ${xhr.statusText}`));
+          }
+        });
+
+        // 3. Gestione errori di rete (connessione interrotta, cors, ecc.)
+        xhr.addEventListener('error', () => {
+          console.error("Errore di rete durante l'upload su S3");
+          reject(new Error("Errore di rete durante l'upload su S3"));
+        });
+
+        // 4. Configurazione e invio
+        xhr.open('PUT', presignedUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.send(file);
+      });
     },
 
     async sendIntervals(): Promise<void> {
@@ -493,7 +507,7 @@ export const useVideoStore = defineStore("video", {
           }
         }
 
-        const blob = new Blob(chunks);
+        const blob = new Blob(chunks as BlobPart[]);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
 
@@ -524,10 +538,16 @@ export const useVideoStore = defineStore("video", {
 
     async fetchTactics(): Promise<void> {
       try {
-        const response = await axios.get<TacticsData>(
-          import.meta.env.VITE_BE_URL + "/video/categories/"
-        );
-        this.tactics = response.data;
+        const response = await fetch(import.meta.env.VITE_BE_URL + "/video/categories/");
+        
+        if (!response.ok) {
+          throw new Error(`Errore HTTP: ${response.status}`);
+        }
+        
+        // Con fetch, devi estrarre manualmente il JSON
+        const data: TacticsData = await response.json();
+        this.tactics = data;
+        
       } catch (error) {
         console.error("Errore nel recupero delle tattiche:", error);
       }
@@ -535,10 +555,16 @@ export const useVideoStore = defineStore("video", {
 
     async testS3Connection(): Promise<void> {
       try {
-        const response = await axios.get<TacticsData>(
-          import.meta.env.VITE_BE_URL + "/test-s3"
-        );
-        console.log("connesso a S3", response);
+        const response = await fetch(import.meta.env.VITE_BE_URL + "/test-s3");
+        
+        if (!response.ok) {
+          throw new Error(`Errore HTTP: ${response.status}`);
+        }
+        
+        // Presumo che l'endpoint test-s3 ritorni un JSON, altrimenti puoi usare await response.text()
+        const data = await response.json(); 
+        console.log("Connesso a S3", data);
+        
       } catch (error) {
         console.error("Errore nella connessione a S3", error);
       }
