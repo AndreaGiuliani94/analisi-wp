@@ -69,15 +69,28 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Creiamo un file separato solo per l'ecosistema Vue
-          'vendor-vue': ['vue', 'vue-router', 'pinia'],
-          
-          // Creiamo un file separato per le icone che pesano un po'
-          'vendor-icons': ['@heroicons/vue'],
-          
-          // Creiamo un file separato per la libreria Excel!
-          'vendor-excel': ['exceljs', 'file-saver']
+        manualChunks(id: string) {
+          // Controlliamo solo i pacchetti esterni
+          if (id.includes('node_modules')) {
+            
+            // Chunk per l'ecosistema Vue
+            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
+              return 'vendor-vue';
+            }
+            
+            // Chunk per le icone (presumo Heroicons)
+            if (id.includes('@heroicons')) {
+              return 'vendor-icons';
+            }
+            
+            // Chunk per ExcelJS e FileSaver
+            if (id.includes('file-saver') || id.includes('exceljs')) {
+              return 'vendor-excel';
+            }
+
+            // Tutto il resto finirà in un chunk generico "vendor"
+            return 'vendor';
+          }
         }
       }
     }
