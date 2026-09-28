@@ -81,7 +81,6 @@ import TeamItem from '@/components/TeamItem.vue';
 import { useTimerStore } from '@/stores/timerStore';
 import ScoreboardHeader from '@/components/match/ScoreboardHeader.vue';
 import EndMatchModal from '@/components/modals/EndMatchModal.vue';
-import { useToast } from 'vue-toastification';
 import { MatchPeriod } from '@/enum/MatchPeriod';
 import { matchPeriodToNumber } from '@/const/consts';
 import ConfirmModal from '@/components/modals/ConfirmModal.vue';
@@ -92,6 +91,7 @@ import { MatchStatus } from '@/enum/MatchStatus';
 import { useMatchStateStore } from '@/stores/matchStateStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { FoulType } from '@/enum/ExclutionDescription';
+import { toast } from 'vue3-toastify';
 
 const gameStore = useGameStore()
 const timerStore = useTimerStore()
@@ -256,13 +256,13 @@ const handleActionConfirm = async () => {
   if (currentAction.value === 'suspend') {
     await timerStore.masterStop();
     await gameStore.suspendMatch();
-    useToast().info("Partita sospesa con successo!");
+    toast.info("Partita sospesa con successo!");
   } else if (currentAction.value === 'cancel') {
     await gameStore.cancelMatch();
-    useToast().info("Partita annullata con successo!");
+    toast.info("Partita annullata con successo!");
   } else if (currentAction.value === 'restart') {
     await restartMatch();
-    useToast().info("Partita riavviata con successo!");
+    toast.info("Partita riavviata con successo!");
   }
   isActionConfirmModalOpen.value = false;
   currentAction.value = null;

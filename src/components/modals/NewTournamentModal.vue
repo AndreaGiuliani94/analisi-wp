@@ -100,7 +100,7 @@ import BaseSelect from '../selects/BaseSelect.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { useTournamentStore } from '@/stores/tournamentStore';
 import BaseModal from './BaseModal.vue';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps({
   isOpen: Boolean
@@ -159,7 +159,7 @@ const register = async () => {
 
     success.value = true
 
-    useToast().success('Torneo creato con successo!');
+    toast.success('Torneo creato con successo!');
     closeModal();
   } catch (e: any) {
     error.value = e.message

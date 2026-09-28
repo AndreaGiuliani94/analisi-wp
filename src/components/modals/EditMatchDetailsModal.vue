@@ -42,8 +42,8 @@ import { ref, watch } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import BaseModal from './BaseModal.vue';
-import { useToast } from 'vue-toastification';
 import { updateMatchDetails } from '@/services/matchService';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -53,7 +53,6 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits([ "close", "updated" ])
-const toast = useToast();
 
 // Form state
 const editedMatchName = ref('')

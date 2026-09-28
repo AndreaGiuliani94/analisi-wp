@@ -112,7 +112,7 @@ import type { Tournament } from '@/interfaces/Tournament';
 import { useTimeFormat } from '@/composables/useTimeFormat';
 import { useTournamentStore } from '@/stores/tournamentStore';
 import { useAuthStore } from '@/stores/authStore';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue3-toastify';
 import { TournamentRole } from '@/enum/RoleType';
 import SwitchButton from '../buttons/SwitchButton.vue';
 
@@ -125,7 +125,6 @@ const emit = defineEmits([ "close", "updated" ]);
 const { formatMsToTimer, formatTimerToMs } = useTimeFormat();
 const tournamentStore = useTournamentStore();
 const authStore = useAuthStore();
-const toast = useToast();
 
 const isEditing = ref(false);
 const editedPeriodDuration = ref('08:00');

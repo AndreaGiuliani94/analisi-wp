@@ -34,9 +34,9 @@ import { reactive, ref } from 'vue'
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import BaseModal from './BaseModal.vue';
-import { useToast } from 'vue-toastification';
 import { createNewTeam } from '@/services/matchService';
 import BaseSelect from '../selects/BaseSelect.vue';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -52,7 +52,6 @@ const categories = [
 ];
 
 const emit = defineEmits(['close', 'created']);
-const toast = useToast();
 const loading = ref(false);
 
 const formData = reactive({

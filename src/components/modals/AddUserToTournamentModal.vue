@@ -44,9 +44,9 @@ import BaseSelect from '../selects/BaseSelect.vue'
 import ActionButton from '../buttons/ActionButton.vue'
 import { useTournamentStore } from '@/stores/tournamentStore'
 import { useAuthStore } from '@/stores/authStore'
-import { useToast } from 'vue-toastification'
 import type { TournamentParticipant } from '@/interfaces/Tournament'
 import { TournamentRole } from '@/enum/RoleType'
+import { toast } from 'vue3-toastify'
 
 const props = defineProps<{
   isOpen: boolean
@@ -57,7 +57,6 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'updated'])
 const tournamentStore = useTournamentStore()
 const authStore = useAuthStore()
-const toast = useToast()
 
 const selectedUserId = ref('')
 const selectedRole = ref(TournamentRole.VIEWER) // Default role

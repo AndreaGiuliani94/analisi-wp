@@ -69,7 +69,7 @@ import type { TeamInfo } from '@/interfaces/TeamInfo';
 import TeamRosterEditor from '@/components/TeamRosterEditor.vue';
 import { useRouter } from 'vue-router';
 import type { Team } from '@/interfaces/Team';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue3-toastify';
 import { useTimerStore } from '@/stores/timerStore';
 import { MatchStatus } from '@/enum/MatchStatus';
 import { useMatchStateStore } from '@/stores/matchStateStore';
@@ -80,7 +80,6 @@ const matchStateStore = useMatchStateStore();
 const userRole = matchStateStore.userRole;
 
 const router = useRouter();
-const toast = useToast();
 const isStarting = ref(false);
 const isGameStarted = (computed(() => gameStore.match.status !== MatchStatus.SCHEDULED && gameStore.match.status !== MatchStatus.WARMUP))
 
@@ -135,7 +134,7 @@ const loadLastRoster = async (isHome: boolean) => {
   const team = isHome ? gameStore.match.homeTeam : gameStore.match.awayTeam;
 
     if (!team.id) {
-        useToast().warning("Attenzione: Seleziona e conferma prima l'intestazione della squadra!");
+        toast.warning("Attenzione: Seleziona e conferma prima l'intestazione della squadra!");
         return;
     }
 

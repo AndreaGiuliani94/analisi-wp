@@ -111,15 +111,14 @@ import { useMatchStateStore } from '@/stores/matchStateStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { Cog6ToothIcon, CloudArrowUpIcon } from '@heroicons/vue/24/outline'
 import { computed, reactive, ref } from 'vue'
-import { useToast } from 'vue-toastification'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import ActionButton from '@/components/buttons/ActionButton.vue'
 import ConfirmModal from '@/components/modals/ConfirmModal.vue'
+import { toast } from 'vue3-toastify'
 
 const store = useSettingsStore()
 const matchStateStore = useMatchStateStore()
 const router = useRouter()
-const toast = useToast()
 const { canEditMatch } = usePermissions()
 
 const userRole = computed(() => matchStateStore.userRole)

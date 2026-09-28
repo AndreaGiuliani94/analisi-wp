@@ -5,7 +5,6 @@ import type { Match } from "@/interfaces/Match";
 import { ShotCategory, ShotOutcome } from "@/enum/ShotDescription";
 import { useSettingsStore, type SettingsStore } from "./settingsStore";
 import { EDCSType, FoulPosition, FoulType } from "@/enum/ExclutionDescription";
-import { useToast } from "vue-toastification";
 import type { Team } from "@/interfaces/Team";
 import { MatchEventType } from "@/enum/MatchEventDescription";
 import { createNewTeam, endMatch, endPublicLive, getAllTeams, getLastTeamRoster, getTeamRoster, getTeamsByName, restartMatch, savePregameSetup, startMatch, startPublicLive, suspendMatch, cancelMatch, updatePlayer, updateSubstitutions } from "@/services/matchService";
@@ -20,6 +19,7 @@ import { useMatchStateStore } from "./matchStateStore";
 import { clearTeam, resetTeam } from "@/utils/utils";
 import { matchPeriodToNumber, numberToMatchPeriod } from "@/const/consts";
 import { MatchStatus } from "@/enum/MatchStatus";
+import { toast } from "vue3-toastify";
 
 export const useGameStore = defineStore("gameStore", {
   state: () => {
@@ -180,7 +180,6 @@ export const useGameStore = defineStore("gameStore", {
     },
     async toggleElement(number: number, team: number) {
       const settingsStore = useSettingsStore();
-      const toast = useToast();
       let el;
       let enablePlayersTime
       if (team === 0) {
@@ -311,7 +310,7 @@ export const useGameStore = defineStore("gameStore", {
           this.match.status = MatchStatus.IN_PROGRESS;
         } catch (error) {
           console.error("Errore durante l'inizio del match:", error);
-          useToast().error("Impossibile avviare il match sul server");
+          toast.error("Impossibile avviare il match sul server");
         }
       }
     },
@@ -320,10 +319,10 @@ export const useGameStore = defineStore("gameStore", {
         const matchStateStore = useMatchStateStore();
         await endMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.status = MatchStatus.FINISHED;
-        useToast().success("Partita conclusa con successo!");
+        toast.success("Partita conclusa con successo!");
       } catch (error) {
         console.error("Errore durante la chiusura del match:", error);
-        useToast().error("Impossibile terminare il match sul server");
+        toast.error("Impossibile terminare il match sul server");
         throw error;
       }
     },
@@ -332,10 +331,10 @@ export const useGameStore = defineStore("gameStore", {
         const matchStateStore = useMatchStateStore();
         await suspendMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.status = MatchStatus.PAUSED;
-        useToast().success("Partita sospesa con successo!");
+        toast.success("Partita sospesa con successo!");
       } catch (error) {
         console.error("Errore durante la sospensione del match:", error);
-        useToast().error("Impossibile sospendere il match sul server");
+        toast.error("Impossibile sospendere il match sul server");
         throw error;
       }
     },
@@ -344,10 +343,10 @@ export const useGameStore = defineStore("gameStore", {
         const matchStateStore = useMatchStateStore();
         await cancelMatch(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.status = MatchStatus.CANCELED;
-        useToast().success("Partita annullata con successo!");
+        toast.success("Partita annullata con successo!");
       } catch (error) {
         console.error("Errore durante l'annullamento del match:", error);
-        useToast().error("Impossibile annullare il match sul server");
+        toast.error("Impossibile annullare il match sul server");
         throw error;
       }
     },
@@ -356,10 +355,10 @@ export const useGameStore = defineStore("gameStore", {
         const matchStateStore = useMatchStateStore();
         await startPublicLive(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.isLive = true;
-        useToast().success("La partita è in live!");
+        toast.success("La partita è in live!");
       } catch (error) {
         console.error("Errore durante la chiusura del match:", error);
-        useToast().error("Impossibile terminare il match sul server");
+        toast.error("Impossibile terminare il match sul server");
         throw error;
       }
     },
@@ -368,10 +367,10 @@ export const useGameStore = defineStore("gameStore", {
         const matchStateStore = useMatchStateStore();
         await endPublicLive(this.match.id, { sender_client_id: matchStateStore.clientId });
         this.match.isLive = false;
-        useToast().success("Live terminato con successo!");
+        toast.success("Live terminato con successo!");
       } catch (error) {
         console.error("Errore durante la chiusura del match:", error);
-        useToast().error("Impossibile terminare il match sul server");
+        toast.error("Impossibile terminare il match sul server");
         throw error;
       }
     },
@@ -496,7 +495,7 @@ export const useGameStore = defineStore("gameStore", {
             await deleteMatchEvent(eventId, useMatchStateStore().clientId); 
           } catch (error) {
             console.error("Errore durante l'eliminazione del timeout:", error);
-            useToast().error("Impossibile eliminare il timeout sul server!");
+            toast.error("Impossibile eliminare il timeout sul server!");
           }
         }
       }
@@ -522,7 +521,7 @@ export const useGameStore = defineStore("gameStore", {
       const player = currentTeam.players.find((p: any) => p.number === payload.number);
       
       if (!player || !player.id) {
-        useToast().error('Giocatore non trovato!');
+        toast.error('Giocatore non trovato!');
         return;
       }
 
@@ -591,7 +590,7 @@ export const useGameStore = defineStore("gameStore", {
       const currentTeam = team === 0 ? this.match.homeTeam : this.match.awayTeam;
       const player = currentTeam.players.find((p: any) => p.number === number);
       if (!player || !player.id) {
-        useToast().error('Impossibile trovare il giocatore!')
+        toast.error('Impossibile trovare il giocatore!')
         return
       }
       const exclusionToRemove = this.getPlayerFouls(player.id)[exclNumber];
@@ -734,7 +733,7 @@ export const useGameStore = defineStore("gameStore", {
         console.error("Errore critico: salvataggio evento fallito a database", error);
         
         // Gestione Errore: potresti mostrare un toast di errore
-        useToast().error("Impossibile salvare l'evento sul server!");
+        toast.error("Impossibile salvare l'evento sul server!");
         
         // E opzionalmente rimuovere l'evento fallito dall'UI (Rollback)
         const index = this.events.indexOf(newEvent);
@@ -745,7 +744,7 @@ export const useGameStore = defineStore("gameStore", {
       try {
         await updateMatchEvent(eventId, payload);
       } catch (error) {        
-        useToast().error("Impossibile aggiornare l'evento sul server!");
+        toast.error("Impossibile aggiornare l'evento sul server!");
       }
     },
     toggleCorrectionMode() {

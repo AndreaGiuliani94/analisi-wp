@@ -127,7 +127,7 @@ import { reactive, ref, computed, watch } from 'vue';
 import BaseModal from './BaseModal.vue';
 import BaseInput from '../inputs/BaseInput.vue';
 import ActionButton from '../buttons/ActionButton.vue';
-import { useToast } from 'vue-toastification';
+import { toast } from 'vue3-toastify';
 import { addPlayerToTeamRoster, updatePlayer } from '@/services/matchService';
 import { useGameStore } from '@/stores/gameStore';
 
@@ -138,7 +138,6 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['close', 'created']);
-const toast = useToast();
 const isLoading = ref(false);
 const gameStore = useGameStore();
 

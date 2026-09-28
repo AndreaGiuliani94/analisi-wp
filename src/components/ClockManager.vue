@@ -95,11 +95,10 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useTimerStore } from '@/stores/timerStore';
 import { BackwardIcon, ForwardIcon, PauseIcon, PlayIcon } from '@heroicons/vue/20/solid';
 import { ArrowUturnLeftIcon, ArrowUturnRightIcon } from '@heroicons/vue/24/outline';
-import { useToast } from 'vue-toastification';
 import ActionButton from './buttons/ActionButton.vue';
 import { computed } from 'vue';
+import { toast } from 'vue3-toastify';
 
-const toast = useToast();
 const settingsStore = useSettingsStore();
 const timerStore = useTimerStore();
 const gameStore = useGameStore();

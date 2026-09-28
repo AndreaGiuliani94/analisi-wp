@@ -56,8 +56,8 @@ import BaseSelect from '../selects/BaseSelect.vue';
 import ActionButton from '../buttons/ActionButton.vue';
 import { useTournamentStore } from '@/stores/tournamentStore';
 import BaseModal from './BaseModal.vue';
-import { useToast } from 'vue-toastification';
 import type { Tournament } from '@/interfaces/Tournament';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -66,7 +66,6 @@ const props = defineProps<{
 
 const emit = defineEmits([ "close", "updated" ])
 const tournamentStore = useTournamentStore()
-const toast = useToast();
 
 // Form state
 const editedName = ref('')

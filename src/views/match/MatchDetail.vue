@@ -140,7 +140,6 @@ import { PlayIcon, TrashIcon } from '@heroicons/vue/24/solid';
 import { PencilIcon } from '@heroicons/vue/24/outline';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useToast } from 'vue-toastification';
 import { deleteParticipant, getMatchDetails, updateMatchDetails, updateParticipantRole } from '@/services/matchService';
 import { MatchRole } from '@/enum/RoleType';
 import type { MatchStatus } from '@/enum/MatchStatus';

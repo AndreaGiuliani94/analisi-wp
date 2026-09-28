@@ -3,11 +3,11 @@ import { useGameStore } from './gameStore';
 import { useSettingsStore } from './settingsStore';
 import { useMatchStateStore } from './matchStateStore';
 import { startPenalties, timerPlay, timerStop } from '@/services/timerService';
-import { useToast } from 'vue-toastification';
 import { matchPeriodToNumber, numberToMatchPeriod } from '@/const/consts';
 import { MatchPeriod } from '@/enum/MatchPeriod';
 import { useTimeFormat } from '@/composables/useTimeFormat';
 import { MatchRole } from '@/enum/RoleType';
+import { toast } from 'vue3-toastify';
 const { formatMsToTimer } = useTimeFormat();
 
 export const useTimerStore = defineStore('timerStore', {
@@ -48,7 +48,7 @@ export const useTimerStore = defineStore('timerStore', {
       localStorage.setItem("is_timer_master", "false");
 
       // Opzionale: Mostra un Toast/Alert all'owner per avvisarlo!
-      useToast().info("Non sei più il gestore del tempo!");
+      toast.info("Non sei più il gestore del tempo!");
     },
 
     takeTimerMaster() {
@@ -59,7 +59,7 @@ export const useTimerStore = defineStore('timerStore', {
       localStorage.setItem("is_timer_master", "true");
       
       // Opzionale: Mostra un Toast/Alert all'owner per avvisarlo!
-      useToast().info("Sei diventato il nuovo gestore del tempo!")
+      toast.info("Sei diventato il nuovo gestore del tempo!")
     },
 
     // --- AZIONI MASTER (chiamate dai bottoni UI) ---
@@ -199,10 +199,10 @@ export const useTimerStore = defineStore('timerStore', {
         await startPenalties(matchId, { sender_client_id: matchStateStore.clientId });
         this.currentPeriod = matchPeriodToNumber[MatchPeriod.PENALTIES];
         this.countdown = 0;
-        useToast().info("Spostamento ai tiri di rigore effettuato");
+        toast.info("Spostamento ai tiri di rigore effettuato");
       } catch (error) {
         console.error("Errore durante la chiusura del match:", error);
-        useToast().error("Impossibile avviare i rigori");
+        toast.error("Impossibile avviare i rigori");
         throw error;
       }
     },
