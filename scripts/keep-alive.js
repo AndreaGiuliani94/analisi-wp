@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Leggiamo le chiavi dalle variabili d'ambiente di GitHub Actions
 const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_ANON_KEY
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Errore: Variabili d\'ambiente mancanti!')
