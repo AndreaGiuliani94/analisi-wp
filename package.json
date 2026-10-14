@@ -32,7 +32,7 @@
     "@tsconfig/node22": "^22.0.5",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^24.19.1",
-    "@vite-pwa/workbox-window": "8.0.6",
+    "@vite-pwa/workbox-window": "8.0.9",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitejs/plugin-vue-jsx": "^5.1.6",
     "@vue/tsconfig": "^0.7.0",

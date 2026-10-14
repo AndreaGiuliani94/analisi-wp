@@ -225,8 +225,8 @@ importers:
         specifier: ^24.19.1
         version: 24.19.1
       '@vite-pwa/workbox-window':
-        specifier: 8.0.6
-        version: 8.0.6
+        specifier: 8.0.9
+        version: 8.0.9
       '@vitejs/plugin-vue':
         specifier: ^6.0.9
         version: 6.0.9(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3))
@@ -1347,8 +1347,8 @@ packages:
       vue-router:
         optional: true
 
-  '@vite-pwa/workbox-window@8.0.6':
-    resolution: {integrity: sha512-qUSwc8aVFOGvvAZ5LF1tOlpzbKdycFGmURB434kP8+wIqt2x8LUYZQ86t+uGtvHZMFLTejHbPfKAkzH9BHx08Q==}
+  '@vite-pwa/workbox-window@8.0.9':
+    resolution: {integrity: sha512-/uP90ERbn+dOWbqcaHxMHMQyNOA0nuGqJ94tEJhHLqKMi/jCeVW5Q74p3kVkqml2i/D3aHBKMwx1NGTUcPRRIg==}
 
   '@vitejs/plugin-vue-jsx@5.1.6':
     resolution: {integrity: sha512-YXvi4as2clxt6DFw5+a0tTA97ntiQXm/raR8ofNj3aNwwdlVGTiG2gp7EvfZW17P50acL/9bP0ccF4XnqNmlgA==}
@@ -4298,7 +4298,7 @@ snapshots:
       vue: 3.5.43(typescript@5.7.3)
       vue-router: 5.3.1(@vue/compiler-sfc@3.5.43)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3))
 
-  '@vite-pwa/workbox-window@8.0.6':
+  '@vite-pwa/workbox-window@8.0.9':
     dependencies:
       '@types/trusted-types': 2.0.7
 
