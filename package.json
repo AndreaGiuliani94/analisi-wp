@@ -14,7 +14,7 @@
     "@headlessui/tailwindcss": "^0.2.2",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
-    "@supabase/supabase-js": "^2.102.1",
+    "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/vite": "^4.2.2",
     "@vercel/analytics": "^2.0.1",
     "exceljs": "^4.4.0",
