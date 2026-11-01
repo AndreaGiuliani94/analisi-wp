@@ -183,7 +183,7 @@ importers:
         version: 4.3.3(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))
       '@vercel/analytics':
         specifier: ^2.0.1
-        version: 2.0.1(vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3)))(vue@3.5.43(typescript@5.7.3))
+        version: 2.0.1(vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3)))(vue@3.5.43(typescript@5.7.3))
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
@@ -194,8 +194,8 @@ importers:
         specifier: ^1.6.15
         version: 1.7.3
       pinia:
-        specifier: ^4.0.3
-        version: 4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3))
+        specifier: ^4.1.0
+        version: 4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3))
       register-service-worker:
         specifier: ^1.7.2
         version: 1.7.2
@@ -204,7 +204,7 @@ importers:
         version: 3.5.43(typescript@5.7.3)
       vue-router:
         specifier: ^5.4.0
-        version: 5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3))
+        version: 5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3))
       vue3-dropzone:
         specifier: ^2.2.1
         version: 2.2.1(vue@3.5.43(typescript@5.7.3))
@@ -2583,10 +2583,10 @@ packages:
     engines: {node: '>=0.10'}
     hasBin: true
 
-  pinia@4.0.3:
-    resolution: {integrity: sha512-XMQqpvjgG7LMqVhhFUzKLT4KEbsYbfZZ0CZU9PgdFm1O2VKBmIkykL8+SfNhOaT7sR0wT6BEgKT0YNDYWgmVRA==}
+  pinia@4.1.0:
+    resolution: {integrity: sha512-+5/HMuVjYQfKlCD5xQ7zfXn1xUzYFEa7pd0DQK5SaMfZCaFRTHlaH/c02N1FoGOdlzSiwf5EOPgJx//1QDw6gw==}
     peerDependencies:
-      '@vue/devtools-api': ^8.1.5
+      '@vue/devtools-api': ^8.2.1
       typescript: '>=5.6.0'
       vue: ^3.5.11
     peerDependenciesMeta:
@@ -4330,10 +4330,10 @@ snapshots:
 
   '@types/trusted-types@2.0.7': {}
 
-  '@vercel/analytics@2.0.1(vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3)))(vue@3.5.43(typescript@5.7.3))':
+  '@vercel/analytics@2.0.1(vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3)))(vue@3.5.43(typescript@5.7.3))':
     optionalDependencies:
       vue: 3.5.43(typescript@5.7.3)
-      vue-router: 5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3))
+      vue-router: 5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3))
 
   '@vite-pwa/workbox-window@8.0.13':
     dependencies:
@@ -5615,7 +5615,7 @@ snapshots:
 
   pidtree@0.6.1: {}
 
-  pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)):
+  pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)):
     dependencies:
       '@vue/devtools-api': 8.2.1
       nostics: 1.3.0
@@ -6195,7 +6195,7 @@ snapshots:
 
   vscode-uri@3.2.0: {}
 
-  vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3)):
+  vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3)))(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2))(vue@3.5.43(typescript@5.7.3)):
     dependencies:
       '@vue-macros/common': 3.1.4(vue@3.5.43(typescript@5.7.3))
       '@vue/devtools-api': 8.2.1
@@ -6216,7 +6216,7 @@ snapshots:
       vue: 3.5.43(typescript@5.7.3)
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.43
-      pinia: 4.0.3(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3))
+      pinia: 4.1.0(@vue/devtools-api@8.2.1)(typescript@5.7.3)(vue@3.5.43(typescript@5.7.3))
       vite: 8.3.2(@types/node@24.19.1)(jiti@2.7.0)(terser@5.51.2)
     transitivePeerDependencies:
       - '@farmfe/core'
